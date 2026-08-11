@@ -1,39 +1,123 @@
+
+# accounts/views.py
+
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, TemplateView
+from django.shortcuts import redirect
+from django.core.exceptions import PermissionDenied
 from .forms import AgentSignUpForm, ProfileCompletionForm
+from .models import CustomUser
+
 
 class RoleBasedLoginView(LoginView):
+    """Login view that redirects users based on their role and status."""
     template_name = 'accounts/login.html'
-
+    
     def get_success_url(self):
         user = self.request.user
-        if user.is_staff or getattr(user, 'role', '') == 'SUPER_ADMIN':
+        
+        # Super admins go to admin dashboard
+        if user.is_admin:
             return reverse_lazy('dashboard:admin')
-        return reverse_lazy('properties:mine')
+        
+        # Pending agents go to pending page
+        if user.is_pending_agent:
+            return reverse_lazy('accounts:pending')
+        
+        # Rejected agents go to pending page (shows rejection reason)
+        if user.is_rejected_agent:
+            return reverse_lazy('accounts:pending')
+        
+        # Suspended agents go to pending page (shows suspension message)
+        if user.is_suspended_agent:
+            return reverse_lazy('accounts:pending')
+        
+        # Approved agents go to their dashboard
+        if user.is_approved_agent:
+            return reverse_lazy('properties:mine')
+        
+        # Public users go to homepage
+        return reverse_lazy('properties:home')
+
 
 class AgentSignUpView(CreateView):
+    """
+    Agent registration view.
+    Creates a PENDING agent account.
+    Does NOT auto-login with full privileges.
+    """
     form_class = AgentSignUpForm
     template_name = 'accounts/signup.html'
-    success_url = reverse_lazy('properties:mine')
-
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Prevent already-authenticated users from signing up again
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         response = super().form_valid(form)
-        login(self.request, self.object)
-        messages.success(self.request, "Welcome to 9jaRent! Your agent account is ready — list your first property below.")
+        
+        # CRITICAL: Do NOT auto-login with full agent privileges
+        # Instead, show pending message
+        messages.success(
+            self.request, 
+            "Your agent application has been submitted and is awaiting administrator approval. "
+            "You will be notified once your application is reviewed."
+        )
         return response
+    
+    def get_success_url(self):
+        return reverse_lazy('accounts:pending')
+
+
+class AgentPendingView(TemplateView):
+    """
+    Page shown to pending/rejected/suspended agents.
+    Displays status and any rejection/suspension reasons.
+    """
+    template_name = 'accounts/pending.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Allow anonymous users who just signed up (via session)
+        # Or authenticated users who are agents
+        if request.user.is_authenticated and not request.user.is_agent:
+            messages.info(request, "This page is for agent applicants only.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+
 
 class CompleteProfileView(LoginRequiredMixin, UpdateView):
+    """View for agents to complete/update their profile."""
     form_class = ProfileCompletionForm
     template_name = 'accounts/complete_profile.html'
-    success_url = reverse_lazy('properties:mine')
-
+    
     def get_object(self, queryset=None):
         return self.request.user
-
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Only agents can complete this profile
+        if not request.user.is_agent:
+            messages.error(request, "Only agents can access this page.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self):
+        # Redirect based on status
+        user = self.request.user
+        if user.is_pending_agent:
+            return reverse_lazy('accounts:pending')
+        if user.is_rejected_agent:
+            return reverse_lazy('accounts:pending')
+        if user.is_suspended_agent:
+            return reverse_lazy('accounts:pending')
+        return reverse_lazy('properties:mine')
+    
     def form_valid(self, form):
-        messages.success(self.request, "Profile completed — you're ready to list properties.")
+        messages.success(self.request, "Profile updated successfully.")
         return super().form_valid(form)

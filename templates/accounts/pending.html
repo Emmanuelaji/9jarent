@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Application Status | 9jaRent{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    {% if user.is_authenticated %}
+                        {% if user.is_pending_agent %}
+                            <div class="mb-4">
+                                <i class="fas fa-clock fa-4x text-warning"></i>
+                            </div>
+                            <h2 class="card-title mb-3">Application Pending</h2>
+                            <p class="card-text text-muted">
+                                Hi <strong>{{ user.full_name_or_username }}</strong>, your agent application has been submitted 
+                                and is awaiting administrator approval.
+                            </p>
+                            <div class="alert alert-info mt-4">
+                                <h5>What happens next?</h5>
+                                <ul class="text-start mb-0">
+                                    <li>Our team will review your application within 24-48 hours</li>
+                                    <li>You will receive a notification once approved</li>
+                                    <li>Once approved, you can start listing properties</li>
+                                </ul>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{% url 'accounts:complete_profile' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-edit me-2"></i>Update Profile
+                                </a>
+                                <a href="{% url 'properties:home' %}" class="btn btn-primary ms-2">
+                                    <i class="fas fa-home me-2"></i>Browse Properties
+                                </a>
+                            </div>
+                            
+                        {% elif user.is_rejected_agent %}
+                            <div class="mb-4">
+                                <i class="fas fa-times-circle fa-4x text-danger"></i>
+                            </div>
+                            <h2 class="card-title mb-3 text-danger">Application Rejected</h2>
+                            <p class="card-text text-muted">
+                                Hi <strong>{{ user.full_name_or_username }}</strong>, we regret to inform you that 
+                                your agent application was not approved at this time.
+                            </p>
+                            {% if user.rejection_reason %}
+                            <div class="alert alert-danger mt-4 text-start">
+                                <h5>Reason for rejection:</h5>
+                                <p class="mb-0">{{ user.rejection_reason }}</p>
+                            </div>
+                            {% endif %}
+                            <div class="alert alert-warning mt-3 text-start">
+                                <h5>You can:</h5>
+                                <ul class="mb-0">
+                                    <li>Update your profile information</li>
+                                    <li>Ensure all details are accurate</li>
+                                    <li>Contact support if you believe this was an error</li>
+                                </ul>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{% url 'accounts:complete_profile' %}" class="btn btn-primary">
+                                    <i class="fas fa-user-edit me-2"></i>Update & Resubmit Profile
+                                </a>
+                            </div>
+                            
+                        {% elif user.is_suspended_agent %}
+                            <div class="mb-4">
+                                <i class="fas fa-ban fa-4x text-danger"></i>
+                            </div>
+                            <h2 class="card-title mb-3 text-danger">Account Suspended</h2>
+                            <p class="card-text text-muted">
+                                Hi <strong>{{ user.full_name_or_username }}</strong>, your agent account has been 
+                                temporarily suspended.
+                            </p>
+                            {% if user.rejection_reason %}
+                            <div class="alert alert-danger mt-4 text-start">
+                                <h5>Reason for suspension:</h5>
+                                <p class="mb-0">{{ user.rejection_reason }}</p>
+                            </div>
+                            {% endif %}
+                            <div class="mt-4">
+                                <a href="mailto:support@9jarent.com.ng" class="btn btn-outline-primary">
+                                    <i class="fas fa-envelope me-2"></i>Contact Support
+                                </a>
+                            </div>
+                            
+                        {% elif user.is_approved_agent %}
+                            <div class="mb-4">
+                                <i class="fas fa-check-circle fa-4x text-success"></i>
+                            </div>
+                            <h2 class="card-title mb-3 text-success">Application Approved!</h2>
+                            <p class="card-text text-muted">
+                                Congratulations <strong>{{ user.full_name_or_username }}</strong>! 
+                                Your agent application has been approved.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{% url 'properties:mine' %}" class="btn btn-primary">
+                                    <i class="fas fa-list me-2"></i>Go to Dashboard
+                                </a>
+                                <a href="{% url 'properties:create' %}" class="btn btn-success ms-2">
+                                    <i class="fas fa-plus me-2"></i>Add Property
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="mb-4">
+                                <i class="fas fa-info-circle fa-4x text-info"></i>
+                            </div>
+                            <h2 class="card-title mb-3">Welcome to 9jaRent</h2>
+                            <p class="card-text text-muted">
+                                Your account is active. Start browsing properties or apply to become an agent.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{% url 'properties:home' %}" class="btn btn-primary">
+                                    <i class="fas fa-home me-2"></i>Browse Properties
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="mb-4">
+                            <i class="fas fa-envelope-open-text fa-4x text-success"></i>
+                        </div>
+                        <h2 class="card-title mb-3">Application Submitted!</h2>
+                        <p class="card-text text-muted">
+                            Your agent application has been submitted and is awaiting administrator approval.
+                        </p>
+                        <div class="alert alert-info mt-4">
+                            <p class="mb-0">You can log in to check your application status once it has been reviewed.</p>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Log In
+                            </a>
+                            <a href="{% url 'properties:home' %}" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-home me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

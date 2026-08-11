@@ -1,21 +1,66 @@
-{% extends 'accounts/auth_base.html' %}
+{% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% load socialaccount %}
-{% block auth_headline %}Start listing in minutes.{% endblock %}
-{% block auth_subhead %}Create your free agent account and reach thousands of renters searching by state.{% endblock %}
-{% block auth_content %}
-<h3 class="display-font mb-1">Create Agent Account</h3>
-<p class="text-muted mb-4">It's free. Your first listing goes live after a quick review.</p>
-<a href="{% provider_login_url 'google' %}" class="btn btn-outline-secondary w-100 py-2 mb-3 d-flex align-items-center justify-content-center gap-2">
-    <i class="fab fa-google" style="color: #DB4437;"></i> Sign up with Google
-</a>
-<div class="d-flex align-items-center mb-3">
-    <hr class="flex-grow-1"><span class="px-2 text-muted small">or</span><hr class="flex-grow-1">
+
+{% block title %}Agent Registration | 9jaRent{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark-green text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-tie me-2"></i>Agent Registration</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        Register as a property agent on 9jaRent. Your application will be reviewed 
+                        by our team before approval.
+                    </p>
+                    
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <h5 class="border-bottom pb-2 mb-3">Account Information</h5>
+                        {{ form.username|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-6">{{ form.first_name|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.last_name|as_crispy_field }}</div>
+                        </div>
+                        {{ form.email|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-6">{{ form.password1|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.password2|as_crispy_field }}</div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3 mt-4">Contact Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">{{ form.phone|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.whatsapp_number|as_crispy_field }}</div>
+                        </div>
+                        
+                        <h5 class="border-bottom pb-2 mb-3 mt-4">Agency Information</h5>
+                        {{ form.company_name|as_crispy_field }}
+                        <div class="row">
+                            <div class="col-md-6">{{ form.state|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form.city|as_crispy_field }}</div>
+                        </div>
+                        {{ form.office_address|as_crispy_field }}
+                        {{ form.bio|as_crispy_field }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Application
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    <p class="text-center text-muted mb-0">
+                        Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<form method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-amber w-100 mt-2 py-2">Create Account</button>
-</form>
-<p class="small text-muted mt-3 mb-0">Already have an account? <a href="{% url 'login' %}" class="fw-semibold text-nigeria">Log in</a></p>
 {% endblock %}
