@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--terracotta); letter-spacing: 0.08em;">Super Admin</p>
+    <h2 class="display-font mb-4">Admin Dashboard</h2>
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3" style="background: var(--ink); color: var(--sand);">
+                <div class="mono-price fs-2">{{ total_listings }}</div>
+                <p class="mb-0 small">Total Listings</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3" style="background: var(--emerald); color: white;">
+                <div class="mono-price fs-2">{{ published_listings }}</div>
+                <p class="mb-0 small">Published</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3" style="background: var(--amber); color: var(--ink);">
+                <div class="mono-price fs-2">{{ pending_properties|length }}</div>
+                <p class="mb-0 small">Pending Approval</p>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white fw-bold display-font border-0 pt-3" style="font-size: 1.1rem;">Pending Approvals</div>
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead><tr><th>Title</th><th>Agent</th><th>Location</th><th>Price</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for prop in pending_properties %}
+                    <tr>
+                        <td>{{ prop.title }}</td>
+                        <td>{{ prop.agent_name }}</td>
+                        <td>{{ prop.area }}, {{ prop.state.name }}</td>
+                        <td class="mono-price">&#8358;{{ prop.price|floatformat:0 }}</td>
+                        <td>
+                            <a href="{% url 'dashboard:approve' prop.id %}" class="btn btn-sm btn-nigeria">Approve</a>
+                            <form method="post" action="{% url 'dashboard:reject' prop.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="text" name="reason" placeholder="Rejection reason" class="form-control form-control-sm d-inline-block" style="width: 150px;">
+                                <button type="submit" class="btn btn-sm" style="background: var(--terracotta); color: white;">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No pending properties. All caught up.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

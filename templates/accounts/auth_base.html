@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-0" style="min-height: calc(100vh - 220px);">
+    <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-center p-5" style="background: linear-gradient(135deg, var(--ink) 0%, var(--emerald-dark) 100%);">
+        <p class="text-uppercase small fw-semibold mb-2" style="color: var(--amber); letter-spacing: 0.08em;">9jaRent.com.ng</p>
+        <h2 class="display-font mb-3" style="color: var(--sand);">{% block auth_headline %}List with the agents Nigerians trust.{% endblock %}</h2>
+        <p style="color: rgba(251,247,239,0.8);">{% block auth_subhead %}Reach renters directly on WhatsApp &mdash; no middlemen, no long forms.{% endblock %}</p>
+        <ul class="list-unstyled mt-4" style="color: rgba(251,247,239,0.9);">
+            <li class="mb-3 d-flex align-items-start"><i class="fas fa-circle-check me-2 mt-1" style="color: var(--amber);"></i> <span>Free to list &mdash; no upfront fees</span></li>
+            <li class="mb-3 d-flex align-items-start"><i class="fas fa-circle-check me-2 mt-1" style="color: var(--amber);"></i> <span>Verified seal builds renter trust</span></li>
+            <li class="mb-3 d-flex align-items-start"><i class="fas fa-circle-check me-2 mt-1" style="color: var(--amber);"></i> <span>Track views &amp; WhatsApp clicks per listing</span></li>
+        </ul>
+    </div>
+    <div class="col-lg-7 d-flex align-items-center justify-content-center py-5 px-3" style="background: var(--sand);">
+        <div style="width: 100%; max-width: 420px;">
+            {% block auth_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

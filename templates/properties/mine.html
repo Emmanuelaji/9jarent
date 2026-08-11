@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h2 class="display-font mb-0">My Listings</h2>
+        <a href="{% url 'properties:create' %}" class="btn btn-amber"><i class="fas fa-plus me-1"></i> List a New Property</a>
+    </div>
+    <div class="row mb-4 g-3">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 text-center">
+                <div class="mono-price fs-3 text-nigeria">{{ total_count }}</div>
+                <p class="mb-0 small text-muted">Total Listings</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 text-center">
+                <div class="mono-price fs-3" style="color: var(--emerald);">{{ published_count }}</div>
+                <p class="mb-0 small text-muted">Published</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 text-center">
+                <div class="mono-price fs-3" style="color: var(--amber-dark);">{{ pending_count }}</div>
+                <p class="mb-0 small text-muted">Pending Review</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 text-center">
+                <div class="mono-price fs-3"><i class="fas fa-eye" style="color: var(--ink-soft);"></i> {{ total_views }}</div>
+                <p class="mb-0 small text-muted">Total Views</p>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead><tr><th>Property</th><th>Location</th><th>Price</th><th>Status</th><th>Views</th><th></th></tr></thead>
+                <tbody>
+                    {% for prop in my_properties %}
+                    <tr>
+                        <td>{{ prop.title }}</td>
+                        <td>{{ prop.area }}, {{ prop.state.name }}</td>
+                        <td class="mono-price">&#8358;{{ prop.price|floatformat:0 }}</td>
+                        <td>
+                            {% if prop.status == 'PUBLISHED' %}<span class="verified-seal">Published</span>
+                            {% elif prop.status == 'PENDING_REVIEW' %}<span class="badge" style="background: var(--amber); color: var(--ink);">Pending Review</span>
+                            {% elif prop.status == 'REJECTED' %}<span class="badge" style="background: var(--terracotta); color: white;">Rejected</span>
+                            {% else %}<span class="badge bg-secondary">Draft</span>{% endif %}
+                        </td>
+                        <td><i class="fas fa-eye text-muted"></i> {{ prop.views }}</td>
+                        <td>
+                            {% if prop.status == 'PUBLISHED' %}
+                                <a href="{% url 'properties:detail' prop.slug %}" class="btn btn-sm btn-outline-secondary">View</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-5">
+                        <p class="text-muted mb-3">You haven't listed a property yet.</p>
+                        <a href="{% url 'properties:create' %}" class="btn btn-nigeria">List Your First Property</a>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

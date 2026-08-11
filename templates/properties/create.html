@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
+            <h2 class="display-font mb-4">List a New Property</h2>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div id="image-preview" class="d-flex flex-wrap gap-2 mb-3"></div>
+                        <div class="alert alert-info border-0" style="background: var(--sage); color: var(--emerald-dark);">
+                            <small><i class="fas fa-info-circle"></i> Your listing will be marked as "Pending Review" and will go live once approved by an admin.</small>
+                        </div>
+                        <button type="submit" class="btn btn-nigeria w-100 py-2">Submit for Approval</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.querySelector('input[name="images"]');
+    var preview = document.getElementById('image-preview');
+    if (!input) return;
+    input.addEventListener('change', function () {
+        preview.innerHTML = '';
+        Array.from(input.files).forEach(function (file) {
+            if (!file.type.startsWith('image/')) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--sage);';
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+});
+</script>
+{% endblock %}

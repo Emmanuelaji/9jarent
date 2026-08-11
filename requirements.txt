@@ -1,0 +1,14 @@
+Django>=5.2
+psycopg2-binary>=2.9
+Pillow
+ffmpeg-python
+django-environ
+django-crispy-forms
+crispy-bootstrap5
+django-storages
+boto3
+celery
+redis
+gunicorn
+django-filter
+whitenoise
