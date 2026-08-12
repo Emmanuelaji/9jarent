@@ -1,4 +1,3 @@
-
 # properties/views.py with proper permission enforcement
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -24,6 +23,19 @@ def get_whatsapp_link(agent_whatsapp, property_title, location):
     number = agent_whatsapp.replace('+', '').strip()
     message = settings.WHATSAPP_DEFAULT_MESSAGE.format(title=property_title, location=location)
     return f"https://wa.me/{number}?text={quote(message)}"
+
+
+def _get_favourited_ids(user, properties):
+    """Return the set of property IDs (from the given iterable) the user has favourited."""
+    if not user.is_authenticated:
+        return set()
+    from favourites.models import Favourite
+    property_ids = [p.id for p in properties]
+    if not property_ids:
+        return set()
+    return set(
+        Favourite.objects.filter(user=user, property_id__in=property_ids).values_list('property_id', flat=True)
+    )
 
 
 # ============================================================================
@@ -74,6 +86,7 @@ class PropertyListView(ListView):
         context = super().get_context_data(**kwargs)
         context['states'] = State.objects.all()
         context['property_types'] = Property.PROPERTY_TYPES
+        context['favourited_ids'] = _get_favourited_ids(self.request.user, context['properties'])
         return context
 
 
@@ -118,7 +131,9 @@ class PropertyDetailView(DetailView):
             context['agent_verified'] = True
         else:
             context['agent_verified'] = False
-            
+
+        context['is_favourited'] = property_obj.id in _get_favourited_ids(self.request.user, [property_obj])
+
         return context
 
 
@@ -134,6 +149,11 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
     model = Property
     form_class = PropertyForm
     template_name = 'properties/create.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -178,6 +198,10 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
     pk_url_kwarg = 'pk'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            # Defer to LoginRequiredMixin for the login redirect instead of
+            # touching request.user.is_admin, which AnonymousUser lacks.
+            return super().dispatch(request, *args, **kwargs)
         obj = self.get_object()
         # Server-side ownership check
         if obj.created_by != request.user and not request.user.is_admin:
@@ -189,12 +213,31 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
             return redirect('properties:mine')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_success_url(self):
         return reverse_lazy('properties:mine')
     
     def form_valid(self, form):
+        response = super().form_valid(form)
+
+        # Append any newly uploaded images (existing images are managed separately via delete_property_image)
+        images = self.request.FILES.getlist('images')
+        if images:
+            existing_count = self.object.images.count()
+            for index, image_file in enumerate(images):
+                PropertyImage.objects.create(
+                    property=self.object,
+                    image=image_file,
+                    is_primary=(existing_count == 0 and index == 0),
+                    order_index=existing_count + index,
+                )
+
         messages.success(self.request, "Property updated successfully.")
-        return super().form_valid(form)
+        return response
 
 
 class MyListingsView(LoginRequiredMixin, ListView):
@@ -293,6 +336,32 @@ def mark_property_rented(request, pk):
     else:
         messages.warning(request, "Only published properties can be marked as rented.")
     return redirect('properties:mine')
+
+
+@login_required
+@object_owner_required(Property, 'created_by')
+def delete_property_image(request, pk, image_id):
+    """Delete one image from a property. Owner or admin only, POST only."""
+    if request.method != 'POST':
+        return HttpResponseForbidden("This action requires POST.")
+
+    prop = get_object_or_404(Property, pk=pk)
+    if prop.created_by != request.user and not request.user.is_admin:
+        raise PermissionDenied("You do not have permission to modify this property's images.")
+
+    image = get_object_or_404(PropertyImage, pk=image_id, property=prop)
+    was_primary = image.is_primary
+    image.delete()
+
+    # Promote the next remaining image to primary if we just removed the primary one
+    if was_primary:
+        next_image = prop.images.order_by('order_index', 'uploaded_at').first()
+        if next_image:
+            next_image.is_primary = True
+            next_image.save(update_fields=['is_primary'])
+
+    messages.success(request, "Image removed.")
+    return redirect('properties:edit', pk=prop.pk)
 
 
 @login_required 

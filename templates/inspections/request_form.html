@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Request Inspection | 9jaRent{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Renter Portal</p>
+            <h2 class="display-font mb-4">Request Inspection</h2>
+            <p class="text-muted mb-4">Send an inspection request to the agent.</p>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3 d-flex gap-3 align-items-center">
+                    {% if property.images.first %}
+                    <img src="{{ property.images.first.image.url }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-1">{{ property.title }}</h6>
+                        <p class="small text-muted mb-1"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.state.name }}</p>
+                        <span class="price-tag mono-price">&#8358;{{ property.price|floatformat:0 }}<small style="opacity:0.7;">/{{ property.rental_period }}</small></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-nigeria w-100 py-2 mt-2">Send Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

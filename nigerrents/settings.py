@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     #'allauth',    
     #'allauth.account',    
     #'allauth.socialaccount',
@@ -24,9 +25,14 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_filters',
+    
+    # Custom Apps
     'properties',
     'accounts',
     'dashboard',
+    'favourites',
+    'messaging',
+    'inspections',
 ]
 
 MIDDLEWARE = [
@@ -47,12 +53,22 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Used to build the pre-filled WhatsApp "Chat on Agent" link on property pages.
+# {title} and {location} are filled in per-property.
+WHATSAPP_DEFAULT_MESSAGE = (
+    "Hello, I am interested in the {title} in {location} listed on 9jaRent.com.ng. "
+    "Is it still available?"
+)
 
 TEMPLATES = [
     {
@@ -65,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'messaging.context_processors.unread_messages',
             ],
         },
     },

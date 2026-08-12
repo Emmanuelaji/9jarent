@@ -28,7 +28,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                         <h2 class="display-font mb-1">{{ property.title }}</h2>
-                        {% if property.verified %}<span class="verified-seal"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
+                        {% if agent_verified %}<span class="verified-seal"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
                     </div>
                     <p class="text-muted mb-3"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.lga.name }}, {{ property.state.name }}</p>
                     <span class="price-tag mono-price fs-4">&#8358;{{ property.price|floatformat:0 }}<small style="opacity:0.7;">/yr</small></span>
@@ -48,12 +48,32 @@
                 <div class="card-body p-4">
                     <h5 class="card-title display-font">Contact Agent</h5>
                     <p class="mb-1 fw-bold">{{ property.agent_name }}</p>
-                    {% if property.verified %}<span class="verified-seal mb-3 d-inline-flex"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
-                    <a href="{{ whatsapp_link }}" target="_blank" class="btn whatsapp-btn w-100 mb-3 py-2 mt-2">
+                    {% if agent_verified %}<span class="verified-seal mb-3 d-inline-flex"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
+                    {% if user.is_authenticated and user.id != property.created_by_id %}
+                    <form method="post" action="{% url 'messaging:start' property.id %}" class="mb-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-nigeria w-100 py-2"><i class="fas fa-comment-dots"></i> Message Agent</button>
+                    </form>
+                    {% endif %}
+                    <a href="{{ whatsapp_link }}" target="_blank" class="btn whatsapp-btn w-100 mb-3 py-2">
                         <i class="fab fa-whatsapp fa-lg"></i> Chat on WhatsApp
                     </a>
+                    {% if user.is_authenticated and user.id != property.created_by_id and not user.is_admin %}
+                    <a href="{% url 'inspections:request' property.id %}" class="btn btn-amber w-100 mb-3 py-2"><i class="fas fa-calendar-check"></i> Request Inspection</a>
+                    {% endif %}
                     {% if property.agent_email %}
-                        <a href="mailto:{{ property.agent_email }}" class="btn btn-outline-secondary w-100"><i class="fas fa-envelope"></i> Send Email</a>
+                        <a href="mailto:{{ property.agent_email }}" class="btn btn-outline-secondary w-100 mb-3"><i class="fas fa-envelope"></i> Send Email</a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'favourites:toggle' property.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        {% if is_favourited %}
+                        <button type="submit" class="btn btn-outline-secondary w-100"><i class="fas fa-heart" style="color: var(--terracotta);"></i> Saved to Favourites</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-outline-secondary w-100"><i class="far fa-heart"></i> Save to Favourites</button>
+                        {% endif %}
+                    </form>
                     {% endif %}
                     <small class="text-muted d-block mt-3 text-center"><i class="fas fa-eye"></i> {{ property.views }} views</small>
                 </div>

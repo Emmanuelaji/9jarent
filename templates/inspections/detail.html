@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Inspection Request | 9jaRent{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <a href="{% url 'inspections:list' %}" class="text-decoration-none small text-muted mb-3 d-inline-block"><i class="fas fa-arrow-left"></i> Back to Inspections</a>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                        <div>
+                            <h4 class="display-font mb-1">{{ inspection.property.title }}</h4>
+                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> {{ inspection.property.area }}, {{ inspection.property.state.name }}</p>
+                        </div>
+                        <span class="badge fs-6" style="
+                            {% if inspection.status == 'PENDING' %}background:#FDF0DC;color:var(--amber-dark);
+                            {% elif inspection.status == 'ACCEPTED' %}background:var(--sage);color:var(--emerald-dark);
+                            {% elif inspection.status == 'COMPLETED' %}background:var(--emerald);color:white;
+                            {% else %}background:#FBEAE5;color:var(--terracotta);{% endif %}">
+                            {{ inspection.get_status_display }}
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <p class="small text-muted mb-1">Requested Date &amp; Time</p>
+                            <p class="fw-semibold mb-0"><i class="fas fa-calendar"></i> {{ inspection.requested_date|date:"l, F j, Y" }} at {{ inspection.requested_time|time:"g:i A" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="small text-muted mb-1">{% if user.is_agent %}Renter{% else %}Agent{% endif %}</p>
+                            <p class="fw-semibold mb-0">{% if user.is_agent %}{{ inspection.renter.full_name_or_username }}{% else %}{{ inspection.agent.full_name_or_username }}{% endif %}</p>
+                        </div>
+                    </div>
+
+                    {% if inspection.renter_message %}
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Renter's Message</p>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ inspection.renter_message }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if inspection.agent_response %}
+                    <div class="alert border-0 mb-3" style="background: var(--sage); color: var(--emerald-dark);">
+                        <strong>Agent's Response:</strong> {{ inspection.agent_response }}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 flex-wrap mt-4">
+                        {% if user.is_agent and inspection.status == 'PENDING' %}
+                        <button type="button" class="btn btn-nigeria" data-bs-toggle="modal" data-bs-target="#acceptModal">Accept</button>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#declineModal">Decline</button>
+                        {% endif %}
+                        {% if user.is_agent and inspection.status == 'ACCEPTED' %}
+                        <form method="post" action="{% url 'inspections:complete' inspection.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-nigeria">Mark Completed</button>
+                        </form>
+                        {% endif %}
+                        {% if not user.is_agent and inspection.is_active %}
+                        <form method="post" action="{% url 'inspections:cancel' inspection.pk %}" onsubmit="return confirm('Cancel this inspection request?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger">Cancel Request</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{% url 'messaging:start' inspection.property.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-comment-dots"></i> {% if user.is_agent %}Message Renter{% else %}Message Agent{% endif %}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_agent and inspection.status == 'PENDING' %}
+<div class="modal fade" id="acceptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'inspections:accept' inspection.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title display-font">Accept Inspection Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Confirm the inspection for <strong>{{ inspection.requested_date|date:"M d, Y" }} at {{ inspection.requested_time|time:"g:i A" }}</strong>.</p>
+                    <label class="form-label small fw-semibold">Note to renter (optional)</label>
+                    <textarea name="agent_response" class="form-control" rows="3" placeholder="e.g. Looking forward to it. Please call when you arrive."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-nigeria">Accept Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="declineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'inspections:decline' inspection.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title display-font">Decline Inspection Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label small fw-semibold">Reason (optional)</label>
+                    <textarea name="agent_response" class="form-control" rows="3" placeholder="e.g. That date no longer works, please suggest another."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-outline-danger">Decline Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

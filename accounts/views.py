@@ -1,4 +1,3 @@
-
 # accounts/views.py
 
 from django.contrib.auth.views import LoginView
@@ -9,7 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, TemplateView
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
-from .forms import AgentSignUpForm, ProfileCompletionForm
+from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm
 from .models import CustomUser
 
 
@@ -74,6 +73,42 @@ class AgentSignUpView(CreateView):
     
     def get_success_url(self):
         return reverse_lazy('accounts:pending')
+
+
+class AccountTypeChoiceView(TemplateView):
+    """Landing page for 'Sign Up Free' - lets a new user pick renter vs agent."""
+    template_name = 'accounts/choose_account_type.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class RenterSignUpView(CreateView):
+    """
+    Renter/public user registration view.
+    Renters have no approval workflow - they can browse and use the
+    platform (favourites, messaging, inspections) immediately.
+    """
+    form_class = RenterSignUpForm
+    template_name = 'accounts/renter_signup.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        messages.success(self.request, "Welcome to 9jaRent! Your account has been created.")
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('properties:home')
 
 
 class AgentPendingView(TemplateView):

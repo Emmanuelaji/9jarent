@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}My Favourites | 9jaRent{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Renter Portal</p>
+    <h2 class="display-font mb-4">My Favourites</h2>
+
+    {% if favourites %}
+    <div class="row">
+        {% for fav in favourites %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm position-relative">
+                <form method="post" action="{% url 'favourites:toggle' fav.property.id %}" class="position-absolute" style="top: 10px; right: 10px; z-index: 2;">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'favourites:list' %}">
+                    <button type="submit" class="btn btn-sm p-0 d-flex align-items-center justify-content-center" style="width:34px;height:34px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);border:none;" title="Remove from favourites">
+                        <i class="fas fa-heart" style="color: var(--terracotta);"></i>
+                    </button>
+                </form>
+                {% if fav.property.images.first %}
+                    <img src="{{ fav.property.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover; border-radius: 12px 12px 0 0;" alt="{{ fav.property.title }}" loading="lazy">
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center" style="height: 200px; background: var(--sage); border-radius: 12px 12px 0 0; color: var(--ink-soft);">No Media Yet</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title text-truncate mb-1" style="font-size: 1.05rem;">{{ fav.property.title }}</h5>
+                    <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt"></i> {{ fav.property.area }}, {{ fav.property.state.name }}</p>
+                    <span class="price-tag mono-price mb-3 d-inline-block">&#8358;{{ fav.property.price|floatformat:0 }}<small style="opacity:0.7;">/{{ fav.property.rental_period }}</small></span>
+                    <a href="{% url 'properties:detail' fav.property.slug %}" class="btn btn-nigeria w-100">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-heart fa-3x mb-3" style="color: var(--sage);"></i>
+        <h5 class="display-font">No favourites yet</h5>
+        <p class="text-muted mb-4">Save properties you like and they'll show up here.</p>
+        <a href="{% url 'properties:list' %}" class="btn btn-nigeria">Browse Properties</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

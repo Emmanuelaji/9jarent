@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Messages | 9jaRent{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 1140px;">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Messages</p>
+    <h2 class="display-font mb-4">Communicate with {% if user.is_agent %}renters about your properties{% else %}agents about properties{% endif %}.</h2>
+
+    <div class="card border-0 shadow-sm" style="height: 70vh; min-height: 480px;">
+        <div class="row g-0 h-100">
+            <div class="col-md-4 border-end h-100 d-flex flex-column">
+                <div class="p-3 border-bottom">
+                    <input type="text" class="form-control" id="conversationSearch" placeholder="Search conversations...">
+                </div>
+                <div class="flex-grow-1" style="overflow-y: auto;">
+                    {% for convo in conversations %}
+                    <a href="{% url 'messaging:detail' convo.pk %}" class="d-flex align-items-start gap-2 p-3 text-decoration-none border-bottom conversation-row {% if active_conversation.pk == convo.pk %}active{% endif %}">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:42px;height:42px;border-radius:50%;background:var(--sage);color:var(--emerald-dark);font-weight:600;">
+                            {{ convo.other.full_name_or_username|slice:":1"|upper }}
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong class="text-truncate" style="color: var(--ink);">{{ convo.other.full_name_or_username }}</strong>
+                                {% if convo.unread %}<span class="badge rounded-pill" style="background: var(--terracotta);">{{ convo.unread }}</span>{% endif %}
+                            </div>
+                            <p class="small text-muted text-truncate mb-0">{{ convo.property.title }}</p>
+                            {% with last=convo.last_message %}
+                            {% if last %}<p class="small text-truncate mb-0" style="color: var(--ink-soft);">{{ last.message }}</p>{% endif %}
+                            {% endwith %}
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-5 px-3">
+                        <i class="fas fa-comment-dots fa-2x mb-3" style="color: var(--sage);"></i>
+                        <p class="text-muted small mb-0">No conversations yet. Message an agent from a property page to get started.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-8 h-100 d-flex flex-column">
+                {% if active_conversation %}
+                <div class="p-3 border-bottom d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px;border-radius:50%;background:var(--sage);color:var(--emerald-dark);font-weight:600;">
+                        {{ active_conversation.other.full_name_or_username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <strong>{{ active_conversation.other.full_name_or_username }}</strong>
+                        <p class="small text-muted mb-0">{{ active_conversation.property.title }}</p>
+                    </div>
+                    <a href="{% url 'properties:detail' active_conversation.property.slug %}" class="btn btn-sm btn-outline-secondary ms-auto">View Property</a>
+                </div>
+                <div class="flex-grow-1 p-3" style="overflow-y: auto; background: var(--sand);">
+                    {% for msg in thread_messages %}
+                    <div class="d-flex mb-3 {% if msg.sender_id == user.id %}justify-content-end{% endif %}">
+                        <div class="p-2 px-3 rounded-3" style="max-width: 75%; {% if msg.sender_id == user.id %}background: var(--emerald); color: white;{% else %}background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.08);{% endif %}">
+                            <p class="mb-1" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                            <small style="opacity: 0.7; font-size: 0.7rem;">{{ msg.created_at|date:"g:i A" }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center mt-4">Say hello - ask about availability or request an inspection.</p>
+                    {% endfor %}
+                </div>
+                <form method="post" class="p-3 border-top d-flex gap-2 align-items-end">
+                    {% csrf_token %}
+                    <div class="flex-grow-1">{{ form.message }}</div>
+                    <button type="submit" class="btn btn-nigeria px-4"><i class="fas fa-paper-plane"></i></button>
+                </form>
+                {% else %}
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-4">
+                    <i class="fas fa-comments fa-3x mb-3" style="color: var(--sage);"></i>
+                    <h5 class="display-font">Select a conversation</h5>
+                    <p class="text-muted">Choose a conversation from the list to view messages.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<style>
+.conversation-row:hover, .conversation-row.active { background: var(--sage); }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var box = document.querySelector('.flex-grow-1[style*="overflow-y: auto; background"]');
+    if (box) { box.scrollTop = box.scrollHeight; }
+    var search = document.getElementById('conversationSearch');
+    if (search) {
+        search.addEventListener('input', function () {
+            var q = search.value.toLowerCase();
+            document.querySelectorAll('.conversation-row').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

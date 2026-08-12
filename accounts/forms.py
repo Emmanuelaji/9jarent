@@ -1,4 +1,3 @@
-
 #accounts/forms.py
 
 from django import forms
@@ -111,6 +110,52 @@ class AgentSignUpForm(UserCreationForm):
         user.role = 'MINOR_ADMIN'
         user.agent_status = 'PENDING'  # CRITICAL: Always pending on signup
         
+        if commit:
+            user.save()
+        return user
+
+
+class RenterSignUpForm(UserCreationForm):
+    """Form for renter/public user registration. No approval workflow needed."""
+
+    first_name = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Full Name"
+    )
+    email = forms.EmailField(
+        required=True,
+        help_text="Used for account recovery and notifications."
+    )
+    phone = forms.CharField(
+        required=False,
+        max_length=20,
+        label="Phone Number (optional)",
+        help_text="e.g. 08012345678"
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'email', 'phone', 'password1', 'password2']
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            raise ValidationError("An account with this email already exists.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if CustomUser.objects.filter(username__iexact=username).exists():
+            raise ValidationError("This username is already taken.")
+        return username
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.phone = self.cleaned_data.get('phone', '')
+        user.role = 'PUBLIC'
         if commit:
             user.save()
         return user

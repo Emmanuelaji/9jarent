@@ -8,6 +8,9 @@ urlpatterns = [
     path('', include('properties.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('accounts/', include('accounts.urls')),
+    path('favourites/', include('favourites.urls')),
+    path('messages/', include('messaging.urls')),
+    path('inspections/', include('inspections.urls')),
 ]
 
 if settings.DEBUG:
