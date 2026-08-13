@@ -73,7 +73,7 @@ class Property(models.Model):
 
     # Basic Info
     title = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True, db_index=True)
     description = models.TextField(validators=[MinLengthValidator(50)])
     
     # Property Details

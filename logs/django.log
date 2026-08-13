@@ -1,0 +1,99 @@
+INFO 2026-08-12 16:04:33,140 autoreload 37026 140009025591168 Watching for file changes with StatReloader
+INFO 2026-08-12 16:06:10,036 log 37026 140008963086016 "GET /dashboard/ HTTP/1.1" 200 19751
+WARNING 2026-08-12 16:06:10,284 log 37026 140008963086016 Not Found: /favicon.ico
+WARNING 2026-08-12 16:06:10,289 log 37026 140008963086016 "GET /favicon.ico HTTP/1.1" 404 6255
+ERROR 2026-08-12 16:06:18,151 log 37026 140008963086016 Internal Server Error: /dashboard/agents/3/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 72, in resolve_template
+    return select_template(template, using=self.using)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader.py", line 47, in select_template
+    raise TemplateDoesNotExist(", ".join(template_name_list), chain=chain)
+django.template.exceptions.TemplateDoesNotExist: dashboard/agent_detail.html
+ERROR 2026-08-12 16:06:18,156 log 37026 140008963086016 "GET /dashboard/agents/3/ HTTP/1.1" 500 88082
+INFO 2026-08-12 16:06:24,106 log 37026 140008963086016 "GET /dashboard/agents/pending/ HTTP/1.1" 200 12345
+ERROR 2026-08-12 16:06:26,506 log 37026 140008963086016 Internal Server Error: /dashboard/agents/3/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 72, in resolve_template
+    return select_template(template, using=self.using)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader.py", line 47, in select_template
+    raise TemplateDoesNotExist(", ".join(template_name_list), chain=chain)
+django.template.exceptions.TemplateDoesNotExist: dashboard/agent_detail.html
+ERROR 2026-08-12 16:06:26,509 log 37026 140008963086016 "GET /dashboard/agents/3/ HTTP/1.1" 500 88097
+INFO 2026-08-12 16:06:35,234 log 37026 140008963086016 "POST /dashboard/agents/3/approve/ HTTP/1.1" 302 0
+INFO 2026-08-12 16:06:35,333 log 37026 140008963086016 "GET /dashboard/agents/pending/ HTTP/1.1" 200 8583
+INFO 2026-08-12 16:06:47,997 log 37026 140008885319360 "GET /agent/properties/ HTTP/1.1" 200 10310
+INFO 2026-08-12 16:06:53,098 log 37026 140008885319360 "GET /messages/ HTTP/1.1" 200 10329
+WARNING 2026-08-12 16:06:54,181 log 37026 140008885319360 Not Found: /favicon.ico
+INFO 2026-08-12 16:06:57,053 log 37026 140008885319360 "GET / HTTP/1.1" 200 13103
+INFO 2026-08-12 16:07:00,237 log 37026 140008885319360 "GET /agent/properties/add/ HTTP/1.1" 200 25580
+WARNING 2026-08-12 16:07:01,168 log 37026 140008885319360 Not Found: /favicon.ico
+INFO 2026-08-12 16:07:50,313 log 37026 140008885319360 "GET /inspections/ HTTP/1.1" 200 9543
+WARNING 2026-08-12 16:07:52,323 log 37026 140008885319360 Not Found: /favicon.ico
+INFO 2026-08-12 16:07:56,097 log 37026 140008885319360 "GET /agent/properties/add/ HTTP/1.1" 200 25580
+WARNING 2026-08-12 16:07:57,552 log 37026 140008885319360 Not Found: /favicon.ico
+WARNING 2026-08-12 16:07:57,558 log 37026 140008885319360 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-12 16:10:04,891 log 37026 140008885319360 "POST /agent/properties/add/ HTTP/1.1" 200 26106
+WARNING 2026-08-12 16:10:06,088 log 37026 140008885319360 Not Found: /favicon.ico
+WARNING 2026-08-12 16:10:06,091 log 37026 140008885319360 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-12 16:10:38,234 log 37026 140008963086016 "POST /agent/properties/add/ HTTP/1.1" 302 0
+INFO 2026-08-12 16:10:38,340 log 37026 140008963086016 "GET /agent/properties/ HTTP/1.1" 200 10981
+WARNING 2026-08-12 16:10:40,324 log 37026 140008963086016 Not Found: /favicon.ico
+INFO 2026-08-13 11:57:54,401 autoreload 2457 140135918000000 Watching for file changes with StatReloader
+INFO 2026-08-13 11:59:26,694 log 2457 140135786084032 "GET / HTTP/1.1" 200 13103
+WARNING 2026-08-13 11:59:30,018 log 2457 140135786084032 Not Found: /favicon.ico
+WARNING 2026-08-13 11:59:30,018 log 2457 140135786084032 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-13 11:59:51,698 log 2457 140135786084032 "POST /agent/properties/add/ HTTP/1.1" 302 0
+INFO 2026-08-13 11:59:51,835 log 2457 140135786084032 "GET /agent/properties/ HTTP/1.1" 200 11590
+INFO 2026-08-13 11:59:55,006 log 2457 140135786084032 "GET /properties/ HTTP/1.1" 200 13103
+INFO 2026-08-13 12:00:00,115 log 2457 140135786084032 "GET /inspections/ HTTP/1.1" 200 9543
+INFO 2026-08-13 12:00:02,443 log 2457 140135786084032 "GET /messages/ HTTP/1.1" 200 10329
+INFO 2026-08-13 12:00:04,493 log 2457 140135786084032 "GET /inspections/ HTTP/1.1" 200 9543
+INFO 2026-08-13 12:00:05,847 log 2457 140135786084032 "GET /agent/properties/ HTTP/1.1" 200 11210
+INFO 2026-08-13 12:00:23,635 log 2457 140135777691328 "GET /agent/properties/ HTTP/1.1" 302 0
+INFO 2026-08-13 12:00:23,746 log 2457 140135777691328 "GET /accounts/login/?next=/agent/properties/ HTTP/1.1" 200 10512
+INFO 2026-08-13 12:00:29,937 log 2457 140135786084032 "GET / HTTP/1.1" 200 13103
+INFO 2026-08-13 12:00:34,830 log 2457 140135786084032 "GET /agent/properties/add/ HTTP/1.1" 200 25580
+INFO 2026-08-13 12:00:37,871 log 2457 140135786084032 "GET /properties/ HTTP/1.1" 200 13103
+INFO 2026-08-13 12:00:39,149 log 2457 140135786084032 "GET /inspections/ HTTP/1.1" 200 9543
+INFO 2026-08-13 12:00:41,436 log 2457 140135786084032 "GET /agent/properties/ HTTP/1.1" 200 11210
+WARNING 2026-08-13 12:00:58,282 log 2457 140135777691328 Not Found: /favicon.ico
+WARNING 2026-08-13 12:00:58,283 log 2457 140135777691328 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-13 12:01:05,552 log 2457 140135777691328 "GET /accounts/login/?next=/agent/properties/ HTTP/1.1" 200 10512
+INFO 2026-08-13 12:01:26,265 log 2457 140135777691328 "GET /accounts/login/?next=/agent/properties/ HTTP/1.1" 200 10512
+WARNING 2026-08-13 12:01:28,157 log 2457 140135777691328 Not Found: /favicon.ico
+WARNING 2026-08-13 12:01:28,160 log 2457 140135777691328 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-13 12:01:36,696 log 2457 140135777691328 "POST /accounts/login/?next=/agent/properties/ HTTP/1.1" 302 0
+INFO 2026-08-13 12:01:36,739 log 2457 140135777691328 "GET /dashboard/ HTTP/1.1" 200 26024
+WARNING 2026-08-13 12:01:37,006 log 2457 140135777691328 Not Found: /favicon.ico
+WARNING 2026-08-13 12:01:37,007 log 2457 140135777691328 "GET /favicon.ico HTTP/1.1" 404 6255
+WARNING 2026-08-13 12:01:55,255 log 2457 140135777691328 Not Found: /properties/plateau-jos-north-bungalow-63f54542/
+WARNING 2026-08-13 12:01:55,256 log 2457 140135777691328 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 404 3359
+WARNING 2026-08-13 12:01:55,372 log 2457 140135777691328 Not Found: /favicon.ico
+WARNING 2026-08-13 12:01:55,379 log 2457 140135777691328 "GET /favicon.ico HTTP/1.1" 404 6255
+INFO 2026-08-13 12:02:04,398 log 2457 140135777691328 "POST /dashboard/properties/1/approve/ HTTP/1.1" 302 0
+INFO 2026-08-13 12:02:04,445 log 2457 140135777691328 "GET /dashboard/ HTTP/1.1" 200 21839
+INFO 2026-08-13 12:02:15,098 log 2457 140135786084032 "GET / HTTP/1.1" 200 15037
+INFO 2026-08-13 12:02:15,928 log 2457 140135786084032 "GET /media/property_images/2312022.jpg HTTP/1.1" 200 430280
+WARNING 2026-08-13 12:02:16,080 log 2457 140135786084032 Not Found: /favicon.ico
+INFO 2026-08-13 12:02:24,599 log 2457 140135786084032 "POST /favourites/toggle/1/ HTTP/1.1" 302 0
+INFO 2026-08-13 12:02:24,658 log 2457 140135786084032 "GET / HTTP/1.1" 200 15390
+WARNING 2026-08-13 12:02:25,399 log 2457 140135786084032 Not Found: /favicon.ico
+INFO 2026-08-13 12:02:28,316 log 2457 140135786084032 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 12974

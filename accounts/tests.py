@@ -8,7 +8,7 @@ User = get_user_model()
 class AgentRegistrationTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.signup_url = reverse('accounts:signup')
+        self.signup_url = reverse('accounts:agent_signup')
         self.pending_url = reverse('accounts:pending')
         self.login_url = reverse('accounts:login')
         
