@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ agent.full_name_or_username }} | Verified Agent | 9jaRent{% endblock %}
+{% block meta_description %}View {{ agent.full_name_or_username }}'s verified property listings on 9jaRent.com.ng. Find apartments, flats, and houses for rent in {{ agent.state|default:"Nigeria" }}.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Agent Header -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex align-items-start gap-4">
+                        <div class="flex-shrink-0">
+                            {% if agent.profile_photo %}
+                            <img src="{{ agent.profile_photo.url }}" alt="{{ agent.full_name_or_username }}" class="rounded-circle" width="100" height="100" style="object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; background: var(--emerald); color: white; font-size: 2.5rem; font-family: 'Fraunces', serif;">
+                                {{ agent.first_name|default:agent.username|first|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h2 class="display-font mb-0">{{ agent.full_name_or_username }}</h2>
+                                <span class="verified-seal"><i class="fas fa-check-circle me-1"></i>Verified Agent</span>
+                            </div>
+                            {% if agent.company_name %}
+                            <p class="text-muted mb-2">{{ agent.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex flex-wrap gap-3 text-muted small mb-3">
+                                {% if agent.state %}
+                                <span><i class="fas fa-map-marker-alt me-1"></i>{{ agent.city|default:"" }}{% if agent.city and agent.state %}, {% endif %}{{ agent.state }}</span>
+                                {% endif %}
+                                <span><i class="fas fa-home me-1"></i>{{ property_count }} active listing{{ property_count|pluralize }}</span>
+                                <span><i class="fas fa-eye me-1"></i>{{ total_views }} total views</span>
+                            </div>
+                            {% if agent.bio %}
+                            <p class="text-muted mb-0">{{ agent.bio }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Properties -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="display-font mb-4">Active Listings</h3>
+        </div>
+    </div>
+
+    {% if agent_properties %}
+    <div class="row g-4">
+        {% for property in agent_properties %}
+        <div class="col-md-6 col-lg-4">
+            <div class="property-card h-100">
+                <div class="property-image-wrapper">
+                    {% if property.primary_image %}
+                    <img src="{{ property.primary_image.image.url }}" alt="{{ property.title }}" class="property-image">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                        <i class="fas fa-image fa-3x"></i>
+                    </div>
+                    {% endif %}
+                    <span class="property-badge">{{ property.get_property_type_display }}</span>
+                </div>
+                <div class="property-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="property-title">{{ property.title }}</h5>
+                        <span class="mono-price fs-5" style="color: var(--emerald);">₦{{ property.price|floatformat:0 }}</span>
+                    </div>
+                    <p class="property-location mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ property.area }}, {{ property.state.name }}
+                    </p>
+                    <div class="property-meta">
+                        <span><i class="fas fa-bed me-1"></i>{{ property.bedrooms }}</span>
+                        <span><i class="fas fa-bath me-1"></i>{{ property.bathrooms }}</span>
+                        <span><i class="fas fa-toilet me-1"></i>{{ property.toilets|default:"—" }}</span>
+                    </div>
+                    <a href="{% url 'properties:detail' property.slug %}" class="btn btn-nigeria w-100 mt-3">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-home fa-3x text-muted mb-3"></i>
+        <h5>No active listings</h5>
+        <p class="text-muted">This agent doesn't have any published properties right now.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

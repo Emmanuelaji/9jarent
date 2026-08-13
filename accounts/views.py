@@ -5,7 +5,8 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView
+from django.views.generic import CreateView, UpdateView, TemplateView, DetailView
+from django.db import models
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm
@@ -156,3 +157,33 @@ class CompleteProfileView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Profile updated successfully.")
         return super().form_valid(form)
+
+
+class AgentPublicProfileView(DetailView):
+    """Public profile page for an approved agent."""
+    model = CustomUser
+    template_name = 'accounts/agent_public_profile.html'
+    context_object_name = 'agent'
+    slug_url_kwarg = 'username'
+    slug_field = 'username'
+
+    def get_queryset(self):
+        # Only show approved agents publicly
+        return CustomUser.objects.filter(
+            role='MINOR_ADMIN',
+            agent_status='APPROVED'
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        agent = self.object
+        # Only show published properties
+        context['agent_properties'] = agent.properties.filter(
+            status='PUBLISHED'
+        ).select_related('state', 'lga').order_by('-created_at')
+        context['property_count'] = context['agent_properties'].count()
+        context['total_views'] = (
+            agent.properties.filter(status='PUBLISHED')
+            .aggregate(total_views=models.Sum('views'))['total_views'] or 0
+        )
+        return context

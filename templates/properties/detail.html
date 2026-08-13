@@ -1,45 +1,120 @@
 {% extends 'base.html' %}
-{% block title %}{{ property.title }} - 9jaRent.com.ng{% endblock %}
+{% block title %}{{ property.title }} for Rent in {{ property.area }}, {{ property.state.name }} | 9jaRent.com.ng{% endblock %}
+{% block meta_description %}<meta name="description" content="{{ property.title }} for rent in {{ property.area }}, {{ property.state.name }}. ₦{{ property.price|floatformat:0 }}/{{ property.rental_period }}. {{ property.bedrooms }} bedroom{{ property.bedrooms|pluralize }} {{ property.property_type|lower }}. Contact verified agent on 9jaRent.com.ng">{% endblock %}
 {% block content %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org/",
   "@type": "RealEstateListing",
   "name": "{{ property.title }}",
-  "description": "{{ property.description }}",
+  "description": "{{ property.description|striptags|truncatewords:30 }}",
   "price": "{{ property.price }}",
   "priceCurrency": "NGN",
-  "address": {"@type": "PostalAddress", "addressLocality": "{{ property.area }}", "addressRegion": "{{ property.state.name }}", "addressCountry": "NG"}
+  "address": {"@type": "PostalAddress", "addressLocality": "{{ property.area }}", "addressRegion": "{{ property.state.name }}", "addressCountry": "NG"},
+  "url": "{{ request.build_absolute_uri }}",
+  "image": "{% if property.primary_image %}{{ request.scheme }}://{{ request.get_host }}{{ property.primary_image.image.url }}{% endif %}"
 }
 </script>
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-8">
+            <!-- Image Gallery -->
             <div class="card border-0 shadow-sm mb-4">
-                {% if property.video %}
-                    <video controls class="w-100" style="max-height: 500px; object-fit: cover; border-radius: 12px 12px 0 0;">
-                        <source src="{{ property.video.url }}" type="video/mp4">
-                    </video>
+                {% if property.images.count > 1 %}
+                <div id="propertyGallery" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for img in property.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ img.image.url }}" class="d-block w-100" style="max-height: 500px; object-fit: cover; border-radius: 12px 12px 0 0;" alt="{{ property.title }} - Image {{ forloop.counter }}" loading="lazy">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if property.images.count > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#propertyGallery" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#propertyGallery" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                    {% endif %}
+                </div>
                 {% elif property.images.first %}
-                    <img src="{{ property.images.first.image.url }}" class="w-100" style="max-height: 500px; object-fit: cover; border-radius: 12px 12px 0 0;" alt="{{ property.title }}" loading="lazy">
+                <img src="{{ property.images.first.image.url }}" class="w-100" style="max-height: 500px; object-fit: cover; border-radius: 12px 12px 0 0;" alt="{{ property.title }}" loading="lazy">
                 {% else %}
-                    <div class="d-flex align-items-center justify-content-center" style="height: 300px; background: var(--sage); border-radius: 12px 12px 0 0;"><h4 class="text-muted">No media available</h4></div>
+                <div class="d-flex align-items-center justify-content-center" style="height: 300px; background: var(--sage); border-radius: 12px 12px 0 0;"><h4 class="text-muted">No media available</h4></div>
                 {% endif %}
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                        <h2 class="display-font mb-1">{{ property.title }}</h2>
+                        <div>
+                            <h2 class="display-font mb-1">{{ property.title }}</h2>
+                            <p class="text-muted mb-2"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.lga.name }}, {{ property.state.name }}</p>
+                        </div>
                         {% if agent_verified %}<span class="verified-seal"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
                     </div>
-                    <p class="text-muted mb-3"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.lga.name }}, {{ property.state.name }}</p>
-                    <span class="price-tag mono-price fs-4">&#8358;{{ property.price|floatformat:0 }}<small style="opacity:0.7;">/yr</small></span>
-                    <div class="d-flex gap-3 my-4">
-                        <span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-bed"></i> {{ property.bedrooms }} Beds</span>
-                        <span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-bath"></i> {{ property.bathrooms }} Baths</span>
+                    <span class="price-tag mono-price fs-4">&#8358;{{ property.price|floatformat:0 }}<small style="opacity:0.7;">/{{ property.get_rental_period_display }}</small></span>
+                    <div class="d-flex gap-3 my-4 flex-wrap">
+                        <span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-bed"></i> {{ property.bedrooms }} Bed{{ property.bedrooms|pluralize }}</span>
+                        <span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-bath"></i> {{ property.bathrooms }} Bath{{ property.bathrooms|pluralize }}</span>
+                        {% if property.toilets %}<span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-toilet"></i> {{ property.toilets }} Toilet{{ property.toilets|pluralize }}</span>{% endif %}
                         <span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-home"></i> {{ property.property_type }}</span>
+                        {% if property.property_size %}<span class="badge bg-light text-dark border py-2 px-3"><i class="fas fa-ruler-combined"></i> {{ property.property_size }}</span>{% endif %}
                     </div>
                     <hr>
                     <h5 class="display-font">Description</h5>
                     <p style="line-height: 1.7;">{{ property.description|linebreaks }}</p>
+
+                    <!-- Amenities -->
+                    {% if property.has_parking or property.has_water or property.has_electricity or property.has_borehole or property.has_generator or property.has_security or property.has_fenced_compound or property.is_furnished or property.has_kitchen or property.has_balcony or property.has_air_conditioning or property.has_internet or property.has_cctv or property.has_swimming_pool or property.has_gym %}
+                    <hr>
+                    <h5 class="display-font">Amenities</h5>
+                    <div class="row g-2">
+                        {% if property.has_parking %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-car me-2 text-success"></i>Parking Space</span></div>{% endif %}
+                        {% if property.has_water %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-tint me-2 text-success"></i>Water Supply</span></div>{% endif %}
+                        {% if property.has_electricity %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-bolt me-2 text-success"></i>Electricity</span></div>{% endif %}
+                        {% if property.has_borehole %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-water me-2 text-success"></i>Borehole</span></div>{% endif %}
+                        {% if property.has_generator %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-plug me-2 text-success"></i>Generator</span></div>{% endif %}
+                        {% if property.has_security %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-shield-alt me-2 text-success"></i>Security</span></div>{% endif %}
+                        {% if property.has_fenced_compound %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-border-all me-2 text-success"></i>Fenced Compound</span></div>{% endif %}
+                        {% if property.is_furnished %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-couch me-2 text-success"></i>Furnished</span></div>{% endif %}
+                        {% if property.has_kitchen %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-utensils me-2 text-success"></i>Kitchen</span></div>{% endif %}
+                        {% if property.has_balcony %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-building me-2 text-success"></i>Balcony</span></div>{% endif %}
+                        {% if property.has_air_conditioning %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-snowflake me-2 text-success"></i>Air Conditioning</span></div>{% endif %}
+                        {% if property.has_internet %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-wifi me-2 text-success"></i>Internet</span></div>{% endif %}
+                        {% if property.has_cctv %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-video me-2 text-success"></i>CCTV</span></div>{% endif %}
+                        {% if property.has_swimming_pool %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-swimming-pool me-2 text-success"></i>Swimming Pool</span></div>{% endif %}
+                        {% if property.has_gym %}<div class="col-6 col-md-4"><span class="text-muted"><i class="fas fa-dumbbell me-2 text-success"></i>Gym</span></div>{% endif %}
+                    </div>
+                    {% endif %}
+                    {% if property.other_amenities %}
+                    <p class="text-muted mt-2"><strong>Other:</strong> {{ property.other_amenities }}</p>
+                    {% endif %}
+
+                    <!-- Fee Breakdown -->
+                    {% if property.service_charge or property.agency_fee or property.legal_fee or property.caution_fee or property.agreement_fee or property.other_fees %}
+                    <hr>
+                    <h5 class="display-font">Fee Breakdown</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr><td>Rent</td><td class="text-end mono-price">&#8358;{{ property.price|floatformat:0 }}</td></tr>
+                                {% if property.service_charge %}<tr><td>Service Charge</td><td class="text-end mono-price">&#8358;{{ property.service_charge|floatformat:0 }}</td></tr>{% endif %}
+                                {% if property.agency_fee %}<tr><td>Agency Fee</td><td class="text-end mono-price">&#8358;{{ property.agency_fee|floatformat:0 }}</td></tr>{% endif %}
+                                {% if property.legal_fee %}<tr><td>Legal Fee</td><td class="text-end mono-price">&#8358;{{ property.legal_fee|floatformat:0 }}</td></tr>{% endif %}
+                                {% if property.caution_fee %}<tr><td>Caution Fee</td><td class="text-end mono-price">&#8358;{{ property.caution_fee|floatformat:0 }}</td></tr>{% endif %}
+                                {% if property.agreement_fee %}<tr><td>Agreement Fee</td><td class="text-end mono-price">&#8358;{{ property.agreement_fee|floatformat:0 }}</td></tr>{% endif %}
+                                {% if property.other_fees %}<tr><td>{{ property.other_fees_description|default:"Other Fees" }}</td><td class="text-end mono-price">&#8358;{{ property.other_fees|floatformat:0 }}</td></tr>{% endif %}
+                                <tr class="fw-bold" style="border-top: 2px solid var(--emerald);">
+                                    <td>Estimated Total Move-In Cost</td>
+                                    <td class="text-end mono-price" style="color: var(--emerald);">&#8358;{{ property.total_move_in_cost|floatformat:0 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Property ID -->
+                    <hr>
+                    <p class="text-muted small mb-0"><i class="fas fa-fingerprint me-1"></i>Property ID: {{ property.slug }} &middot; Listed {{ property.published_at|default:property.created_at|date:"F j, Y" }}</p>
                 </div>
             </div>
         </div>
@@ -47,8 +122,26 @@
             <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
                 <div class="card-body p-4">
                     <h5 class="card-title display-font">Contact Agent</h5>
-                    <p class="mb-1 fw-bold">{{ property.agent_name }}</p>
+
+                    <!-- Agent Profile Card -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        {% if property.created_by and property.created_by.profile_photo %}
+                        <img src="{{ property.created_by.profile_photo.url }}" alt="{{ property.agent_name }}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: var(--emerald); color: white; font-size: 1.2rem; font-family: 'Fraunces', serif;">
+                            {{ property.agent_name|first|upper }}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="mb-0 fw-bold">{{ property.agent_name }}</p>
+                            {% if property.created_by %}
+                            <a href="{% url 'accounts:agent_public_profile' property.created_by.username %}" class="small text-nigeria">View Profile <i class="fas fa-arrow-right ms-1"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     {% if agent_verified %}<span class="verified-seal mb-3 d-inline-flex"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
+
                     {% if user.is_authenticated and user.id != property.created_by_id %}
                     <form method="post" action="{% url 'messaging:start' property.id %}" class="mb-3">
                         {% csrf_token %}
@@ -75,9 +168,34 @@
                         {% endif %}
                     </form>
                     {% endif %}
-                    <small class="text-muted d-block mt-3 text-center"><i class="fas fa-eye"></i> {{ property.views }} views</small>
+                    <small class="text-muted d-block mt-3 text-center"><i class="fas fa-eye"></i> {{ property.views }} view{{ property.views|pluralize }}</small>
                 </div>
             </div>
+
+            <!-- Similar Properties -->
+            {% if similar_properties %}
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body p-4">
+                    <h6 class="display-font mb-3">Similar Properties</h6>
+                    {% for sim in similar_properties %}
+                    <div class="d-flex gap-3 mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                        {% if sim.primary_image %}
+                        <img src="{{ sim.primary_image.image.url }}" alt="{{ sim.title }}" class="rounded" width="80" height="60" style="object-fit: cover;">
+                        {% else %}
+                        <div class="rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 60px; background: var(--sage);">
+                            <i class="fas fa-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'properties:detail' sim.slug %}" class="fw-bold text-dark d-block">{{ sim.title }}</a>
+                            <small class="text-muted d-block">{{ sim.area }}, {{ sim.state.name }}</small>
+                            <span class="mono-price text-nigeria">&#8358;{{ sim.price|floatformat:0 }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

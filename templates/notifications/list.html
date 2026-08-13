@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | 9jaRent{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="display-font mb-0"><i class="fas fa-bell me-2"></i>Notifications</h2>
+                {% if unread_count > 0 %}
+                <form method="post" action="{% url 'notifications:mark_all_read' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-check-double me-1"></i>Mark all as read
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="list-group list-group-flush">
+                    {% for notification in notifications %}
+                    <a href="{% url 'notifications:redirect' notification.pk %}" 
+                       class="list-group-item list-group-item-action d-flex gap-3 py-3 {% if not notification.is_read %}bg-light{% endif %}">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: 
+                                {% if notification.notification_type == 'agent_approved' %}var(--emerald)
+                                {% elif notification.notification_type == 'agent_rejected' %}var(--terracotta)
+                                {% elif notification.notification_type == 'property_approved' %}var(--emerald)
+                                {% elif notification.notification_type == 'property_rejected' %}var(--terracotta)
+                                {% elif notification.notification_type == 'new_message' %}var(--ink)
+                                {% elif notification.notification_type == 'inspection_request' %}var(--amber)
+                                {% elif notification.notification_type == 'inspection_accepted' %}var(--emerald)
+                                {% elif notification.notification_type == 'inspection_declined' %}var(--terracotta)
+                                {% else %}var(--ink-soft){% endif %}; color: white;">
+                                <i class="fas 
+                                    {% if notification.notification_type == 'agent_approved' or notification.notification_type == 'property_approved' or notification.notification_type == 'inspection_accepted' %}fa-check
+                                    {% elif notification.notification_type == 'agent_rejected' or notification.notification_type == 'property_rejected' or notification.notification_type == 'inspection_declined' %}fa-times
+                                    {% elif notification.notification_type == 'new_message' %}fa-comment
+                                    {% elif notification.notification_type == 'inspection_request' %}fa-calendar
+                                    {% else %}fa-bell{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1 {% if not notification.is_read %}fw-bold{% endif %}">{{ notification.title }}</h6>
+                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ notification.message }}</p>
+                            {% if not notification.is_read %}
+                            <span class="badge bg-nigeria">New</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <h5>No notifications</h5>
+                        <p class="text-muted">You don't have any notifications yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
