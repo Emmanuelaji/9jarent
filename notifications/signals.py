@@ -1,94 +1,131 @@
+# notifications/signals.py
 """
-Notification signals.
-
-These create in-app notifications when key platform events occur.
-Email notifications can be added later via Celery tasks.
+Signal handlers to auto-create notifications on key platform events.
+Design allows easy migration to background workers (Celery/RQ) later.
 """
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from accounts.models import CustomUser
 from properties.models import Property
 from inspections.models import InspectionRequest
+from reports.models import Report
 from messaging.models import Message
 from .models import Notification
 
+User = get_user_model()
 
-def _create_notification(user, notification_type, title, message, link=None):
-    """Helper to create a notification safely."""
-    if not user:
-        return None
-    return Notification.objects.create(
-        user=user,
-        notification_type=notification_type,
-        title=title,
-        message=message,
-        link=link
-    )
-
-
-# ============================================================================
-# AGENT NOTIFICATIONS
-# ============================================================================
 
 @receiver(post_save, sender=CustomUser)
 def notify_agent_status_change(sender, instance, created, **kwargs):
     """Notify agent when their application status changes."""
-    if created or not instance.is_agent:
+    if created or not instance.pk:
         return
 
-    # Only notify on actual status changes (not every save)
-    # We use a simple heuristic: if approved_at/rejected_at/suspended_at
-    # was just set, send notification. For production, consider using
-    # a dedicated signal or tracking previous state.
-    pass  # Handled in dashboard views for explicit control
+    # Check if agent_status changed by comparing with DB
+    try:
+        old = CustomUser.objects.get(pk=instance.pk)
+        if old.agent_status != instance.agent_status:
+            if instance.agent_status == 'APPROVED':
+                Notification.objects.create(
+                    user=instance,
+                    notification_type='agent_approved',
+                    title='Agent Application Approved',
+                    message='Congratulations! Your agent application has been approved. You can now list properties.',
+                    link='/agent/properties/add/',
+                )
+            elif instance.agent_status == 'REJECTED':
+                Notification.objects.create(
+                    user=instance,
+                    notification_type='agent_rejected',
+                    title='Agent Application Rejected',
+                    message=f'Your agent application was rejected. Reason: {instance.rejection_reason or "No reason provided"}',
+                )
+            elif instance.agent_status == 'SUSPENDED':
+                Notification.objects.create(
+                    user=instance,
+                    notification_type='agent_suspended',
+                    title='Account Suspended',
+                    message=f'Your agent account has been suspended. Reason: {instance.rejection_reason or "No reason provided"}',
+                )
+    except CustomUser.DoesNotExist:
+        pass
 
-
-# ============================================================================
-# PROPERTY NOTIFICATIONS
-# ============================================================================
 
 @receiver(post_save, sender=Property)
 def notify_property_status_change(sender, instance, created, **kwargs):
     """Notify agent when their property status changes."""
-    if created:
-        # New property submitted - notify agent
-        if instance.created_by:
-            _create_notification(
-                instance.created_by,
-                Notification.Type.PROPERTY_PUBLISHED,
-                'Property Submitted for Review',
-                f'Your property "{instance.title}" has been submitted and is pending review.',
-            )
+    if not instance.created_by:
         return
 
-    # For status changes, we rely on explicit creation in dashboard views
-    # to avoid duplicate notifications on every save.
+    try:
+        old = Property.objects.get(pk=instance.pk)
+        if old.status != instance.status:
+            if instance.status == 'PUBLISHED':
+                Notification.objects.create(
+                    user=instance.created_by,
+                    notification_type='property_approved',
+                    title='Property Approved',
+                    message=f'Your property "{instance.title}" has been approved and published.',
+                    link=f'/properties/{instance.slug}/',
+                )
+            elif instance.status == 'REJECTED':
+                Notification.objects.create(
+                    user=instance.created_by,
+                    notification_type='property_rejected',
+                    title='Property Rejected',
+                    message=f'Your property "{instance.title}" was rejected. Reason: {instance.rejection_reason or "No reason provided"}',
+                )
+    except Property.DoesNotExist:
+        pass
 
-
-# ============================================================================
-# INSPECTION NOTIFICATIONS
-# ============================================================================
 
 @receiver(post_save, sender=InspectionRequest)
-def notify_inspection_change(sender, instance, created, **kwargs):
-    """Notify relevant parties when inspection status changes."""
+def notify_inspection_status_change(sender, instance, created, **kwargs):
+    """Notify renter and agent on inspection status changes."""
     if created:
-        # Notify agent of new inspection request
-        _create_notification(
-            instance.agent,
-            Notification.Type.INSPECTION_REQUEST,
-            'New Inspection Request',
-            f'{instance.renter.full_name_or_username} requested an inspection for "{instance.property.title}" on {instance.requested_date}.',
+        # New inspection request - notify agent
+        Notification.objects.create(
+            user=instance.agent,
+            notification_type='inspection_request',
+            title='New Inspection Request',
+            message=f'{instance.renter.full_name_or_username} requested an inspection for "{instance.property.title}" on {instance.requested_date}.',
+            link=f'/inspections/{instance.pk}/',
         )
         return
 
+    try:
+        old = InspectionRequest.objects.get(pk=instance.pk)
+        if old.status != instance.status:
+            if instance.status == 'ACCEPTED':
+                Notification.objects.create(
+                    user=instance.renter,
+                    notification_type='inspection_accepted',
+                    title='Inspection Confirmed',
+                    message=f'Your inspection request for "{instance.property.title}" has been accepted.',
+                    link=f'/inspections/{instance.pk}/',
+                )
+            elif instance.status == 'DECLINED':
+                Notification.objects.create(
+                    user=instance.renter,
+                    notification_type='inspection_declined',
+                    title='Inspection Declined',
+                    message=f'Your inspection request for "{instance.property.title}" was declined.',
+                    link=f'/inspections/{instance.pk}/',
+                )
+            elif instance.status == 'COMPLETED':
+                Notification.objects.create(
+                    user=instance.renter,
+                    notification_type='inspection_completed',
+                    title='Inspection Completed',
+                    message=f'Your inspection for "{instance.property.title}" has been marked as completed.',
+                    link=f'/inspections/{instance.pk}/',
+                )
+    except InspectionRequest.DoesNotExist:
+        pass
 
-# ============================================================================
-# MESSAGE NOTIFICATIONS
-# ============================================================================
 
 @receiver(post_save, sender=Message)
 def notify_new_message(sender, instance, created, **kwargs):
@@ -97,13 +134,12 @@ def notify_new_message(sender, instance, created, **kwargs):
         return
 
     conversation = instance.conversation
-    # Notify the other party
-    recipient = conversation.agent if instance.sender_id == conversation.renter_id else conversation.renter
+    recipient = conversation.agent if instance.sender == conversation.renter else conversation.renter
 
-    _create_notification(
-        recipient,
-        Notification.Type.NEW_MESSAGE,
-        f'New message from {instance.sender.full_name_or_username}',
-        f'Re: {conversation.property.title}',
-        link=f'/messages/{conversation.pk}/'
+    Notification.objects.create(
+        user=recipient,
+        notification_type='new_message',
+        title='New Message',
+        message=f'New message from {instance.sender.full_name_or_username} about "{conversation.property.title}"',
+        link=f'/messages/{conversation.pk}/',
     )

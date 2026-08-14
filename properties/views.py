@@ -1,11 +1,11 @@
-# properties/views.py with proper permission enforcement
+# properties/views.py with proper permission enforcement and DRAFT support
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
@@ -43,7 +43,7 @@ def _get_favourited_ids(user, properties):
 # ============================================================================
 
 class PropertyListView(ListView):
-    """Public property listing with search and filters."""
+    """Public property listing with search and filters. ONLY PUBLISHED properties."""
     model = Property
     template_name = 'properties/list.html'
     context_object_name = 'properties'
@@ -51,7 +51,7 @@ class PropertyListView(ListView):
 
     def get_queryset(self):
         queryset = Property.objects.filter(status='PUBLISHED').select_related('state', 'lga', 'created_by')
-        
+
         search = self.request.GET.get('search')
         state = self.request.GET.get('state')
         lga = self.request.GET.get('lga')
@@ -79,7 +79,7 @@ class PropertyListView(ListView):
             queryset = queryset.filter(property_type=property_type)
         if bedrooms:
             queryset = queryset.filter(bedrooms__gte=bedrooms)
-        
+
         return queryset.order_by(sort)
 
     def get_context_data(self, **kwargs):
@@ -91,7 +91,7 @@ class PropertyListView(ListView):
 
 
 class PropertyDetailView(DetailView):
-    """Public property detail page."""
+    """Public property detail page. ONLY PUBLISHED properties."""
     model = Property
     template_name = 'properties/detail.html'
     context_object_name = 'property'
@@ -111,7 +111,7 @@ class PropertyDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         property_obj = self.object
-        
+
         # Use agent's profile WhatsApp if available, fallback to property field
         whatsapp_number = property_obj.created_by.whatsapp_number if property_obj.created_by else property_obj.agent_whatsapp
         context['whatsapp_link'] = get_whatsapp_link(
@@ -119,13 +119,13 @@ class PropertyDetailView(DetailView):
             property_obj.title,
             f"{property_obj.area}, {property_obj.state.name}"
         )
-        
+
         # Similar properties
         context['similar_properties'] = Property.objects.filter(
             state=property_obj.state, 
             status='PUBLISHED'
         ).exclude(id=property_obj.id).select_related('state', 'lga')[:4]
-        
+
         # Agent verification status
         if property_obj.created_by and property_obj.created_by.is_approved_agent:
             context['agent_verified'] = True
@@ -145,6 +145,7 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
     """
     Create a new property listing.
     ONLY approved agents can access this.
+    Supports "Save as Draft" and "Submit for Review".
     """
     model = Property
     form_class = PropertyForm
@@ -157,8 +158,16 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        form.instance.status = 'PENDING_REVIEW'
-        
+
+        # Check if user clicked "Save as Draft" or "Submit for Review"
+        action = self.request.POST.get('action', 'submit')
+        if action == 'draft':
+            form.instance.status = 'DRAFT'
+            messages.success(self.request, "Property saved as draft.")
+        else:
+            form.instance.status = 'PENDING_REVIEW'
+            messages.success(self.request, "Property submitted successfully! Pending admin approval.")
+
         # Use agent's profile data instead of form fields where appropriate
         user = self.request.user
         if not form.instance.agent_name:
@@ -167,7 +176,7 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
             form.instance.agent_whatsapp = user.whatsapp_number or ''
         if not form.instance.agent_email:
             form.instance.agent_email = user.email
-            
+
         response = super().form_valid(form)
 
         # Handle image uploads
@@ -180,9 +189,8 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
                 order_index=index,
             )
 
-        messages.success(self.request, "Property submitted successfully! Pending admin approval.")
         return response
-    
+
     def get_success_url(self):
         return reverse_lazy('properties:mine')
 
@@ -191,6 +199,7 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
     """
     Edit an existing property.
     Only the owner agent or admin can edit.
+    Supports "Save as Draft" for DRAFT properties.
     """
     model = Property
     form_class = PropertyForm
@@ -199,8 +208,6 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            # Defer to LoginRequiredMixin for the login redirect instead of
-            # touching request.user.is_admin, which AnonymousUser lacks.
             return super().dispatch(request, *args, **kwargs)
         obj = self.get_object()
         # Server-side ownership check
@@ -220,11 +227,29 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('properties:mine')
-    
+
     def form_valid(self, form):
+        # Check if user clicked "Save as Draft" or "Submit for Review"
+        action = self.request.POST.get('action', 'save')
+        obj = self.object
+
+        if action == 'draft':
+            # Keep as draft or revert to draft
+            form.instance.status = 'DRAFT'
+            messages.success(self.request, "Property saved as draft.")
+        elif action == 'submit' and obj.status == 'DRAFT':
+            form.instance.status = 'PENDING_REVIEW'
+            messages.success(self.request, "Property submitted for review.")
+        elif action == 'resubmit' and obj.status == 'REJECTED':
+            form.instance.status = 'PENDING_REVIEW'
+            form.instance.rejection_reason = ''
+            messages.success(self.request, "Property resubmitted for review.")
+        else:
+            messages.success(self.request, "Property updated successfully.")
+
         response = super().form_valid(form)
 
-        # Append any newly uploaded images (existing images are managed separately via delete_property_image)
+        # Append any newly uploaded images
         images = self.request.FILES.getlist('images')
         if images:
             existing_count = self.object.images.count()
@@ -236,7 +261,6 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
                     order_index=existing_count + index,
                 )
 
-        messages.success(self.request, "Property updated successfully.")
         return response
 
 
@@ -255,12 +279,12 @@ class MyListingsView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        
+
         # Agent status messaging
         context['agent_status'] = user.agent_status
         context['agent_status_display'] = user.get_agent_status_display() if user.is_agent else None
         context['rejection_reason'] = user.rejection_reason if user.is_rejected_agent else None
-        
+
         # Statistics - use efficient aggregation
         qs = self.get_queryset()
         context['total_count'] = qs.count()
@@ -269,17 +293,31 @@ class MyListingsView(LoginRequiredMixin, ListView):
         context['rejected_count'] = qs.filter(status='REJECTED').count()
         context['rented_count'] = qs.filter(status='RENTED').count()
         context['archived_count'] = qs.filter(status='ARCHIVED').count()
-        
+        context['draft_count'] = qs.filter(status='DRAFT').count()
+
         # Use database aggregation instead of Python sum
-        from django.db.models import Sum
         stats = qs.aggregate(
             total_views=Sum('views'),
             total_whatsapp=Sum('whatsapp_clicks')
         )
         context['total_views'] = stats['total_views'] or 0
         context['total_whatsapp_clicks'] = stats['total_whatsapp'] or 0
-        
+
         return context
+
+
+class DraftListView(LoginRequiredMixin, ListView):
+    """Agent's draft properties."""
+    model = Property
+    template_name = 'properties/drafts.html'
+    context_object_name = 'drafts'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Property.objects.filter(
+            created_by=self.request.user,
+            status='DRAFT'
+        ).select_related('state', 'lga').order_by('-updated_at')
 
 
 # ============================================================================
@@ -289,27 +327,27 @@ class MyListingsView(LoginRequiredMixin, ListView):
 @login_required 
 @object_owner_required(Property, 'created_by')
 def submit_property(request, pk):
-    """Submit a draft property for admin review."""
+    """Submit a DRAFT property for admin review."""
     if request.method != 'POST':
         return HttpResponseForbidden("This action requires POST.")
-    
+
     prop = get_object_or_404(Property, pk=pk, created_by=request.user)
     if prop.status == 'DRAFT':
         prop.status = 'PENDING_REVIEW'
         prop.save(update_fields=['status', 'updated_at'])
         messages.success(request, "Property submitted for review.")
     else:
-        messages.warning(request, "Only draft properties can be submitted.")
+        messages.warning(request, "Only draft properties can be submitted for review.")
     return redirect('properties:mine')
 
 
 @login_required 
 @object_owner_required(Property, 'created_by')
 def resubmit_property(request, pk):
-    """Resubmit a rejected property after edits."""
+    """Resubmit a REJECTED property after edits."""
     if request.method != 'POST':
         return HttpResponseForbidden("This action requires POST.")
-    
+
     prop = get_object_or_404(Property, pk=pk, created_by=request.user)
     if prop.status == 'REJECTED':
         prop.status = 'PENDING_REVIEW'
@@ -324,10 +362,10 @@ def resubmit_property(request, pk):
 @login_required 
 @object_owner_required(Property, 'created_by')
 def mark_property_rented(request, pk):
-    """Mark a published property as rented."""
+    """Mark a PUBLISHED property as rented."""
     if request.method != 'POST':
         return HttpResponseForbidden("This action requires POST.")
-    
+
     prop = get_object_or_404(Property, pk=pk, created_by=request.user)
     if prop.status == 'PUBLISHED':
         prop.status = 'RENTED'
@@ -370,7 +408,7 @@ def archive_property(request, pk):
     """Archive a property (removes from public view but keeps record)."""
     if request.method != 'POST':
         return HttpResponseForbidden("This action requires POST.")
-    
+
     prop = get_object_or_404(Property, pk=pk, created_by=request.user)
     if prop.status in ['PUBLISHED', 'REJECTED', 'RENTED']:
         prop.status = 'ARCHIVED'
