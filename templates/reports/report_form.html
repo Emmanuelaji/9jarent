@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Report {{ target_type|title }} | 9jaRent{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="display-font mb-0">
+                        <i class="fas fa-flag me-2" style="color: var(--terracotta);"></i>
+                        Report {{ target_type|title }}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Target Info -->
+                    <div class="alert alert-light border mb-4">
+                        {% if target_type == 'property' %}
+                        <div class="d-flex align-items-center gap-3">
+                            {% if target.primary_image %}
+                            <img src="{{ target.primary_image.image.url }}" alt="" class="rounded" width="60" height="45" style="object-fit: cover;">
+                            {% endif %}
+                            <div>
+                                <strong>{{ target.title }}</strong>
+                                <p class="text-muted small mb-0">{{ target.area }}, {{ target.state.name }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: var(--emerald); color: white; font-family: 'Fraunces', serif;">
+                                {{ target.full_name_or_username|first|upper }}
+                            </div>
+                            <div>
+                                <strong>{{ target.full_name_or_username }}</strong>
+                                <p class="text-muted small mb-0">{{ target.company_name|default:"Verified Agent" }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }} <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }} <span class="text-danger">*</span></label>
+                            {{ form.description }}
+                            <div class="form-text">Please provide at least 20 characters describing the issue.</div>
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-nigeria">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                            </button>
+                            {% if target_type == 'property' %}
+                            <a href="{% url 'properties:detail' target.slug %}" class="btn btn-outline-secondary">Cancel</a>
+                            {% else %}
+                            <a href="{% url 'accounts:agent_public_profile' target.username %}" class="btn btn-outline-secondary">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

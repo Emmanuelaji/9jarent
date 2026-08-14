@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Report #{{ report.pk }} | 9jaRent Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'dashboard:reports' %}" class="btn btn-sm btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-left me-1"></i>Back to Reports
+            </a>
+            <h2 class="mb-0">Report #{{ report.pk }}</h2>
+            <p class="text-muted">Submitted {{ report.created_at|naturaltime }}</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Report Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Category</label>
+                            <p class="mb-0">
+                                <span class="badge" style="background: 
+                                    {% if report.category == 'fake_listing' %}var(--terracotta)
+                                    {% elif report.category == 'wrong_price' %}var(--amber)
+                                    {% elif report.category == 'unavailable' %}#777
+                                    {% elif report.category == 'suspicious_agent' %}var(--ink)
+                                    {% elif report.category == 'misleading_info' %}var(--amber-dark)
+                                    {% elif report.category == 'inappropriate_content' %}var(--terracotta)
+                                    {% else %}var(--ink-soft){% endif %}; color: white;">
+                                    {{ report.get_category_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Status</label>
+                            <p class="mb-0">
+                                <span class="badge bg-{% if report.status == 'pending' %}warning text-dark{% elif report.status == 'under_review' %}info{% elif report.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Reporter</label>
+                            <p class="mb-0 fw-bold">{{ report.reporter.full_name_or_username }} <small class="text-muted">(@{{ report.reporter.username }})</small></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Submitted</label>
+                            <p class="mb-0">{{ report.created_at|date:"F j, Y \a\t g:i A" }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6>Description</h6>
+                    <p style="line-height: 1.7;">{{ report.description|linebreaks }}</p>
+
+                    {% if report.admin_notes %}
+                    <hr>
+                    <h6>Admin Notes</h6>
+                    <div class="alert alert-light border">
+                        <p class="mb-0 text-muted">{{ report.admin_notes|linebreaks }}</p>
+                        {% if report.resolved_by %}
+                        <small class="text-muted d-block mt-2">
+                            — {{ report.resolved_by.username }}, {{ report.resolved_at|naturaltime }}
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Target Card -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Report Target</h6>
+                </div>
+                <div class="card-body">
+                    {% if report.property %}
+                    <div class="d-flex gap-3 mb-3">
+                        {% if report.property.primary_image %}
+                        <img src="{{ report.property.primary_image.image.url }}" alt="" class="rounded" width="80" height="60" style="object-fit: cover;">
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'properties:detail' report.property.slug %}" class="fw-bold d-block">{{ report.property.title }}</a>
+                            <small class="text-muted">{{ report.property.area }}, {{ report.property.state.name }}</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'properties:detail' report.property.slug %}" class="btn btn-sm btn-outline-primary w-100">View Property</a>
+                    {% elif report.agent %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: var(--emerald); color: white; font-family: 'Fraunces', serif;">
+                            {{ report.agent.full_name_or_username|first|upper }}
+                        </div>
+                        <div>
+                            <a href="{% url 'accounts:agent_public_profile' report.agent.username %}" class="fw-bold d-block">{{ report.agent.full_name_or_username }}</a>
+                            <small class="text-muted">{{ report.agent.company_name|default:"Verified Agent" }}</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'accounts:agent_public_profile' report.agent.username %}" class="btn btn-sm btn-outline-primary w-100">View Agent Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resolution Form -->
+            {% if report.get_is_pending or report.status == 'under_review' %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Resolve Report</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'dashboard:resolve_report' report.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small">Action</label>
+                            <select name="status" class="form-select" required>
+                                <option value="">Select action...</option>
+                                <option value="resolved">Mark as Resolved</option>
+                                <option value="dismissed">Dismiss Report</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Admin Notes</label>
+                            <textarea name="admin_notes" class="form-control" rows="3" placeholder="Add notes about this resolution..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-nigeria w-100">Submit Resolution</button>
+                    </form>
+                </div>
+            </div>
+            {% elif report.get_is_resolved or report.status == 'dismissed' %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h6>Resolved</h6>
+                        <p class="text-muted small mb-0">by {{ report.resolved_by.username }}<br>{{ report.resolved_at|naturaltime }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Reports | 9jaRent Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-0"><i class="fas fa-flag me-2" style="color: var(--terracotta);"></i>Reports</h2>
+            <p class="text-muted">Review and manage user-submitted reports</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold" style="color: var(--amber);">{{ status_counts.pending }}</div>
+                    <small class="text-muted">Pending</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold text-info">{{ status_counts.under_review }}</div>
+                    <small class="text-muted">Under Review</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold text-success">{{ status_counts.resolved }}</div>
+                    <small class="text-muted">Resolved</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold text-secondary">{{ status_counts.total }}</div>
+                    <small class="text-muted">Total</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Status</label>
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="under_review" {% if current_status == 'under_review' %}selected{% endif %}>Under Review</option>
+                        <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="dismissed" {% if current_status == 'dismissed' %}selected{% endif %}>Dismissed</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Category</label>
+                    <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        <option value="fake_listing" {% if current_category == 'fake_listing' %}selected{% endif %}>Fake Listing</option>
+                        <option value="wrong_price" {% if current_category == 'wrong_price' %}selected{% endif %}>Wrong Price</option>
+                        <option value="unavailable" {% if current_category == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                        <option value="suspicious_agent" {% if current_category == 'suspicious_agent' %}selected{% endif %}>Suspicious Agent</option>
+                        <option value="misleading_info" {% if current_category == 'misleading_info' %}selected{% endif %}>Misleading Info</option>
+                        <option value="inappropriate_content" {% if current_category == 'inappropriate_content' %}selected{% endif %}>Inappropriate</option>
+                        <option value="other" {% if current_category == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'dashboard:reports' %}" class="btn btn-sm btn-outline-secondary w-100">Clear Filters</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Target</th>
+                            <th>Reporter</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td><span class="text-muted">#{{ report.pk }}</span></td>
+                            <td>
+                                <span class="badge" style="background: 
+                                    {% if report.category == 'fake_listing' %}var(--terracotta)
+                                    {% elif report.category == 'wrong_price' %}var(--amber)
+                                    {% elif report.category == 'unavailable' %}#777
+                                    {% elif report.category == 'suspicious_agent' %}var(--ink)
+                                    {% elif report.category == 'misleading_info' %}var(--amber-dark)
+                                    {% elif report.category == 'inappropriate_content' %}var(--terracotta)
+                                    {% else %}var(--ink-soft){% endif %}; color: white;">
+                                    {{ report.get_category_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if report.property %}
+                                <a href="{% url 'properties:detail' report.property.slug %}">{{ report.property.title|truncatechars:30 }}</a>
+                                {% elif report.agent %}
+                                <a href="{% url 'accounts:agent_public_profile' report.agent.username %}">{{ report.agent.full_name_or_username }}</a>
+                                {% endif %}
+                            </td>
+                            <td>{{ report.reporter.username }}</td>
+                            <td>
+                                <span class="badge bg-{% if report.status == 'pending' %}warning text-dark{% elif report.status == 'under_review' %}info{% elif report.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </td>
+                            <td><small class="text-muted">{{ report.created_at|naturaltime }}</small></td>
+                            <td>
+                                <a href="{% url 'dashboard:report_detail' report.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h5>No reports</h5>
+                <p class="text-muted">No reports match your current filters.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">Previous</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">Next</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

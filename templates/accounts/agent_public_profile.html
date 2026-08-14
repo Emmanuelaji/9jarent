@@ -29,6 +29,11 @@
                             {% if agent.company_name %}
                             <p class="text-muted mb-2">{{ agent.company_name }}</p>
                             {% endif %}
+                            {% if user.is_authenticated and user != agent %}
+                            <a href="{% url 'reports:report_agent' agent.pk %}" class="btn btn-sm btn-outline-danger mt-2">
+                                <i class="fas fa-flag me-1"></i>Report Agent
+                            </a>
+                            {% endif %}
                             <div class="d-flex flex-wrap gap-3 text-muted small mb-3">
                                 {% if agent.state %}
                                 <span><i class="fas fa-map-marker-alt me-1"></i>{{ agent.city|default:"" }}{% if agent.city and agent.state %}, {% endif %}{{ agent.state }}</span>

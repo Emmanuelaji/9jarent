@@ -12,7 +12,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
-from accounts.permissions import AdminRequiredMixin
+from accounts.permissions import AdminRequiredMixin, admin_required
 from properties.models import Property
 from accounts.models import CustomUser
 
@@ -333,3 +333,82 @@ class AgentDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
             'rented': Property.objects.filter(created_by=agent, status='RENTED').count(),
         }
         return context
+
+
+
+# ============================================================================
+# REPORT MANAGEMENT VIEWS
+# ============================================================================
+
+class ReportsListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """Admin view of all user-submitted reports."""
+    template_name = 'dashboard/reports_list.html'
+    context_object_name = 'reports'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from reports.models import Report
+        queryset = Report.objects.select_related(
+            'reporter', 'property', 'agent', 'resolved_by'
+        ).order_by('-created_at')
+
+        # Filter by status
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # Filter by category
+        category = self.request.GET.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        from reports.models import Report
+        context = super().get_context_data(**kwargs)
+        context['status_counts'] = {
+            'pending': Report.objects.filter(status=Report.Status.PENDING).count(),
+            'under_review': Report.objects.filter(status=Report.Status.UNDER_REVIEW).count(),
+            'resolved': Report.objects.filter(status=Report.Status.RESOLVED).count(),
+            'dismissed': Report.objects.filter(status=Report.Status.DISMISSED).count(),
+            'total': Report.objects.count(),
+        }
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_category'] = self.request.GET.get('category', '')
+        return context
+
+
+class ReportDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
+    """Admin view of a single report."""
+    template_name = 'dashboard/report_detail.html'
+    context_object_name = 'report'
+
+    def get_queryset(self):
+        from reports.models import Report
+        return Report.objects.select_related(
+            'reporter', 'property', 'agent', 'resolved_by'
+        )
+
+
+@login_required
+@admin_required
+def resolve_report(request, pk):
+    """Admin resolves or dismisses a report."""
+    from reports.forms import ReportResolutionForm
+    report = get_object_or_404(Report, pk=pk)
+
+    if request.method == 'POST':
+        form = ReportResolutionForm(request.POST)
+        if form.is_valid():
+            report.status = form.cleaned_data['status']
+            report.admin_notes = form.cleaned_data['admin_notes']
+            report.resolved_by = request.user
+            from django.utils import timezone
+            report.resolved_at = timezone.now()
+            report.save(update_fields=['status', 'admin_notes', 'resolved_by', 'resolved_at'])
+
+            messages.success(request, f'Report #{report.pk} has been marked as {report.get_status_display()}.')
+            return redirect('dashboard:report_detail', pk=report.pk)
+
+    return redirect('dashboard:report_detail', pk=report.pk)
