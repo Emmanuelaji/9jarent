@@ -1,4 +1,3 @@
-
 # dashboard/urls.py
 
 from django.urls import path
@@ -25,4 +24,13 @@ urlpatterns = [
     path('agents/<int:pk>/reject/', views.reject_agent, name='reject_agent'),
     path('agents/<int:pk>/suspend/', views.suspend_agent, name='suspend_agent'),
     path('agents/<int:pk>/reactivate/', views.reactivate_agent, name='reactivate_agent'),
+    
+    # Inspection management
+    path('inspections/', views.InspectionListView.as_view(), name='inspections_list'),
+    path('inspections/<int:pk>/', views.InspectionDetailView.as_view(), name='inspection_detail'),
+    
+    # Report management
+    path('reports/', views.ReportsListView.as_view(), name='reports_list'),
+    path('reports/<int:pk>/', views.ReportDetailView.as_view(), name='report_detail'),
+    path('reports/<int:pk>/resolve/', views.resolve_report, name='resolve_report'),
 ]

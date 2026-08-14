@@ -27,3 +27,23 @@ WARNING 2026-08-14 10:56:57,592 log 3955 140417486198464 Method Not Allowed (GET
 WARNING 2026-08-14 10:56:57,598 log 3955 140417486198464 "GET /accounts/logout/ HTTP/1.1" 405 0
 INFO 2026-08-14 10:57:04,937 log 3955 140417486198464 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19389
 INFO 2026-08-14 10:57:07,915 log 3955 140417486198464 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:04:52,677 autoreload 5333 140371055945600 Watching for file changes with StatReloader
+INFO 2026-08-14 11:05:56,571 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:06:04,326 log 5333 140370982897344 "GET / HTTP/1.1" 200 15041
+WARNING 2026-08-14 11:06:05,885 log 5333 140370982897344 Not Found: /favicon.ico
+INFO 2026-08-14 11:16:26,552 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:16:29,853 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:24:36,596 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:24:38,215 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:30:58,964 log 5333 140370992338624 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 11:48:47,549 autoreload 5333 140371055945600 /home/breeze/Desktop/9jarent/dashboard/urls.py changed, reloading.
+INFO 2026-08-14 11:48:52,655 autoreload 10706 139726643165056 Watching for file changes with StatReloader
+INFO 2026-08-14 11:51:07,885 autoreload 11037 139699993864064 Watching for file changes with StatReloader
+INFO 2026-08-14 11:53:43,608 autoreload 11037 139699993864064 /home/breeze/Desktop/9jarent/dashboard/views.py changed, reloading.
+INFO 2026-08-14 11:53:44,432 autoreload 11433 139847047923584 Watching for file changes with StatReloader
+INFO 2026-08-14 11:54:21,991 autoreload 11537 140603337779072 Watching for file changes with StatReloader
+INFO 2026-08-14 12:00:09,052 autoreload 11537 140603337779072 /home/breeze/Desktop/9jarent/dashboard/urls.py changed, reloading.
+INFO 2026-08-14 12:00:09,904 autoreload 12311 140638836942720 Watching for file changes with StatReloader
+INFO 2026-08-14 12:06:15,982 autoreload 12311 140638836942720 /home/breeze/Desktop/9jarent/dashboard/views.py changed, reloading.
+INFO 2026-08-14 12:06:16,820 autoreload 13124 139742047938432 Watching for file changes with StatReloader
+INFO 2026-08-14 12:08:41,881 autoreload 13469 140367710406528 Watching for file changes with StatReloader

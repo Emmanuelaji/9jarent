@@ -12,52 +12,54 @@
         </div>
     </div>
 
-    <!-- Metrics Cards -->
-    <div class="row g-3 mb-4">
-        <!-- Properties -->
-        <div class="col-md-3 col-lg-2">
+    <!-- Property Metrics Cards -->
+    <div class="row g-3 mb-2">
+        <div class="col-12">
+            <h5 class="text-muted mb-2"><i class="fas fa-home me-2"></i>Properties</h5>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-primary text-white h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Total Listings</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total</h6>
                     <h3 class="mb-0">{{ total_listings }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-lg-2">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-success text-white h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="card-title">Published</h6>
                     <h3 class="mb-0">{{ published_listings }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-lg-2">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-warning text-dark h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Pending Review</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title">Pending</h6>
                     <h3 class="mb-0">{{ pending_review_listings }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-lg-2">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-info text-white h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="card-title">Rented</h6>
                     <h3 class="mb-0">{{ rented_listings }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-lg-2">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-secondary text-white h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="card-title">Archived</h6>
                     <h3 class="mb-0">{{ archived_listings }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-lg-2">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="card bg-dark text-white h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="card-title">Rejected</h6>
                     <h3 class="mb-0">{{ rejected_listings }}</h3>
                 </div>
@@ -66,40 +68,113 @@
     </div>
 
     <!-- Agent Metrics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+    <div class="row g-3 mb-2">
+        <div class="col-12">
+            <h5 class="text-muted mb-2"><i class="fas fa-users me-2"></i>Agents</h5>
+        </div>
+        <div class="col-6 col-md-3">
             <div class="card border-warning h-100">
-                <div class="card-body">
-                    <h6 class="card-title text-warning"><i class="fas fa-clock me-2"></i>Pending Agents</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title text-warning"><i class="fas fa-clock me-2"></i>Pending</h6>
                     <h3 class="mb-0">{{ pending_agents }}</h3>
                     <a href="{% url 'dashboard:agents_pending' %}" class="btn btn-sm btn-outline-warning mt-2">Review</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-success h-100">
-                <div class="card-body">
-                    <h6 class="card-title text-success"><i class="fas fa-check-circle me-2"></i>Approved Agents</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title text-success"><i class="fas fa-check-circle me-2"></i>Approved</h6>
                     <h3 class="mb-0">{{ approved_agents }}</h3>
                     <a href="{% url 'dashboard:agents_approved' %}" class="btn btn-sm btn-outline-success mt-2">View</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-danger h-100">
-                <div class="card-body">
-                    <h6 class="card-title text-danger"><i class="fas fa-times-circle me-2"></i>Rejected Agents</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title text-danger"><i class="fas fa-times-circle me-2"></i>Rejected</h6>
                     <h3 class="mb-0">{{ rejected_agents }}</h3>
                     <a href="{% url 'dashboard:agents_rejected' %}" class="btn btn-sm btn-outline-danger mt-2">View</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-secondary h-100">
-                <div class="card-body">
-                    <h6 class="card-title text-secondary"><i class="fas fa-ban me-2"></i>Suspended Agents</h6>
+                <div class="card-body text-center">
+                    <h6 class="card-title text-secondary"><i class="fas fa-ban me-2"></i>Suspended</h6>
                     <h3 class="mb-0">{{ suspended_agents }}</h3>
                     <a href="{% url 'dashboard:agents_suspended' %}" class="btn btn-sm btn-outline-secondary mt-2">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspection & Report Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <h5 class="text-muted mb-2"><i class="fas fa-clipboard-check me-2"></i>Inspections</h5>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="card border-info h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-info">Total</h6>
+                            <h4 class="mb-0">{{ total_inspections }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-warning h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-warning">Pending</h6>
+                            <h4 class="mb-0">{{ pending_inspections }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-success h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-success">Completed</h6>
+                            <h4 class="mb-0">{{ completed_inspections }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h5 class="text-muted mb-2"><i class="fas fa-flag me-2"></i>Reports</h5>
+            <div class="row g-2">
+                <div class="col-3">
+                    <div class="card border-danger h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-danger">Pending</h6>
+                            <h4 class="mb-0">{{ pending_reports }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="card border-warning h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-warning">Review</h6>
+                            <h4 class="mb-0">{{ under_review_reports }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="card border-success h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-success">Resolved</h6>
+                            <h4 class="mb-0">{{ resolved_reports }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="card border-secondary h-100">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-secondary">Dismissed</h6>
+                            <h4 class="mb-0">{{ dismissed_reports }}</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,7 +237,6 @@
                                             <i class="fas fa-times"></i>
                                         </button>
                                         
-                                        <!-- Reject Modal -->
                                         <div class="modal fade" id="rejectModal{{ prop.pk }}" tabindex="-1">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -253,7 +327,6 @@
                                             <i class="fas fa-times"></i>
                                         </button>
                                         
-                                        <!-- Reject Agent Modal -->
                                         <div class="modal fade" id="rejectAgentModal{{ agent.pk }}" tabindex="-1">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -295,19 +368,159 @@
         </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="row">
-        <div class="col-md-6">
+    <!-- Recent Inspection Requests -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Recent Inspection Requests</h5>
+                    <a href="{% url 'dashboard:inspections_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_inspections %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Renter</th>
+                                    <th>Agent</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Requested</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for insp in recent_inspections %}
+                                <tr>
+                                    <td><a href="{% url 'properties:detail' insp.property.slug %}">{{ insp.property.title }}</a></td>
+                                    <td>{{ insp.renter.full_name_or_username }}</td>
+                                    <td>{{ insp.agent.full_name_or_username }}</td>
+                                    <td>{{ insp.requested_date|date:"M d, Y" }} at {{ insp.requested_time|time:"g:i A" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if insp.status == 'PENDING' %}warning{% elif insp.status == 'ACCEPTED' %}success{% elif insp.status == 'DECLINED' %}danger{% elif insp.status == 'COMPLETED' %}info{% else %}secondary{% endif %}">
+                                            {{ insp.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ insp.created_at|timesince }} ago</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">No inspection requests yet</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-flag me-2"></i>Recent Reports</h5>
+                    <a href="{% url 'dashboard:reports_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_reports %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Target</th>
+                                    <th>Reporter</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in recent_reports %}
+                                <tr>
+                                    <td><span class="badge bg-secondary">{{ report.get_category_display }}</span></td>
+                                    <td>
+                                        {% if report.property %}
+                                            <a href="{% url 'properties:detail' report.property.slug %}">{{ report.property.title|truncatechars:30 }}</a>
+                                        {% elif report.agent %}
+                                            <a href="{% url 'dashboard:agent_detail' report.agent.pk %}">{{ report.agent.full_name_or_username }}</a>
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ report.reporter.full_name_or_username }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if report.status == 'pending' %}danger{% elif report.status == 'under_review' %}warning{% elif report.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ report.created_at|timesince }} ago</td>
+                                    <td>
+                                        <a href="{% url 'dashboard:report_detail' report.pk %}" class="btn btn-sm btn-info">Review</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">No reports submitted yet</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Feed -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Properties</h5>
+                    <h5 class="mb-0"><i class="fas fa-stream me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activity %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-{{ activity.icon }} text-{{ activity.color }} me-2"></i>
+                                    <strong>{{ activity.title }}</strong>
+                                    <span class="text-muted">by {{ activity.user }}</span>
+                                </div>
+                                <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                            </div>
+                            <div class="mt-1">
+                                <span class="badge bg-{% if activity.status == 'PUBLISHED' or activity.status == 'APPROVED' or activity.status == 'COMPLETED' %}success{% elif activity.status == 'PENDING_REVIEW' or activity.status == 'PENDING' %}warning{% elif activity.status == 'REJECTED' or activity.status == 'DECLINED' %}danger{% else %}secondary{% endif %}">
+                                    {{ activity.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center py-4 text-muted">No recent activity</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Properties & Agents & Users -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-home me-2"></i>Recent Properties</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         {% for prop in recent_properties %}
                         <a href="{% url 'properties:detail' prop.slug %}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ prop.title }}</h6>
+                                <h6 class="mb-1">{{ prop.title|truncatechars:25 }}</h6>
                                 <small class="text-muted">{{ prop.created_at|timesince }} ago</small>
                             </div>
                             <p class="mb-1 text-muted">{{ prop.area }}, {{ prop.state.name }}</p>
@@ -324,7 +537,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="fas fa-users me-2"></i>Recent Agents</h5>
@@ -346,6 +559,28 @@
                         </a>
                         {% empty %}
                         <div class="list-group-item text-center py-4 text-muted">No recent agents</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Recent Users</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ user.full_name_or_username }}</h6>
+                                <small class="text-muted">{{ user.date_joined|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1 text-muted">{{ user.email }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center py-4 text-muted">No recent users</div>
                         {% endfor %}
                     </div>
                 </div>
