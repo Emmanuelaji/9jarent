@@ -13,6 +13,7 @@
         :root {
             --emerald: #0B6E4F;
             --emerald-dark: #084E38;
+            --emerald-light: #E7EFE6;
             --amber: #F2A93B;
             --amber-dark: #D8901F;
             --terracotta: #C1512F;
@@ -21,6 +22,7 @@
             --ink: #16211C;
             --ink-soft: #4B5750;
             --whatsapp: #25D366;
+            --border-light: #E9ECEF;
         }
         * { box-sizing: border-box; }
         body {
@@ -44,44 +46,116 @@
 
         /* Navbar */
         .navbar-9ja {
-            background-color: var(--ink);
-            padding: 0.9rem 0;
-            border-bottom: 3px solid var(--amber);
+            background-color: #fff;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .navbar-9ja .navbar-brand {
             font-family: 'Fraunces', serif;
             font-weight: 700;
             font-size: 1.35rem;
-            color: var(--sand) !important;
+            color: var(--ink) !important;
         }
-        .navbar-9ja .navbar-brand .brand-dot { color: var(--amber); }
+        .navbar-9ja .navbar-brand .brand-9ja { color: var(--emerald); }
+        .navbar-9ja .navbar-brand .brand-rent { color: var(--amber); }
         .navbar-9ja .nav-link {
-            color: rgba(251,247,239,0.82) !important;
+            color: var(--ink-soft) !important;
             font-weight: 500;
-            font-size: 0.94rem;
+            font-size: 0.9rem;
             padding: 0.5rem 0.9rem !important;
             transition: color 0.15s ease;
         }
-        .navbar-9ja .nav-link:hover { color: var(--amber) !important; }
+        .navbar-9ja .nav-link:hover { color: var(--emerald) !important; }
         .navbar-9ja .nav-link.nav-cta {
-            background: var(--amber);
-            color: var(--ink) !important;
-            border-radius: 6px;
+            background: var(--emerald);
+            color: #fff !important;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem !important;
+        }
+        .navbar-9ja .nav-link.nav-cta:hover { background: var(--emerald-dark); color: #fff !important; }
+
+        /* User dropdown */
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--emerald-light);
+        }
+        .user-avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--emerald);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .dropdown-menu-9ja {
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            padding: 0.5rem;
+            min-width: 220px;
+        }
+        .dropdown-menu-9ja .dropdown-item {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            color: var(--ink-soft);
+            transition: all 0.15s ease;
+        }
+        .dropdown-menu-9ja .dropdown-item:hover {
+            background: var(--emerald-light);
+            color: var(--emerald-dark);
+        }
+        .dropdown-menu-9ja .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            color: var(--emerald);
+        }
+        .dropdown-menu-9ja .dropdown-divider {
+            border-color: var(--border-light);
+            margin: 0.4rem 0.5rem;
+        }
+        .dropdown-menu-9ja .dropdown-header {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9CA3AF;
             font-weight: 600;
         }
-        .navbar-9ja .nav-link.nav-cta:hover { background: var(--amber-dark); color: var(--ink) !important; }
-        .role-pill {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 0.15rem 0.55rem;
-            border-radius: 20px;
-            background: rgba(242,169,59,0.18);
-            color: var(--amber);
-            margin-left: 0.5rem;
-            vertical-align: middle;
+
+        /* Notification bell */
+        .notif-bell {
+            position: relative;
+            color: var(--ink-soft);
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            transition: color 0.15s ease;
+        }
+        .notif-bell:hover { color: var(--emerald); }
+        .notif-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--terracotta);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Buttons */
@@ -94,10 +168,10 @@
         .whatsapp-btn:hover { background-color: #128C7E; color: white; }
 
         /* Cards */
-        .card { border-radius: 12px; }
+        .card { border-radius: 12px; border: 1px solid var(--border-light); }
         .card.shadow-sm { box-shadow: 0 2px 14px rgba(22,33,28,0.06) !important; }
 
-        /* Price tag signature element */
+        /* Price tag */
         .price-tag {
             position: relative;
             display: inline-block;
@@ -133,6 +207,84 @@
             border: 1px solid rgba(11,110,79,0.25);
         }
 
+        /* Form styling */
+        .form-control-9ja {
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .form-control-9ja:focus {
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 3px rgba(11,110,79,0.1);
+        }
+        .form-label-9ja {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--ink);
+            margin-bottom: 0.4rem;
+        }
+
+        /* Toggle tabs */
+        .toggle-tabs {
+            display: flex;
+            background: #fff;
+            border-radius: 30px;
+            padding: 4px;
+            border: 1px solid var(--border-light);
+        }
+        .toggle-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            border-radius: 26px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--ink-soft);
+            transition: all 0.2s ease;
+        }
+        .toggle-tab.active {
+            background: var(--emerald-dark);
+            color: #fff;
+        }
+
+        /* Social login buttons */
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            background: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--ink);
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .social-btn:hover { background: #f8f9fa; border-color: #d1d5db; }
+
+        /* Password strength */
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #E9ECEF;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .strength-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
         footer.site-footer { background-color: var(--ink); color: rgba(251,247,239,0.7); }
         footer.site-footer .footer-brand { font-family: 'Fraunces', serif; color: var(--sand); font-weight: 700; }
     </style>
@@ -141,32 +293,62 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-9ja">
         <div class="container">
-            <a class="navbar-brand" href="/">9ja<span class="brand-dot">Rent</span>.com.ng</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: rgba(251,247,239,0.3);">
+            <a class="navbar-brand" href="/">
+                <span class="brand-9ja">9ja</span><span class="brand-rent">Rent</span><span style="color:var(--ink-soft)">.com.ng</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: var(--border-light);">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                     <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}">Browse Properties</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Agents</a></li>
                     {% if user.is_authenticated %}
-                        {% if user.is_staff or user.role == 'SUPER_ADMIN' %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:admin' %}"><i class="fas fa-shield-halved me-1"></i> Admin Dashboard</a></li>
-                        {% elif user.is_agent %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'properties:mine' %}"><i class="fas fa-list-check me-1"></i> My Listings</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'inspections:list' %}"><i class="fas fa-calendar-check me-1"></i> Inspections</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'messaging:inbox' %}"><i class="fas fa-comment-dots me-1"></i> Messages{% if unread_message_count %} <span class="badge rounded-pill" style="background: var(--terracotta);">{{ unread_message_count }}</span>{% endif %}</a></li>
-                            <li class="nav-item"><a class="nav-link nav-cta" href="{% url 'properties:create' %}"><i class="fas fa-plus me-1"></i> List Property</a></li>
-                        {% else %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'favourites:list' %}"><i class="fas fa-heart me-1"></i> Favourites</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'inspections:list' %}"><i class="fas fa-calendar-check me-1"></i> Inspections</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'messaging:inbox' %}"><i class="fas fa-comment-dots me-1"></i> Messages{% if unread_message_count %} <span class="badge rounded-pill" style="background: var(--terracotta);">{{ unread_message_count }}</span>{% endif %}</a></li>
-                        {% endif %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:logout' %}">Logout</a>
-                            {% if user.is_staff or user.role == 'SUPER_ADMIN' %}<span class="role-pill">Admin</span>{% elif user.is_agent %}<span class="role-pill">Agent</span>{% endif %}
+                        <!-- Notifications -->
+                        <li class="nav-item">
+                            <a class="notif-bell" href="{% url 'notifications:list' %}">
+                                <i class="far fa-bell"></i>
+                                {% if unread_notification_count %}<span class="notif-badge">{{ unread_notification_count }}</span>{% endif %}
+                            </a>
+                        </li>
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right: 0.5rem !important;">
+                                {% if user.profile_photo %}
+                                    <img src="{{ user.profile_photo.url }}" alt="{{ user.full_name_or_username }}" class="user-avatar">
+                                {% else %}
+                                    <div class="user-avatar-placeholder">{{ user.first_name|default:user.username|first|upper }}</div>
+                                {% endif %}
+                                <span class="d-none d-lg-inline small fw-semibold" style="color: var(--ink);">{{ user.first_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-9ja">
+                                <li class="dropdown-header">{{ user.full_name_or_username }}</li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:complete_profile' %}"><i class="far fa-user"></i> Profile</a></li>
+                                {% if user.is_staff or user.role == 'SUPER_ADMIN' %}
+                                    <li><a class="dropdown-item" href="{% url 'dashboard:admin' %}"><i class="fas fa-shield-halved"></i> Admin Dashboard</a></li>
+                                {% elif user.is_agent %}
+                                    <li><a class="dropdown-item" href="{% url 'properties:mine' %}"><i class="fas fa-list-check"></i> My Listings</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'properties:create' %}"><i class="fas fa-plus"></i> Add Property</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'favourites:list' %}"><i class="far fa-heart"></i> Favourites</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'inspections:list' %}"><i class="far fa-calendar-check"></i> Inspections</a></li>
+                                <li><a class="dropdown-item" href="{% url 'messaging:inbox' %}"><i class="far fa-comment-dots"></i> Messages{% if unread_message_count %} <span class="badge rounded-pill" style="background: var(--terracotta); font-size: 0.65rem;">{{ unread_message_count }}</span>{% endif %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'notifications:list' %}"><i class="far fa-bell"></i> Notifications{% if unread_notification_count %} <span class="badge rounded-pill" style="background: var(--terracotta); font-size: 0.65rem;">{{ unread_notification_count }}</span>{% endif %}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                                            <i class="fas fa-arrow-right-from-bracket"></i> Log Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
                         </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}"><i class="fas fa-user me-1"></i> Login</a></li>
-                        <li class="nav-item"><a class="nav-link nav-cta" href="{% url 'accounts:signup' %}"><i class="fas fa-user-plus me-1"></i> Sign Up Free</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Log in</a></li>
+                        <li class="nav-item"><a class="nav-link nav-cta" href="{% url 'accounts:signup' %}">Sign Up Free</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -176,7 +358,7 @@
         {% if messages %}
             <div class="container pt-4">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius: 10px;">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -194,7 +376,7 @@
                 </div>
                 <div class="col-md-6 text-md-end small">
                     <p class="mb-1">&copy; 2026 9jaRent.com.ng. All rights reserved.</p>
-                    <p class="mb-0">Built for renters and agents, state by state.</p>
+                    <p class="mb-0">Built for renters and agents, statewide.</p>
                 </div>
             </div>
         </div>

@@ -1,145 +1,76 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
-
 {% block title %}Application Status | 9jaRent{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body text-center p-5">
-                    {% if user.is_authenticated %}
-                        {% if user.is_pending_agent %}
-                            <div class="mb-4">
-                                <i class="fas fa-clock fa-4x text-warning"></i>
-                            </div>
-                            <h2 class="card-title mb-3">Application Pending</h2>
-                            <p class="card-text text-muted">
-                                Hi <strong>{{ user.full_name_or_username }}</strong>, your agent application has been submitted 
-                                and is awaiting administrator approval.
-                            </p>
-                            <div class="alert alert-info mt-4">
-                                <h5>What happens next?</h5>
-                                <ul class="text-start mb-0">
-                                    <li>Our team will review your application within 24-48 hours</li>
-                                    <li>You will receive a notification once approved</li>
-                                    <li>Once approved, you can start listing properties</li>
-                                </ul>
-                            </div>
-                            <div class="mt-4">
-                                <a href="{% url 'accounts:complete_profile' %}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user-edit me-2"></i>Update Profile
-                                </a>
-                                <a href="{% url 'properties:home' %}" class="btn btn-primary ms-2">
-                                    <i class="fas fa-home me-2"></i>Browse Properties
-                                </a>
-                            </div>
-                            
-                        {% elif user.is_rejected_agent %}
-                            <div class="mb-4">
-                                <i class="fas fa-times-circle fa-4x text-danger"></i>
-                            </div>
-                            <h2 class="card-title mb-3 text-danger">Application Rejected</h2>
-                            <p class="card-text text-muted">
-                                Hi <strong>{{ user.full_name_or_username }}</strong>, we regret to inform you that 
-                                your agent application was not approved at this time.
-                            </p>
-                            {% if user.rejection_reason %}
-                            <div class="alert alert-danger mt-4 text-start">
-                                <h5>Reason for rejection:</h5>
-                                <p class="mb-0">{{ user.rejection_reason }}</p>
-                            </div>
-                            {% endif %}
-                            <div class="alert alert-warning mt-3 text-start">
-                                <h5>You can:</h5>
-                                <ul class="mb-0">
-                                    <li>Update your profile information</li>
-                                    <li>Ensure all details are accurate</li>
-                                    <li>Contact support if you believe this was an error</li>
-                                </ul>
-                            </div>
-                            <div class="mt-4">
-                                <a href="{% url 'accounts:complete_profile' %}" class="btn btn-primary">
-                                    <i class="fas fa-user-edit me-2"></i>Update & Resubmit Profile
-                                </a>
-                            </div>
-                            
-                        {% elif user.is_suspended_agent %}
-                            <div class="mb-4">
-                                <i class="fas fa-ban fa-4x text-danger"></i>
-                            </div>
-                            <h2 class="card-title mb-3 text-danger">Account Suspended</h2>
-                            <p class="card-text text-muted">
-                                Hi <strong>{{ user.full_name_or_username }}</strong>, your agent account has been 
-                                temporarily suspended.
-                            </p>
-                            {% if user.rejection_reason %}
-                            <div class="alert alert-danger mt-4 text-start">
-                                <h5>Reason for suspension:</h5>
-                                <p class="mb-0">{{ user.rejection_reason }}</p>
-                            </div>
-                            {% endif %}
-                            <div class="mt-4">
-                                <a href="mailto:support@9jarent.com.ng" class="btn btn-outline-primary">
-                                    <i class="fas fa-envelope me-2"></i>Contact Support
-                                </a>
-                            </div>
-                            
-                        {% elif user.is_approved_agent %}
-                            <div class="mb-4">
-                                <i class="fas fa-check-circle fa-4x text-success"></i>
-                            </div>
-                            <h2 class="card-title mb-3 text-success">Application Approved!</h2>
-                            <p class="card-text text-muted">
-                                Congratulations <strong>{{ user.full_name_or_username }}</strong>! 
-                                Your agent application has been approved.
-                            </p>
-                            <div class="mt-4">
-                                <a href="{% url 'properties:mine' %}" class="btn btn-primary">
-                                    <i class="fas fa-list me-2"></i>Go to Dashboard
-                                </a>
-                                <a href="{% url 'properties:create' %}" class="btn btn-success ms-2">
-                                    <i class="fas fa-plus me-2"></i>Add Property
-                                </a>
-                            </div>
-                        {% else %}
-                            <div class="mb-4">
-                                <i class="fas fa-info-circle fa-4x text-info"></i>
-                            </div>
-                            <h2 class="card-title mb-3">Welcome to 9jaRent</h2>
-                            <p class="card-text text-muted">
-                                Your account is active. Start browsing properties or apply to become an agent.
-                            </p>
-                            <div class="mt-4">
-                                <a href="{% url 'properties:home' %}" class="btn btn-primary">
-                                    <i class="fas fa-home me-2"></i>Browse Properties
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="mb-4">
-                            <i class="fas fa-envelope-open-text fa-4x text-success"></i>
-                        </div>
-                        <h2 class="card-title mb-3">Application Submitted!</h2>
-                        <p class="card-text text-muted">
-                            Your agent application has been submitted and is awaiting administrator approval.
-                        </p>
-                        <div class="alert alert-info mt-4">
-                            <p class="mb-0">You can log in to check your application status once it has been reviewed.</p>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{% url 'accounts:login' %}" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i>Log In
-                            </a>
-                            <a href="{% url 'properties:home' %}" class="btn btn-outline-primary ms-2">
-                                <i class="fas fa-home me-2"></i>Back to Home
-                            </a>
-                        </div>
-                    {% endif %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 76px); background: #F8F9FA;">
+    <div class="text-center p-4" style="max-width: 480px;">
+        {% if user.is_authenticated %}
+            {% if user.is_pending_agent %}
+                <div class="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; background: #FFF3E0;">
+                    <i class="fas fa-clock" style="font-size: 2rem; color: #F2A93B;"></i>
                 </div>
+                <h3 class="fw-bold mb-2 display-font" style="font-size: 1.5rem;">Application Pending</h3>
+                <p class="text-muted mb-4">
+                    Hi <strong>{{ user.full_name_or_username }}</strong>, your agent application has been submitted 
+                    and is awaiting administrator approval.
+                </p>
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 12px; text-align: left;">
+                    <h6 class="fw-bold mb-3">What happens next?</h6>
+                    <ul class="list-unstyled text-muted small mb-0">
+                        <li class="mb-2 d-flex gap-2">
+                            <i class="fas fa-check-circle mt-1" style="color: #0B6E4F;"></i>
+                            <span>Our team will review your application within 24-48 hours</span>
+                        </li>
+                        <li class="mb-2 d-flex gap-2">
+                            <i class="fas fa-check-circle mt-1" style="color: #0B6E4F;"></i>
+                            <span>You will receive a notification once approved</span>
+                        </li>
+                        <li class="mb-0 d-flex gap-2">
+                            <i class="fas fa-check-circle mt-1" style="color: #0B6E4F;"></i>
+                            <span>Once approved, you can start listing properties</span>
+                        </li>
+                    </ul>
+                </div>
+                <a href="{% url 'properties:home' %}" class="btn btn-amber w-100 py-2" style="border-radius: 10px; font-weight: 600;">Browse Properties</a>
+                
+            {% elif user.is_rejected_agent %}
+                <div class="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; background: #FEE2E2;">
+                    <i class="fas fa-xmark" style="font-size: 2rem; color: #DC3545;"></i>
+                </div>
+                <h3 class="fw-bold mb-2 display-font" style="font-size: 1.5rem; color: #DC3545;">Application Rejected</h3>
+                <p class="text-muted mb-3">Unfortunately, your agent application was not approved.</p>
+                {% if user.rejection_reason %}
+                <div class="alert alert-danger text-start small" style="border-radius: 10px;">
+                    <strong>Reason:</strong> {{ user.rejection_reason }}
+                </div>
+                {% endif %}
+                <p class="text-muted small mb-4">You may update your profile and reapply if you believe this was an error.</p>
+                <a href="{% url 'accounts:complete_profile' %}" class="btn btn-amber w-100 py-2 mb-2" style="border-radius: 10px; font-weight: 600;">Update Profile</a>
+                
+            {% elif user.is_suspended_agent %}
+                <div class="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; background: #FEE2E2;">
+                    <i class="fas fa-ban" style="font-size: 2rem; color: #DC3545;"></i>
+                </div>
+                <h3 class="fw-bold mb-2 display-font" style="font-size: 1.5rem; color: #DC3545;">Account Suspended</h3>
+                <p class="text-muted mb-3">Your agent account has been suspended.</p>
+                {% if user.rejection_reason %}
+                <div class="alert alert-danger text-start small" style="border-radius: 10px;">
+                    <strong>Reason:</strong> {{ user.rejection_reason }}
+                </div>
+                {% endif %}
+                <p class="text-muted small">Please contact support for assistance.</p>
+            {% endif %}
+        {% else %}
+            <div class="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+                 style="width: 80px; height: 80px; background: #E7EFE6;">
+                <i class="fas fa-paper-plane" style="font-size: 2rem; color: #0B6E4F;"></i>
             </div>
-        </div>
+            <h3 class="fw-bold mb-2 display-font" style="font-size: 1.5rem;">Application Submitted</h3>
+            <p class="text-muted mb-4">Your agent application has been submitted and is awaiting review. You can log in to check your status.</p>
+            <a href="{% url 'accounts:login' %}" class="btn btn-amber w-100 py-2" style="border-radius: 10px; font-weight: 600;">Log In</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

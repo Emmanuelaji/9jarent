@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Registration Successful | 9jaRent{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 76px); background: linear-gradient(180deg, #0B3D2E 0%, #0B6E4F 100%);">
+    <div class="text-center text-white p-4" style="max-width: 400px;">
+        <!-- Animated checkmark -->
+        <div class="mb-4 position-relative d-inline-block">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                 style="width: 80px; height: 80px; background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-check" style="font-size: 2rem; color: #fff;"></i>
+            </div>
+            <!-- Decorative dots -->
+            <div class="position-absolute" style="top: -5px; left: -10px; width: 6px; height: 6px; background: #F2A93B; border-radius: 50%;"></div>
+            <div class="position-absolute" style="top: 10px; right: -15px; width: 4px; height: 4px; background: rgba(255,255,255,0.5); border-radius: 50%;"></div>
+            <div class="position-absolute" style="bottom: 5px; left: -15px; width: 5px; height: 5px; background: rgba(255,255,255,0.4); border-radius: 50%;"></div>
+        </div>
+        
+        <h2 class="display-font mb-3" style="color: #fff; font-size: 1.75rem;">Registration Successful!</h2>
+        <p class="mb-1" style="color: rgba(255,255,255,0.8);">Your account has been created successfully.</p>
+        <p class="mb-4" style="color: rgba(255,255,255,0.8);">You can now log in to your account.</p>
+        
+        <a href="{% url 'accounts:login' %}" class="btn btn-amber w-100 py-2 mb-4" style="border-radius: 10px; font-weight: 600;">Go to Login</a>
+        
+        <p class="small mb-0" style="color: rgba(255,255,255,0.6);">Welcome to 9jaRent! 🎉</p>
+    </div>
+</div>
+{% endblock %}

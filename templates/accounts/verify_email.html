@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Verify Your Email | 9jaRent{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 76px); background: #F8F9FA;">
+    <div class="text-center p-4" style="max-width: 420px;">
+        <!-- Email icon -->
+        <div class="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center" 
+             style="width: 80px; height: 80px; background: #E7EFE6;">
+            <i class="fas fa-envelope-open-text" style="font-size: 2rem; color: #0B6E4F;"></i>
+            <div class="position-absolute" style="margin-top: 25px; margin-left: 25px; width: 24px; height: 24px; background: #0B6E4F; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff;">
+                <i class="fas fa-check" style="color: #fff; font-size: 0.6rem;"></i>
+            </div>
+        </div>
+        
+        <h3 class="fw-bold mb-2 display-font" style="font-size: 1.5rem;">Verify Your Email</h3>
+        <p class="text-muted mb-1">We've sent a verification link to</p>
+        <p class="fw-semibold mb-3" style="color: var(--ink);">{{ email|default:"john.doe@email.com" }}</p>
+        <p class="text-muted small mb-4">Please check your inbox and click the link to verify your email address.</p>
+        
+        <!-- Resend box -->
+        <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 12px;">
+            <p class="fw-semibold small mb-2" style="color: var(--ink);">Didn't receive the email?</p>
+            <p class="text-muted small mb-3">Check your spam folder or click below to resend the verification email.</p>
+            <form method="post" action="#">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success w-100 py-2" style="border-radius: 10px; border-color: #0B6E4F; color: #0B6E4F; font-weight: 600;">
+                    <i class="fas fa-rotate-right me-2"></i>Resend Email
+                </button>
+            </form>
+        </div>
+        
+        <a href="{% url 'accounts:login' %}" class="small fw-semibold" style="color: #0B6E4F;">Back to login</a>
+    </div>
+</div>
+{% endblock %}

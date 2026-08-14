@@ -109,7 +109,7 @@ class RenterSignUpView(CreateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('properties:home')
+        return reverse_lazy('accounts:signup_success')
 
 
 class AgentPendingView(TemplateView):
@@ -187,3 +187,9 @@ class AgentPublicProfileView(DetailView):
             .aggregate(total_views=models.Sum('views'))['total_views'] or 0
         )
         return context
+
+
+
+class SignUpSuccessView(TemplateView):
+    """Registration success page shown after renter signup."""
+    template_name = 'accounts/signup_success.html'

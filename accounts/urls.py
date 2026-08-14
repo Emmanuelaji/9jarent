@@ -4,7 +4,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import (
     RoleBasedLoginView, AgentSignUpView, RenterSignUpView, AccountTypeChoiceView,
-    CompleteProfileView, AgentPendingView, AgentPublicProfileView,
+    CompleteProfileView, AgentPendingView, AgentPublicProfileView, SignUpSuccessView,
 )
 
 app_name = 'accounts'
@@ -31,5 +31,7 @@ urlpatterns = [
     path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(
         template_name='accounts/password_reset_complete.html'
     ), name='password_reset_complete'),
+    
+    path('signup/success/', SignUpSuccessView.as_view(), name='signup_success'),
     path('agents/<slug:username>/', AgentPublicProfileView.as_view(), name='agent_public_profile'),
 ]

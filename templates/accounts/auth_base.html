@@ -1,38 +1,66 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row g-0" style="min-height: calc(100vh - 76px);">
-    <!-- Left Sidebar -->
-    <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-center p-5" style="background: linear-gradient(180deg, #0B3D2E 0%, #0B6E4F 100%); color: #fff;">
-        <div class="mb-auto pt-4">
-            <p class="text-uppercase small fw-semibold mb-2" style="color: #F2A93B; letter-spacing: 0.08em;">9jaRent.com.ng</p>
+<div class="container-fluid p-0">
+    <div class="row g-0" style="min-height: 100vh;">
+        <!-- Left Sidebar - Green with interior image -->
+        <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-between p-5 position-relative" 
+             style="background: linear-gradient(180deg, #0B3D2E 0%, #0B6E4F 100%); color: #fff; min-height: 100vh;">
+            <!-- Background image overlay -->
+            <div class="position-absolute top-0 start-0 w-100 h-100" 
+                 style="background: url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80') center/cover no-repeat; opacity: 0.15;"></div>
+            
+            <div class="position-relative" style="z-index: 1;">
+                <p class="text-uppercase small fw-semibold mb-0" style="color: #F2A93B; letter-spacing: 0.08em;">9jaRent.com.ng</p>
+            </div>
+            
+            <div class="position-relative" style="z-index: 1;">
+                <h1 class="display-font mb-4" style="font-size: 2.6rem; line-height: 1.15; color: #fff;">
+                    Find a place,<br>message the agent,<br><span style="color: #F2A93B;">move in.</span>
+                </h1>
+                <p class="mb-4" style="color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 360px;">
+                    Connecting renters directly with verified agents across Nigeria.
+                </p>
+                <ul class="list-unstyled" style="color: rgba(255,255,255,0.9);">
+                    <li class="mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-check-circle" style="color: #F2A93B;"></i>
+                        <span>Verified agents</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-check-circle" style="color: #F2A93B;"></i>
+                        <span>Real properties</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-check-circle" style="color: #F2A93B;"></i>
+                        <span>Direct communication</span>
+                    </li>
+                    <li class="mb-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-check-circle" style="color: #F2A93B;"></i>
+                        <span>No middlemen</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="position-relative" style="z-index: 1;">
+                <!-- Interior illustration at bottom -->
+                <div class="rounded-3 overflow-hidden" style="max-width: 320px;">
+                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80" 
+                         alt="Interior" class="w-100" style="opacity: 0.6; border-radius: 12px;">
+                </div>
+            </div>
         </div>
-        <div class="mb-4">
-            <h1 class="display-font mb-4" style="font-size: 2.6rem; line-height: 1.15; color: #fff;">Find a place, message the agent, <span style="color: #F2A93B;">move in.</span></h1>
-            <p class="mb-4" style="color: rgba(255,255,255,0.75); font-size: 1rem;">Connecting renters directly with verified agents across Nigeria.</p>
-            <ul class="list-unstyled" style="color: rgba(255,255,255,0.9);">
-                <li class="mb-3">
-                    <i class="bi bi-check-circle-fill me-2" style="color: #F2A93B;"></i>Browse verified listings
-                </li>
-                <li class="mb-3">
-                    <i class="bi bi-check-circle-fill me-2" style="color: #F2A93B;"></i>Message agents directly
-                </li>
-                <li class="mb-3">
-                    <i class="bi bi-check-circle-fill me-2" style="color: #F2A93B;"></i>Secure your rental quickly
-                </li>
-            </ul>
-        </div>
-        <div class="mt-auto pb-4">
-            <p class="text-muted small" style="color: rgba(255,255,255,0.6);">© 2026 9jaRent. All rights reserved.</p>
-        </div>
-    </div>
-
-    <!-- Right Content Area -->
-    <div class="col-lg-7 d-flex align-items-center justify-content-center p-4 py-5" style="background: #F8F9FA;">
-        <div style="max-width: 460px; width: 100%;">
-            {% block auth_content %}
-            <!-- Child templates will override this block -->
-            {% endblock %}
+        
+        <!-- Right Content -->
+        <div class="col-lg-7 d-flex align-items-center justify-content-center p-4 p-md-5" style="background: #fff;">
+            <div style="max-width: 440px; width: 100%;">
+                <!-- Logo for mobile -->
+                <div class="text-center mb-4 d-lg-none">
+                    <span class="display-font" style="font-size: 1.5rem; font-weight: 700;">
+                        <span style="color: #0B3D2E;">9ja</span><span style="color: #F2A93B;">Rent</span><span style="color: #0B3D2E;">.com.ng</span>
+                    </span>
+                </div>
+                {% block auth_content %}{% endblock %}
+            </div>
         </div>
     </div>
 </div>

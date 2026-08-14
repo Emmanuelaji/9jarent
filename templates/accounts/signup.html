@@ -1,66 +1,102 @@
-{% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% extends 'accounts/auth_base.html' %}
+{% block title %}Create Agent Account | 9jaRent{% endblock %}
 
-{% block title %}Agent Registration | 9jaRent{% endblock %}
+{% block auth_content %}
+<div class="text-center mb-4">
+    <h3 class="fw-bold mb-1 display-font" style="font-size: 1.5rem;">Create Agent Account</h3>
+    <p class="text-muted" style="font-size: 0.9rem;">Register your agency and start listing properties.</p>
+</div>
 
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark-green text-white">
-                    <h4 class="mb-0"><i class="fas fa-user-tie me-2"></i>Agent Registration</h4>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted mb-4">
-                        Register as a property agent on 9jaRent. Your application will be reviewed 
-                        by our team before approval.
-                    </p>
-                    
-                    <form method="post" enctype="multipart/form-data" novalidate>
-                        {% csrf_token %}
-                        
-                        <h5 class="border-bottom pb-2 mb-3">Account Information</h5>
-                        {{ form.username|as_crispy_field }}
-                        <div class="row">
-                            <div class="col-md-6">{{ form.first_name|as_crispy_field }}</div>
-                            <div class="col-md-6">{{ form.last_name|as_crispy_field }}</div>
-                        </div>
-                        {{ form.email|as_crispy_field }}
-                        <div class="row">
-                            <div class="col-md-6">{{ form.password1|as_crispy_field }}</div>
-                            <div class="col-md-6">{{ form.password2|as_crispy_field }}</div>
-                        </div>
-                        
-                        <h5 class="border-bottom pb-2 mb-3 mt-4">Contact Details</h5>
-                        <div class="row">
-                            <div class="col-md-6">{{ form.phone|as_crispy_field }}</div>
-                            <div class="col-md-6">{{ form.whatsapp_number|as_crispy_field }}</div>
-                        </div>
-                        
-                        <h5 class="border-bottom pb-2 mb-3 mt-4">Agency Information</h5>
-                        {{ form.company_name|as_crispy_field }}
-                        <div class="row">
-                            <div class="col-md-6">{{ form.state|as_crispy_field }}</div>
-                            <div class="col-md-6">{{ form.city|as_crispy_field }}</div>
-                        </div>
-                        {{ form.office_address|as_crispy_field }}
-                        {{ form.bio|as_crispy_field }}
-                        
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-paper-plane me-2"></i>Submit Application
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <hr class="my-4">
-                    <p class="text-center text-muted mb-0">
-                        Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
-                    </p>
-                </div>
-            </div>
+<!-- Step Indicator -->
+<div class="d-flex justify-content-center align-items-center gap-2 mb-5">
+    <div class="text-center">
+        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" 
+             style="width: 36px; height: 36px; background: var(--emerald); color: #fff; font-size: 0.85rem;">
+            <i class="fas fa-building"></i>
         </div>
+        <small class="fw-semibold" style="color: var(--emerald); font-size: 0.75rem;">Agency Info</small>
+    </div>
+    <div style="width: 40px; height: 2px; background: var(--border-light);"></div>
+    <div class="text-center">
+        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" 
+             style="width: 36px; height: 36px; background: #E9ECEF; color: var(--ink-soft); font-size: 0.85rem;">
+            <i class="fas fa-envelope"></i>
+        </div>
+        <small class="fw-semibold text-muted" style="font-size: 0.75rem;">Verification</small>
+    </div>
+    <div style="width: 40px; height: 2px; background: var(--border-light);"></div>
+    <div class="text-center">
+        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" 
+             style="width: 36px; height: 36px; background: #E9ECEF; color: var(--ink-soft); font-size: 0.85rem;">
+            <i class="fas fa-user-check"></i>
+        </div>
+        <small class="fw-semibold text-muted" style="font-size: 0.75rem;">Account Setup</small>
     </div>
 </div>
+
+<form method="post" enctype="multipart/form-data" action="{% url 'accounts:agent_signup' %}" novalidate>
+    {% csrf_token %}
+    
+    <h6 class="fw-bold mb-3" style="color: var(--ink);">Agency Information</h6>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label-9ja">Agency / Company Name</label>
+            <input type="text" name="company_name" class="form-control form-control-9ja" placeholder="Enter agency name">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label-9ja">State</label>
+            <select name="state" class="form-select form-control-9ja" style="padding: 0.75rem 1rem;">
+                <option value="">Select state</option>
+                <option value="Lagos">Lagos</option>
+                <option value="Abuja">Abuja</option>
+                <option value="Oyo">Oyo</option>
+                <option value="Rivers">Rivers</option>
+                <option value="Kano">Kano</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label-9ja">City</label>
+            <select name="city" class="form-select form-control-9ja" style="padding: 0.75rem 1rem;">
+                <option value="">Select city</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label-9ja">Office Address</label>
+            <input type="text" name="office_address" class="form-control form-control-9ja" placeholder="Enter office address">
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label-9ja">Phone Number</label>
+            <input type="tel" name="phone" class="form-control form-control-9ja" placeholder="080 1234 5678" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label-9ja">WhatsApp Number</label>
+            <input type="tel" name="whatsapp_number" class="form-control form-control-9ja" placeholder="080 1234 5678" required>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <label class="form-label-9ja">Agency Description</label>
+        <textarea name="bio" class="form-control form-control-9ja" rows="3" placeholder="Tell us about your agency..." maxlength="500"></textarea>
+        <div class="text-end small text-muted mt-1">0/500</div>
+    </div>
+    
+    <!-- Hidden fields for step 2/3 -->
+    <input type="hidden" name="username" value="">
+    <input type="hidden" name="email" value="">
+    <input type="hidden" name="first_name" value="">
+    <input type="hidden" name="password1" value="">
+    <input type="hidden" name="password2" value="">
+    
+    <div class="d-flex gap-3">
+        <a href="{% url 'accounts:signup' %}" class="btn btn-outline-secondary flex-fill py-2" style="border-radius: 10px;">Cancel</a>
+        <button type="submit" class="btn btn-amber flex-fill py-2" style="border-radius: 10px; font-weight: 600;">Next: Verification</button>
+    </div>
+</form>
 {% endblock %}

@@ -1,17 +1,16 @@
-
 {% extends 'accounts/auth_base.html' %}
 {% block title %}Create Renter Account | 9jaRent{% endblock %}
 
 {% block auth_content %}
 <div class="text-center mb-4">
-    <h3 class="fw-bold mb-1" style="font-size: 1.5rem;">Create Renter Account</h3>
+    <h3 class="fw-bold mb-1 display-font" style="font-size: 1.5rem;">Create Renter Account</h3>
     <p class="text-muted" style="font-size: 0.9rem;">Join thousands of renters finding their perfect homes.</p>
 </div>
 
 <!-- Email/Phone Toggle -->
-<div class="d-flex bg-white rounded-pill p-1 mb-4 shadow-sm" style="border: 1px solid #E9ECEF;">
-    <button type="button" class="btn btn-sm flex-fill fw-semibold" id="emailTab" style="border-radius: 20px; background: #0B3D2E; color: #fff;">Email</button>
-    <button type="button" class="btn btn-sm flex-fill fw-semibold text-muted" id="phoneTab" style="border-radius: 20px; background: transparent;">Phone</button>
+<div class="toggle-tabs mb-4">
+    <button type="button" class="toggle-tab active" id="emailTab" onclick="switchTab('email')">Email</button>
+    <button type="button" class="toggle-tab" id="phoneTab" onclick="switchTab('phone')">Phone</button>
 </div>
 
 <form method="post" action="{% url 'accounts:renter_signup' %}">
@@ -19,40 +18,40 @@
     
     <!-- Full Name -->
     <div class="mb-3">
-        <label class="form-label fw-semibold small">Full Name</label>
-        <input type="text" name="first_name" class="form-control form-control-lg" placeholder="Enter your full name" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem;" required>
+        <label class="form-label-9ja">Full Name</label>
+        <input type="text" name="first_name" class="form-control form-control-9ja" placeholder="Enter your full name" required>
     </div>
     
     <!-- Email -->
-    <div class="mb-3">
-        <label class="form-label fw-semibold small">Email Address</label>
-        <input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email address" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem;" required>
+    <div id="emailField">
+        <label class="form-label-9ja">Email Address</label>
+        <input type="email" name="email" class="form-control form-control-9ja mb-3" placeholder="Enter your email address" required>
     </div>
     
-    <!-- Phone (Optional) -->
-    <div class="mb-3">
-        <label class="form-label fw-semibold small">Phone Number <span class="text-muted fw-normal">(Optional)</span></label>
-        <input type="tel" name="phone" class="form-control form-control-lg" placeholder="080 1234 5678" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem;">
+    <!-- Phone -->
+    <div id="phoneField" style="display: none;">
+        <label class="form-label-9ja">Phone Number</label>
+        <input type="tel" name="phone" class="form-control form-control-9ja mb-3" placeholder="080 1234 5678">
     </div>
     
     <!-- Password -->
     <div class="mb-3">
-        <label class="form-label fw-semibold small">Password</label>
+        <label class="form-label-9ja">Password</label>
         <div class="position-relative">
-            <input type="password" name="password1" id="signupPassword" class="form-control form-control-lg" placeholder="Create a password" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem; padding-right: 40px;" required>
-            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted" style="padding: 0.5rem;" onclick="togglePassword('signupPassword', this)">
-                <i class="far fa-eye"></i>
+            <input type="password" name="password1" id="signupPassword" class="form-control form-control-9ja" placeholder="Create a password" required>
+            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2" onclick="togglePassword('signupPassword')" style="color: var(--ink-soft); padding: 0;">
+                <i class="far fa-eye" id="signupPasswordEye"></i>
             </button>
         </div>
     </div>
     
     <!-- Confirm Password -->
     <div class="mb-3">
-        <label class="form-label fw-semibold small">Confirm Password</label>
+        <label class="form-label-9ja">Confirm Password</label>
         <div class="position-relative">
-            <input type="password" name="password2" id="confirmPassword" class="form-control form-control-lg" placeholder="Confirm your password" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem; padding-right: 40px;" required>
-            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted" style="padding: 0.5rem;" onclick="togglePassword('confirmPassword', this)">
-                <i class="far fa-eye"></i>
+            <input type="password" name="password2" id="confirmPassword" class="form-control form-control-9ja" placeholder="Confirm your password" required>
+            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2" onclick="togglePassword('confirmPassword')" style="color: var(--ink-soft); padding: 0;">
+                <i class="far fa-eye" id="confirmPasswordEye"></i>
             </button>
         </div>
     </div>
@@ -60,31 +59,55 @@
     <!-- Terms -->
     <div class="mb-4">
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="terms" id="termsCheck" style="border-color: #E9ECEF;" required>
-            <label class="form-check-label small text-muted" for="termsCheck">
-                I agree to the <a href="#" style="color: #0B6E4F;">Terms & Conditions</a> and <a href="#" style="color: #0B6E4F;">Privacy Policy</a>
+            <input class="form-check-input" type="checkbox" name="agree_terms" id="agreeTerms" required style="border-color: var(--border-light);">
+            <label class="form-check-label small text-muted" for="agreeTerms">
+                I agree to the <a href="#" style="color: var(--emerald);">Terms & Conditions</a> and <a href="#" style="color: var(--emerald);">Privacy Policy</a>
             </label>
         </div>
     </div>
     
-    <!-- Submit -->
-    <button type="submit" class="btn w-100 fw-bold mb-4" style="background: #F2A93B; color: #fff; border-radius: 10px; padding: 0.85rem; font-size: 1rem;">Create Account</button>
-    
-    <p class="text-center text-muted small mb-0">Already have an account? <a href="{% url 'accounts:login' %}" style="color: #0B6E4F; font-weight: 600; text-decoration: none;">Log in</a></p>
+    <button type="submit" class="btn btn-amber w-100 py-2 mb-3" style="border-radius: 10px; font-weight: 600;">Create Account</button>
 </form>
 
+<p class="text-center small text-muted mb-0">
+    Already have an account? <a href="{% url 'accounts:login' %}" class="fw-semibold" style="color: var(--emerald);">Log in</a>
+</p>
+
 <script>
-function togglePassword(fieldId, btn) {
+function switchTab(tab) {
+    const emailTab = document.getElementById('emailTab');
+    const phoneTab = document.getElementById('phoneTab');
+    const emailField = document.getElementById('emailField');
+    const phoneField = document.getElementById('phoneField');
+    
+    if (tab === 'email') {
+        emailTab.classList.add('active');
+        phoneTab.classList.remove('active');
+        emailField.style.display = 'block';
+        phoneField.style.display = 'none';
+        emailField.querySelector('input').required = true;
+        if (phoneField.querySelector('input')) phoneField.querySelector('input').required = false;
+    } else {
+        phoneTab.classList.add('active');
+        emailTab.classList.remove('active');
+        emailField.style.display = 'none';
+        phoneField.style.display = 'block';
+        if (emailField.querySelector('input')) emailField.querySelector('input').required = false;
+        phoneField.querySelector('input').required = true;
+    }
+}
+
+function togglePassword(fieldId) {
     const field = document.getElementById(fieldId);
-    const icon = btn.querySelector('i');
+    const eye = document.getElementById(fieldId + 'Eye');
     if (field.type === 'password') {
         field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        eye.classList.remove('fa-eye');
+        eye.classList.add('fa-eye-slash');
     } else {
         field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        eye.classList.remove('fa-eye-slash');
+        eye.classList.add('fa-eye');
     }
 }
 </script>
