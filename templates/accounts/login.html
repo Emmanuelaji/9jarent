@@ -1,22 +1,117 @@
+
 {% extends 'accounts/auth_base.html' %}
-{% load crispy_forms_tags %}
-{% block auth_headline %}Welcome back, agent.{% endblock %}
+{% block title %}Log In | 9jaRent{% endblock %}
+
 {% block auth_content %}
-<h3 class="display-font mb-1">Agent Login</h3>
-<p class="text-muted mb-4">Log in to manage your listings.</p>
-<a href="" class="btn btn-outline-secondary w-100 py-2 mb-3 d-flex align-items-center justify-content-center gap-2">
-    <i class="fab fa-google" style="color: #DB4437;"></i> Continue with Google
-</a>
-<div class="d-flex align-items-center mb-3">
-    <hr class="flex-grow-1"><span class="px-2 text-muted small">or</span><hr class="flex-grow-1">
+<div class="text-center mb-4">
+    <h3 class="fw-bold mb-1" style="font-size: 1.5rem;">Welcome Back</h3>
+    <p class="text-muted" style="font-size: 0.9rem;">Log in to your account to continue</p>
 </div>
-<form method="post">
+
+<!-- Email/Phone Toggle -->
+<div class="d-flex bg-white rounded-pill p-1 mb-4 shadow-sm" style="border: 1px solid #E9ECEF;">
+    <button type="button" class="btn btn-sm flex-fill fw-semibold" id="emailTab" style="border-radius: 20px; background: #0B3D2E; color: #fff;" onclick="switchTab('email')">Email</button>
+    <button type="button" class="btn btn-sm flex-fill fw-semibold text-muted" id="phoneTab" style="border-radius: 20px; background: transparent;" onclick="switchTab('phone')">Phone</button>
+</div>
+
+<form method="post" action="{% url 'accounts:login' %}">
     {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-nigeria w-100 mt-2 py-2">Login</button>
+    
+    <!-- Email Field -->
+    <div id="emailField" class="mb-3">
+        <label class="form-label fw-semibold small">Email Address</label>
+        <input type="email" name="username" class="form-control form-control-lg" placeholder="Enter your email address" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem;" required>
+    </div>
+    
+    <!-- Phone Field (hidden by default) -->
+    <div id="phoneField" class="mb-3" style="display: none;">
+        <label class="form-label fw-semibold small">Phone Number</label>
+        <input type="tel" name="phone" class="form-control form-control-lg" placeholder="080 1234 5678" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem;">
+    </div>
+    
+    <!-- Password -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold small">Password</label>
+        <div class="position-relative">
+            <input type="password" name="password" id="loginPassword" class="form-control form-control-lg" placeholder="Enter your password" style="border-radius: 10px; border: 1px solid #E9ECEF; font-size: 0.9rem; padding: 0.75rem 1rem; padding-right: 40px;" required>
+            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted" style="padding: 0.5rem;" onclick="togglePassword('loginPassword', this)">
+                <i class="far fa-eye"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Remember Me & Forgot Password -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="remember" id="rememberMe" style="border-color: #E9ECEF;">
+            <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+        </div>
+        <a href="{% url 'accounts:password_reset' %}" style="color: #0B6E4F; font-size: 0.85rem; font-weight: 500; text-decoration: none;">Forgot password?</a>
+    </div>
+    
+    <!-- Submit -->
+    <button type="submit" class="btn w-100 fw-bold mb-4" style="background: #F2A93B; color: #fff; border-radius: 10px; padding: 0.85rem; font-size: 1rem;">Log In</button>
+    
+    <!-- Divider -->
+    <div class="d-flex align-items-center mb-4">
+        <div class="flex-fill border-top" style="border-color: #E9ECEF;"></div>
+        <span class="px-3 text-muted small">or continue with</span>
+        <div class="flex-fill border-top" style="border-color: #E9ECEF;"></div>
+    </div>
+    
+    <!-- Social Login -->
+    <button type="button" class="btn btn-outline-secondary w-100 mb-2 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px; padding: 0.75rem; border-color: #E9ECEF; font-size: 0.9rem;">
+        <img src="https://www.google.com/favicon.ico" alt="" style="width: 18px; height: 18px;">
+        Continue with Google
+    </button>
+    <button type="button" class="btn btn-outline-secondary w-100 mb-4 d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px; padding: 0.75rem; border-color: #E9ECEF; font-size: 0.9rem;">
+        <i class="fab fa-apple" style="font-size: 1.1rem;"></i>
+        Continue with Apple
+    </button>
+    
+    <p class="text-center text-muted small mb-0">Don't have an account? <a href="{% url 'accounts:signup' %}" style="color: #0B6E4F; font-weight: 600; text-decoration: none;">Sign up</a></p>
 </form>
-<div class="d-flex justify-content-between align-items-center mt-3">
-    <a href="{% url 'accounts:password_reset' %}" class="small text-muted">Forgot password?</a>
-    <a href="{% url 'accounts:signup' %}" class="small fw-semibold text-nigeria">New agent? Create an account</a>
-</div>
+
+<script>
+function switchTab(tab) {
+    const emailTab = document.getElementById('emailTab');
+    const phoneTab = document.getElementById('phoneTab');
+    const emailField = document.getElementById('emailField');
+    const phoneField = document.getElementById('phoneField');
+    
+    if (tab === 'email') {
+        emailTab.style.background = '#0B3D2E';
+        emailTab.style.color = '#fff';
+        phoneTab.style.background = 'transparent';
+        phoneTab.style.color = '#6c757d';
+        emailField.style.display = 'block';
+        phoneField.style.display = 'none';
+        emailField.querySelector('input').required = true;
+        phoneField.querySelector('input').required = false;
+    } else {
+        phoneTab.style.background = '#0B3D2E';
+        phoneTab.style.color = '#fff';
+        emailTab.style.background = 'transparent';
+        emailTab.style.color = '#6c757d';
+        phoneField.style.display = 'block';
+        emailField.style.display = 'none';
+        phoneField.querySelector('input').required = true;
+        emailField.querySelector('input').required = false;
+    }
+}
+
+function togglePassword(fieldId, btn) {
+    const field = document.getElementById(fieldId);
+    const icon = btn.querySelector('i');
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %}

@@ -1,35 +1,54 @@
+
 {% extends 'base.html' %}
 {% block title %}Choose Account Type | 9jaRent{% endblock %}
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center text-center mb-4">
-        <div class="col-lg-6">
-            <h2 class="display-font mb-2">Choose Account Type</h2>
-            <p class="text-muted">Select how you want to use 9jaRent</p>
+<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 76px); background: #F8F9FA;">
+    <div class="text-center" style="max-width: 600px; width: 100%; padding: 2rem;">
+        <!-- Logo -->
+        <div class="mb-5">
+            <span class="display-font" style="font-size: 1.5rem; font-weight: 700;">
+                <span style="color: #0B3D2E;">9ja</span><span style="color: #F2A93B;">Rent</span><span style="color: #0B3D2E;">.com.ng</span>
+            </span>
         </div>
-    </div>
-    <div class="row justify-content-center g-4">
-        <div class="col-md-5">
-            <div class="card border-0 shadow-sm h-100 text-center p-4">
-                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:72px;height:72px;border-radius:50%;background:var(--sage);">
-                    <i class="fas fa-user fa-lg" style="color: var(--emerald);"></i>
+        
+        <h2 class="display-font mb-2" style="font-size: 1.75rem;">Choose Account Type</h2>
+        <p class="text-muted mb-5">Select how you want to use 9jaRent</p>
+        
+        <div class="row g-4 justify-content-center">
+            <!-- Renter Card -->
+            <div class="col-md-5">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" onclick="window.location.href='{% url "accounts:renter_signup" %}'">
+                    <div class="card-body p-4 text-center">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; border-radius: 50%; background: #E8F5E9;">
+                            <i class="fas fa-user" style="font-size: 1.5rem; color: #0B6E4F;"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">I'm a Renter</h5>
+                        <p class="text-muted small mb-3">Find and contact agents about properties.</p>
+                        <button class="btn btn-outline-success w-100" style="border-radius: 8px; font-weight: 600;">
+                            Choose Renter
+                        </button>
+                    </div>
                 </div>
-                <h4 class="display-font">I'm a Renter</h4>
-                <p class="text-muted mb-4">Find and contact agents about properties.</p>
-                <a href="{% url 'accounts:renter_signup' %}" class="btn btn-nigeria mt-auto">Choose Renter</a>
+            </div>
+            
+            <!-- Agent Card -->
+            <div class="col-md-5">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='';" onclick="window.location.href='{% url "accounts:agent_signup" %}'">
+                    <div class="card-body p-4 text-center">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; border-radius: 50%; background: #FFF3E0;">
+                            <i class="fas fa-briefcase" style="font-size: 1.5rem; color: #F2A93B;"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">I'm an Agent</h5>
+                        <p class="text-muted small mb-3">List properties and connect with potential renters.</p>
+                        <button class="btn btn-outline-warning w-100" style="border-radius: 8px; font-weight: 600; color: #F2A93B; border-color: #F2A93B;">
+                            Choose Agent
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="card border-0 shadow-sm h-100 text-center p-4">
-                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:72px;height:72px;border-radius:50%;background:#FDF0DC;">
-                    <i class="fas fa-briefcase fa-lg" style="color: var(--amber-dark);"></i>
-                </div>
-                <h4 class="display-font">I'm an Agent</h4>
-                <p class="text-muted mb-4">List properties and connect with potential renters.</p>
-                <a href="{% url 'accounts:agent_signup' %}" class="btn btn-amber mt-auto">Choose Agent</a>
-            </div>
-        </div>
+        
+        <p class="text-muted mt-4">Already have an account? <a href="{% url 'accounts:login' %}" style="color: #0B6E4F; font-weight: 600; text-decoration: none;">Log in</a></p>
     </div>
-    <p class="text-center text-muted mt-4">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
 </div>
 {% endblock %}

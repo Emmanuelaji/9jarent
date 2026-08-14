@@ -1,0 +1,636 @@
+INFO 2026-08-14 13:49:05,183 autoreload 5438 140431952123776 Watching for file changes with StatReloader
+INFO 2026-08-14 13:49:08,683 log 5438 140431889266368 "GET /dashboard/ HTTP/1.1" 200 39486
+INFO 2026-08-14 13:50:00,475 log 5438 140431807477440 "GET /agent/properties/ HTTP/1.1" 200 11326
+INFO 2026-08-14 13:50:03,931 log 5438 140431807477440 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19389
+INFO 2026-08-14 13:50:13,778 log 5438 140431799084736 "GET / HTTP/1.1" 200 14826
+WARNING 2026-08-14 13:50:14,272 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:50:14,273 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:50:18,223 log 5438 140431799084736 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19951
+INFO 2026-08-14 13:50:22,063 log 5438 140431799084736 "GET /reports/property/1/ HTTP/1.1" 200 11039
+INFO 2026-08-14 13:50:33,548 log 5438 140431799084736 "POST /reports/property/1/ HTTP/1.1" 200 11205
+INFO 2026-08-14 13:50:36,250 log 5438 140431799084736 "GET /properties/ HTTP/1.1" 200 14837
+INFO 2026-08-14 13:50:39,773 log 5438 140431799084736 "GET / HTTP/1.1" 200 14826
+INFO 2026-08-14 13:50:41,030 log 5438 140431799084736 "GET /messages/ HTTP/1.1" 200 10857
+INFO 2026-08-14 13:50:42,940 log 5438 140431799084736 "GET /messages/1/ HTTP/1.1" 200 16926
+INFO 2026-08-14 13:50:45,575 log 5438 140431799084736 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19951
+INFO 2026-08-14 13:50:55,130 log 5438 140431807477440 "GET /agent/properties/ HTTP/1.1" 200 11326
+INFO 2026-08-14 13:50:58,069 log 5438 140431807477440 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19389
+INFO 2026-08-14 13:51:04,547 log 5438 140431807477440 "GET / HTTP/1.1" 200 15041
+INFO 2026-08-14 13:51:08,358 log 5438 140431807477440 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19389
+INFO 2026-08-14 13:51:14,683 log 5438 140431807477440 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 13:51:18,282 log 5438 140431807477440 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 13:51:28,244 log 5438 140431799084736 "GET /inspections/ HTTP/1.1" 200 11693
+INFO 2026-08-14 13:51:30,366 log 5438 140431799084736 "GET /properties/ HTTP/1.1" 200 14837
+INFO 2026-08-14 13:51:32,269 log 5438 140431799084736 "GET / HTTP/1.1" 200 14826
+INFO 2026-08-14 13:51:37,384 log 5438 140431807477440 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 13:52:01,976 log 5438 140431799084736 "GET / HTTP/1.1" 200 13879
+INFO 2026-08-14 13:52:06,019 log 5438 140431799084736 "GET /media/property_images/2312022.jpg HTTP/1.1" 200 430280
+WARNING 2026-08-14 13:52:08,261 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:52:08,263 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:52:14,335 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 200 10512
+WARNING 2026-08-14 13:52:18,576 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:52:20,962 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+INFO 2026-08-14 13:53:50,683 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:53:52,235 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:53:52,237 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:53:54,848 log 5438 140431799084736 "GET /accounts/signup/agent/ HTTP/1.1" 200 20130
+INFO 2026-08-14 13:54:02,106 log 5438 140431799084736 "GET /accounts/signup/agent/ HTTP/1.1" 200 20130
+WARNING 2026-08-14 13:54:03,513 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:54:03,515 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:54:22,894 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:54:24,184 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:54:26,104 log 5438 140431799084736 "GET /accounts/signup/renter/ HTTP/1.1" 200 13608
+INFO 2026-08-14 13:55:47,347 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 200 10512
+INFO 2026-08-14 13:55:54,774 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:55:56,010 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:55:57,494 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 200 10512
+INFO 2026-08-14 13:56:00,058 log 5438 140431799084736 "GET /accounts/password-reset/ HTTP/1.1" 200 9655
+INFO 2026-08-14 13:56:03,979 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 200 10512
+WARNING 2026-08-14 13:56:05,232 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:56:05,233 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:56:10,473 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:56:11,713 log 5438 140431799084736 Not Found: /favicon.ico
+WARNING 2026-08-14 13:56:11,714 log 5438 140431799084736 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 13:56:13,063 log 5438 140431799084736 "GET /accounts/signup/agent/ HTTP/1.1" 200 20130
+INFO 2026-08-14 13:56:16,963 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 200 10512
+INFO 2026-08-14 13:56:19,590 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+INFO 2026-08-14 13:56:24,471 log 5438 140431799084736 "GET /accounts/signup/renter/ HTTP/1.1" 200 13608
+ERROR 2026-08-14 13:57:45,206 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'choose_account' not found. 'choose_account' is not a valid view function or pattern name.
+ERROR 2026-08-14 13:57:45,227 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 196832
+WARNING 2026-08-14 13:57:48,165 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:57:59,758 log 5438 140431799084736 "GET /accounts/signup/renter/ HTTP/1.1" 200 13608
+INFO 2026-08-14 13:58:03,355 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:58:04,814 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:58:06,640 log 5438 140431799084736 "GET /accounts/signup/renter/ HTTP/1.1" 200 13608
+INFO 2026-08-14 13:58:10,153 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 9173
+WARNING 2026-08-14 13:58:12,492 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 13:58:47,239 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 10851
+WARNING 2026-08-14 13:58:49,354 log 5438 140431799084736 Not Found: /favicon.ico
+ERROR 2026-08-14 13:59:00,919 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'choose_account' not found. 'choose_account' is not a valid view function or pattern name.
+ERROR 2026-08-14 13:59:00,936 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 196825
+INFO 2026-08-14 13:59:46,166 log 5438 140431799084736 "GET /accounts/signup/ HTTP/1.1" 200 10851
+ERROR 2026-08-14 13:59:53,318 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 607, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 674, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Template: /home/breeze/Desktop/9jarent/templates/accounts/auth_base.html, Unclosed tag on line 2: 'block'. Looking for one of: endblock.
+ERROR 2026-08-14 13:59:53,376 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 191703
+ERROR 2026-08-14 14:00:32,916 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 607, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 674, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Template: /home/breeze/Desktop/9jarent/templates/accounts/auth_base.html, Unclosed tag on line 2: 'block'. Looking for one of: endblock.
+ERROR 2026-08-14 14:00:32,945 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 191703
+ERROR 2026-08-14 14:02:22,660 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 307, in do_extends
+    nodelist = parser.parse()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 602, in parse
+    raise self.error(token, e)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 235, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 607, in parse
+    self.unclosed_block_tag(parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 674, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Template: /home/breeze/Desktop/9jarent/templates/accounts/auth_base.html, Unclosed tag on line 2: 'block'. Looking for one of: endblock.
+ERROR 2026-08-14 14:02:22,723 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 191897
+WARNING 2026-08-14 14:02:32,141 log 5438 140431799084736 Not Found: /favicon.ico
+ERROR 2026-08-14 14:05:07,570 log 5438 140431799084736 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'choose_account' not found. 'choose_account' is not a valid view function or pattern name.
+ERROR 2026-08-14 14:05:07,585 log 5438 140431799084736 "GET /accounts/login/ HTTP/1.1" 500 195076
+WARNING 2026-08-14 14:05:09,816 log 5438 140431799084736 Not Found: /favicon.ico
+INFO 2026-08-14 14:05:50,155 log 5438 140431799084736 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 14:06:05,841 log 5438 140431799084736 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 14:06:06,618 log 5438 140431799084736 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 14:06:10,163 log 5438 140431799084736 "GET /agent/properties/ HTTP/1.1" 200 11326
+INFO 2026-08-14 14:06:11,822 log 5438 140431799084736 "GET /messages/ HTTP/1.1" 200 11066
+INFO 2026-08-14 14:06:13,255 log 5438 140431799084736 "GET /agent/properties/ HTTP/1.1" 200 11326
+INFO 2026-08-14 14:06:15,183 log 5438 140431799084736 "GET /messages/ HTTP/1.1" 200 11066
+INFO 2026-08-14 14:06:16,851 log 5438 140431799084736 "GET /properties/ HTTP/1.1" 200 15052
+INFO 2026-08-14 14:06:19,280 log 5438 140431799084736 "GET /properties/plateau-jos-north-bungalow-63f54542/ HTTP/1.1" 200 19389
+INFO 2026-08-14 14:06:20,736 log 5438 140431799084736 "GET /accounts/agents/breeze/ HTTP/1.1" 200 11543
+INFO 2026-08-14 14:09:17,432 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15073
+INFO 2026-08-14 14:09:31,519 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15073
+WARNING 2026-08-14 14:09:34,392 log 5438 140431807477440 Not Found: /favicon.ico
+INFO 2026-08-14 14:09:36,516 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15073
+WARNING 2026-08-14 14:09:38,470 log 5438 140431807477440 Not Found: /favicon.ico
+INFO 2026-08-14 14:09:41,173 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15073
+INFO 2026-08-14 14:09:49,203 log 5438 140431807477440 "GET /accounts/password-reset/ HTTP/1.1" 200 10057
+WARNING 2026-08-14 14:09:50,895 log 5438 140431807477440 Not Found: /favicon.ico
+INFO 2026-08-14 14:09:53,729 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15073
+INFO 2026-08-14 14:10:18,885 log 5438 140431807477440 "POST /accounts/login/ HTTP/1.1" 302 0
+INFO 2026-08-14 14:10:19,014 log 5438 140431807477440 "GET / HTTP/1.1" 200 14826
+WARNING 2026-08-14 14:10:21,120 log 5438 140431807477440 Not Found: /favicon.ico
+WARNING 2026-08-14 14:10:22,766 log 5438 140431807477440 Method Not Allowed (GET): /accounts/logout/
+WARNING 2026-08-14 14:10:22,769 log 5438 140431807477440 "GET /accounts/logout/ HTTP/1.1" 405 0
+INFO 2026-08-14 14:10:32,180 log 5438 140431807477440 "GET /messages/ HTTP/1.1" 302 0
+INFO 2026-08-14 14:10:32,590 log 5438 140431807477440 "GET /accounts/login/?next=/messages/ HTTP/1.1" 200 15073
+WARNING 2026-08-14 14:10:36,163 log 5438 140431807477440 Not Found: /favicon.ico
+WARNING 2026-08-14 14:10:36,166 log 5438 140431807477440 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 14:13:29,149 log 5438 140431807477440 "GET /accounts/login/?next=/messages/ HTTP/1.1" 200 10898
+WARNING 2026-08-14 14:13:31,507 log 5438 140431807477440 Not Found: /favicon.ico
+INFO 2026-08-14 14:13:36,390 log 5438 140431807477440 "GET /accounts/signup/ HTTP/1.1" 200 10851
+WARNING 2026-08-14 14:13:37,892 log 5438 140431807477440 Not Found: /favicon.ico
+WARNING 2026-08-14 14:13:37,897 log 5438 140431807477440 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 14:13:43,989 log 5438 140431807477440 "GET /accounts/signup/renter/ HTTP/1.1" 200 13977
+WARNING 2026-08-14 14:13:45,577 log 5438 140431807477440 Not Found: /favicon.ico
+INFO 2026-08-14 14:13:48,543 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 10898
+ERROR 2026-08-14 14:14:00,557 log 5438 140431807477440 Internal Server Error: /accounts/login/
+Traceback (most recent call last):
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 222, in _get_response
+    response = response.render()
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/home/breeze/Desktop/9jarent/venv/lib/python3.13/site-packages/django/urls/resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'choose_account' not found. 'choose_account' is not a valid view function or pattern name.
+ERROR 2026-08-14 14:14:00,603 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 500 195250
+INFO 2026-08-14 14:15:02,235 log 5438 140431807477440 "GET /accounts/login/ HTTP/1.1" 200 15090
+WARNING 2026-08-14 14:15:05,503 log 5438 140431807477440 Not Found: /favicon.ico
+WARNING 2026-08-14 14:15:05,519 log 5438 140431807477440 "GET /favicon.ico HTTP/1.1" 404 7204
+INFO 2026-08-14 14:15:10,459 log 5438 140431807477440 "GET /accounts/signup/ HTTP/1.1" 200 10851
+WARNING 2026-08-14 14:15:12,674 log 5438 140431807477440 Not Found: /favicon.ico
+WARNING 2026-08-14 14:15:12,677 log 5438 140431807477440 "GET /favicon.ico HTTP/1.1" 404 7204
