@@ -47,3 +47,4 @@ INFO 2026-08-14 12:00:09,904 autoreload 12311 140638836942720 Watching for file 
 INFO 2026-08-14 12:06:15,982 autoreload 12311 140638836942720 /home/breeze/Desktop/9jarent/dashboard/views.py changed, reloading.
 INFO 2026-08-14 12:06:16,820 autoreload 13124 139742047938432 Watching for file changes with StatReloader
 INFO 2026-08-14 12:08:41,881 autoreload 13469 140367710406528 Watching for file changes with StatReloader
+INFO 2026-08-14 12:12:56,378 autoreload 14174 139670930249600 Watching for file changes with StatReloader
