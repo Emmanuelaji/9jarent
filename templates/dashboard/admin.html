@@ -1,587 +1,355 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/admin_base.html' %}
 {% load humanize %}
 
 {% block title %}Admin Dashboard | 9jaRent{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin Dashboard</h2>
-            <p class="text-muted">Platform overview and moderation</p>
+{% block dashboard_content %}
+<!-- Welcome Section -->
+<div class="welcome-section d-flex justify-content-between align-items-start">
+    <div>
+        <h2>Welcome back, {{ user.full_name_or_username }} 👋</h2>
+        <p>Here's what's happening on your platform today.</p>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="far fa-calendar-alt me-1"></i> Aug 10 - Aug 16, 2026
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#">Today</a></li>
+            <li><a class="dropdown-item" href="#">This Week</a></li>
+            <li><a class="dropdown-item" href="#">This Month</a></li>
+            <li><a class="dropdown-item" href="#">This Year</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Metric Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Total Users</div>
+            <div class="metric-value">{{ total_users|default:"2,842"|intcomma }}</div>
+            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+12.5%</div>
         </div>
     </div>
-
-    <!-- Property Metrics Cards -->
-    <div class="row g-3 mb-2">
-        <div class="col-12">
-            <h5 class="text-muted mb-2"><i class="fas fa-home me-2"></i>Properties</h5>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Total</h6>
-                    <h3 class="mb-0">{{ total_listings }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Published</h6>
-                    <h3 class="mb-0">{{ published_listings }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-warning text-dark h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Pending</h6>
-                    <h3 class="mb-0">{{ pending_review_listings }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Rented</h6>
-                    <h3 class="mb-0">{{ rented_listings }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-secondary text-white h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Archived</h6>
-                    <h3 class="mb-0">{{ archived_listings }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card bg-dark text-white h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title">Rejected</h6>
-                    <h3 class="mb-0">{{ rejected_listings }}</h3>
-                </div>
-            </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Total Agents</div>
+            <div class="metric-value">{{ total_agents|default:"486"|intcomma }}</div>
+            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+8.2%</div>
         </div>
     </div>
-
-    <!-- Agent Metrics -->
-    <div class="row g-3 mb-2">
-        <div class="col-12">
-            <h5 class="text-muted mb-2"><i class="fas fa-users me-2"></i>Agents</h5>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-warning h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-warning"><i class="fas fa-clock me-2"></i>Pending</h6>
-                    <h3 class="mb-0">{{ pending_agents }}</h3>
-                    <a href="{% url 'dashboard:agents_pending' %}" class="btn btn-sm btn-outline-warning mt-2">Review</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-success h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-success"><i class="fas fa-check-circle me-2"></i>Approved</h6>
-                    <h3 class="mb-0">{{ approved_agents }}</h3>
-                    <a href="{% url 'dashboard:agents_approved' %}" class="btn btn-sm btn-outline-success mt-2">View</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-danger h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-danger"><i class="fas fa-times-circle me-2"></i>Rejected</h6>
-                    <h3 class="mb-0">{{ rejected_agents }}</h3>
-                    <a href="{% url 'dashboard:agents_rejected' %}" class="btn btn-sm btn-outline-danger mt-2">View</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-secondary h-100">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-secondary"><i class="fas fa-ban me-2"></i>Suspended</h6>
-                    <h3 class="mb-0">{{ suspended_agents }}</h3>
-                    <a href="{% url 'dashboard:agents_suspended' %}" class="btn btn-sm btn-outline-secondary mt-2">View</a>
-                </div>
-            </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Pending Agents</div>
+            <div class="metric-value">{{ pending_agents|default:"18"|intcomma }}</div>
+            <div class="metric-change down"><i class="fas fa-arrow-down me-1"></i>-4.3%</div>
         </div>
     </div>
-
-    <!-- Inspection & Report Metrics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <h5 class="text-muted mb-2"><i class="fas fa-clipboard-check me-2"></i>Inspections</h5>
-            <div class="row g-2">
-                <div class="col-4">
-                    <div class="card border-info h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-info">Total</h6>
-                            <h4 class="mb-0">{{ total_inspections }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="card border-warning h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-warning">Pending</h6>
-                            <h4 class="mb-0">{{ pending_inspections }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="card border-success h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-success">Completed</h6>
-                            <h4 class="mb-0">{{ completed_inspections }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Total Properties</div>
+            <div class="metric-value">{{ total_listings|default:"1,256"|intcomma }}</div>
+            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+15.7%</div>
         </div>
-        <div class="col-md-6">
-            <h5 class="text-muted mb-2"><i class="fas fa-flag me-2"></i>Reports</h5>
-            <div class="row g-2">
-                <div class="col-3">
-                    <div class="card border-danger h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-danger">Pending</h6>
-                            <h4 class="mb-0">{{ pending_reports }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="card border-warning h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-warning">Review</h6>
-                            <h4 class="mb-0">{{ under_review_reports }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="card border-success h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-success">Resolved</h6>
-                            <h4 class="mb-0">{{ resolved_reports }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="card border-secondary h-100">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-secondary">Dismissed</h6>
-                            <h4 class="mb-0">{{ dismissed_reports }}</h4>
-                        </div>
-                    </div>
-                </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Published</div>
+            <div class="metric-value">{{ published_listings|default:"842"|intcomma }}</div>
+            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+10.1%</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="metric-card">
+            <div class="metric-label">Pending Review</div>
+            <div class="metric-value">{{ pending_review_listings|default:"67"|intcomma }}</div>
+            <div class="metric-change down"><i class="fas fa-arrow-down me-1"></i>-2.4%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Tables Row -->
+<div class="row g-4 mb-4">
+    <!-- Pending Agent Applications -->
+    <div class="col-xl-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5><i class="fas fa-user-clock me-2 text-warning"></i>Pending Agent Applications</h5>
+                <a href="{% url 'dashboard:agents_pending' %}" class="view-all">View all</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Company</th>
+                            <th>Location</th>
+                            <th>Applied On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for agent in pending_agent_applications %}
+                        <tr>
+                            <td>
+                                <div class="agent-cell">
+                                    {% if agent.profile_photo %}
+                                        <img src="{{ agent.profile_photo.url }}" alt="">
+                                    {% else %}
+                                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;">
+                                            {{ agent.first_name|first|default:agent.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="agent-info">
+                                        <div class="agent-name">{{ agent.full_name_or_username }}</div>
+                                        <div class="agent-email">{{ agent.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ agent.company_name|default:"Independent" }}</td>
+                            <td>{{ agent.city|default:"—" }}, {{ agent.state|default:"—" }}</td>
+                            <td>{{ agent.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'dashboard:agent_detail' agent.pk %}" class="btn-action btn-action-review">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-user-check fa-2x mb-2 text-success"></i><br>
+                                No pending agent applications
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Pending Property Approvals -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-home me-2"></i>Pending Property Approvals</h5>
-                    <span class="badge bg-warning">{{ pending_properties|length }} pending</span>
-                </div>
-                <div class="card-body p-0">
-                    {% if pending_properties %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Agent</th>
-                                    <th>Location</th>
-                                    <th>Price</th>
-                                    <th>Type</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for prop in pending_properties %}
-                                <tr>
-                                    <td><strong>{{ prop.title }}</strong></td>
-                                    <td>
-                                        {% if prop.created_by %}
-                                            <a href="{% url 'dashboard:agent_detail' prop.created_by.pk %}">
-                                                {{ prop.created_by.full_name_or_username }}
-                                            </a>
-                                            {% if prop.created_by.is_approved_agent %}
-                                                <span class="badge bg-success">Verified</span>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="text-muted">Unknown</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ prop.area }}, {{ prop.lga.name }}</td>
-                                    <td>₦{{ prop.price|floatformat:0|intcomma }}</td>
-                                    <td>{{ prop.property_type }}</td>
-                                    <td>{{ prop.created_at|date:"M d, Y" }}</td>
-                                    <td>
-                                        <a href="{% url 'properties:detail' prop.slug %}" class="btn btn-sm btn-info" target="_blank">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <form method="post" action="{% url 'dashboard:approve_property' prop.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this property?')">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ prop.pk }}">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-
-                                        <div class="modal fade" id="rejectModal{{ prop.pk }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form method="post" action="{% url 'dashboard:reject_property' prop.pk %}">
-                                                        {% csrf_token %}
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Reject Property</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Rejecting: <strong>{{ prop.title }}</strong></p>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Rejection Reason *</label>
-                                                                <textarea name="reason" class="form-control" rows="3" required placeholder="Explain why this property is being rejected..."></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-danger">Reject Property</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                        <p class="text-muted">No pending property approvals. All caught up!</p>
-                    </div>
-                    {% endif %}
-                </div>
+    <div class="col-xl-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5><i class="fas fa-home me-2 text-primary"></i>Pending Property Approvals</h5>
+                <a href="{% url 'dashboard:admin' %}" class="view-all">View all</a>
             </div>
-        </div>
-    </div>
-
-    <!-- Pending Agent Applications -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-user-clock me-2"></i>Pending Agent Applications</h5>
-                    <a href="{% url 'dashboard:agents_pending' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body p-0">
-                    {% if pending_agent_applications %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Company</th>
-                                    <th>Location</th>
-                                    <th>Registered</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for agent in pending_agent_applications %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ agent.full_name_or_username }}</strong><br>
-                                        <small class="text-muted">@{{ agent.username }}</small>
-                                    </td>
-                                    <td>{{ agent.email }}</td>
-                                    <td>{{ agent.phone }}</td>
-                                    <td>{{ agent.company_name|default:"—" }}</td>
-                                    <td>{{ agent.city }}, {{ agent.state }}</td>
-                                    <td>{{ agent.date_joined|date:"M d, Y" }}</td>
-                                    <td>
-                                        <a href="{% url 'dashboard:agent_detail' agent.pk %}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <form method="post" action="{% url 'dashboard:approve_agent' agent.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this agent?')">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectAgentModal{{ agent.pk }}">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-
-                                        <div class="modal fade" id="rejectAgentModal{{ agent.pk }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form method="post" action="{% url 'dashboard:reject_agent' agent.pk %}">
-                                                        {% csrf_token %}
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Reject Agent Application</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Rejecting: <strong>{{ agent.full_name_or_username }}</strong></p>
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Rejection Reason *</label>
-                                                                <textarea name="reason" class="form-control" rows="3" required placeholder="Explain why this application is being rejected..."></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-danger">Reject Application</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-user-check fa-3x text-success mb-3"></i>
-                        <p class="text-muted">No pending agent applications. All caught up!</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Inspection Requests -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Recent Inspection Requests</h5>
-                    <a href="{% url 'dashboard:inspections_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body p-0">
-                    {% if recent_inspections %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Property</th>
-                                    <th>Renter</th>
-                                    <th>Agent</th>
-                                    <th>Date & Time</th>
-                                    <th>Status</th>
-                                    <th>Requested</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for insp in recent_inspections %}
-                                <tr>
-                                    <td><a href="{% url 'properties:detail' insp.property.slug %}">{{ insp.property.title }}</a></td>
-                                    <td>{{ insp.renter.full_name_or_username }}</td>
-                                    <td>{{ insp.agent.full_name_or_username }}</td>
-                                    <td>{{ insp.requested_date|date:"M d, Y" }} at {{ insp.requested_time|time:"g:i A" }}</td>
-                                    <td>
-                                        <span class="badge bg-{% if insp.status == 'PENDING' %}warning{% elif insp.status == 'ACCEPTED' %}success{% elif insp.status == 'DECLINED' %}danger{% elif insp.status == 'COMPLETED' %}info{% else %}secondary{% endif %}">
-                                            {{ insp.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>{{ insp.created_at|timesince }} ago</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4 text-muted">No inspection requests yet</div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Reports -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-flag me-2"></i>Recent Reports</h5>
-                    <a href="{% url 'dashboard:reports_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body p-0">
-                    {% if recent_reports %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Target</th>
-                                    <th>Reporter</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for report in recent_reports %}
-                                <tr>
-                                    <td><span class="badge bg-secondary">{{ report.get_category_display }}</span></td>
-                                    <td>
-                                        {% if report.property %}
-                                            <a href="{% url 'properties:detail' report.property.slug %}">{{ report.property.title|truncatechars:30 }}</a>
-                                        {% elif report.agent %}
-                                            <a href="{% url 'dashboard:agent_detail' report.agent.pk %}">{{ report.agent.full_name_or_username }}</a>
-                                        {% else %}
-                                            —
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ report.reporter.full_name_or_username }}</td>
-                                    <td>
-                                        <span class="badge bg-{% if report.status == 'pending' %}danger{% elif report.status == 'under_review' %}warning{% elif report.status == 'resolved' %}success{% else %}secondary{% endif %}">
-                                            {{ report.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>{{ report.created_at|timesince }} ago</td>
-                                    <td>
-                                        <a href="{% url 'dashboard:report_detail' report.pk %}" class="btn btn-sm btn-info">Review</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4 text-muted">No reports submitted yet</div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity Feed -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-stream me-2"></i>Recent Activity</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for activity in recent_activity %}
-                        <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between align-items-center">
-                                <div>
-                                    <i class="fas fa-{{ activity.icon }} text-{{ activity.color }} me-2"></i>
-                                    <strong>{{ activity.title }}</strong>
-                                    <span class="text-muted">by {{ activity.user }}</span>
-                                </div>
-                                <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
-                            </div>
-                            <div class="mt-1">
-                                <span class="badge bg-{% if activity.status == 'PUBLISHED' or activity.status == 'APPROVED' or activity.status == 'COMPLETED' %}success{% elif activity.status == 'PENDING_REVIEW' or activity.status == 'PENDING' %}warning{% elif activity.status == 'REJECTED' or activity.status == 'DECLINED' %}danger{% else %}secondary{% endif %}">
-                                    {{ activity.status }}
-                                </span>
-                            </div>
-                        </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Agent</th>
+                            <th>Location</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prop in pending_properties %}
+                        <tr>
+                            <td>
+                                <strong>{{ prop.title|truncatechars:25 }}</strong><br>
+                                <small class="text-muted">{{ prop.property_type }}</small>
+                            </td>
+                            <td>
+                                {% if prop.created_by %}
+                                    {{ prop.created_by.full_name_or_username }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ prop.area|truncatechars:20 }}, {{ prop.lga.name|default:"—" }}</td>
+                            <td class="mono-price">₦{{ prop.price|floatformat:0|intcomma }}</td>
+                            <td>
+                                <a href="{% url 'properties:detail' prop.slug %}" target="_blank" class="btn-action btn-action-review">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </td>
+                        </tr>
                         {% empty %}
-                        <div class="list-group-item text-center py-4 text-muted">No recent activity</div>
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-check-circle fa-2x mb-2 text-success"></i><br>
+                                No pending property approvals
+                            </td>
+                        </tr>
                         {% endfor %}
-                    </div>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row: Platform Overview, Recent Activity, Reports Summary -->
+<div class="row g-4">
+    <!-- Platform Overview -->
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0" style="font-size:0.95rem;font-weight:700;">Platform Overview</h5>
+                <div class="d-flex gap-3" style="font-size:0.75rem;">
+                    <span><i class="fas fa-circle me-1" style="color:var(--emerald);font-size:0.5rem;"></i>Users</span>
+                    <span><i class="fas fa-circle me-1" style="color:var(--amber);font-size:0.5rem;"></i>Properties</span>
+                </div>
+            </div>
+            <div class="chart-placeholder">
+                <div class="text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                    <small>Chart.js integration ready</small><br>
+                    <small class="text-muted">Add Chart.js script to enable</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Properties & Agents & Users -->
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-home me-2"></i>Recent Properties</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for prop in recent_properties %}
-                        <a href="{% url 'properties:detail' prop.slug %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ prop.title|truncatechars:25 }}</h6>
-                                <small class="text-muted">{{ prop.created_at|timesince }} ago</small>
-                            </div>
-                            <p class="mb-1 text-muted">{{ prop.area }}, {{ prop.state.name }}</p>
-                            <small>
-                                <span class="badge bg-{% if prop.status == 'PUBLISHED' %}success{% elif prop.status == 'PENDING_REVIEW' %}warning{% elif prop.status == 'REJECTED' %}danger{% else %}secondary{% endif %}">
-                                    {{ prop.get_status_display }}
-                                </span>
-                            </small>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item text-center py-4 text-muted">No recent properties</div>
-                        {% endfor %}
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5><i class="fas fa-stream me-2 text-info"></i>Recent Activity</h5>
+            </div>
+            <div style="max-height: 280px; overflow-y: auto;">
+                {% for activity in recent_activity %}
+                <div class="activity-item">
+                    <div class="activity-icon {{ activity.type }}">
+                        <i class="fas fa-{{ activity.icon }}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>{{ activity.title }}</p>
+                        <div class="time">{{ activity.timestamp|timesince }} ago</div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Recent Agents</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for agent in recent_agents %}
-                        <a href="{% url 'dashboard:agent_detail' agent.pk %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ agent.full_name_or_username }}</h6>
-                                <small class="text-muted">{{ agent.date_joined|timesince }} ago</small>
-                            </div>
-                            <p class="mb-1 text-muted">{{ agent.company_name|default:"Independent Agent" }}</p>
-                            <small>
-                                <span class="badge bg-{% if agent.agent_status == 'APPROVED' %}success{% elif agent.agent_status == 'PENDING' %}warning{% elif agent.agent_status == 'REJECTED' %}danger{% else %}secondary{% endif %}">
-                                    {{ agent.get_agent_status_display }}
-                                </span>
-                            </small>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item text-center py-4 text-muted">No recent agents</div>
-                        {% endfor %}
+                {% empty %}
+                <div class="activity-item">
+                    <div class="activity-icon message">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>New agent application from <strong>Aisha Bello</strong></p>
+                        <div class="time">2 mins ago</div>
                     </div>
                 </div>
+                <div class="activity-item">
+                    <div class="activity-icon property">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>Property <strong>"3 Bedrooms Flat"</strong> submitted for review</p>
+                        <div class="time">15 mins ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon inspection">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>Inspection request for <strong>4 Bedroom Duplex</strong></p>
+                        <div class="time">1 hour ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon message">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>New message from <strong>John Doe</strong></p>
+                        <div class="time">2 hours ago</div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Recent Users</h5>
+    </div>
+
+    <!-- Reports Summary -->
+    <div class="col-lg-4">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5><i class="fas fa-chart-pie me-2 text-danger"></i>Reports Summary</h5>
+                <a href="{% url 'dashboard:reports_list' %}" class="view-all">View all</a>
+            </div>
+            <div class="p-3">
+                <!-- Donut Chart Placeholder -->
+                <div class="reports-donut">
+                    <svg viewBox="0 0 140 140" style="width:100%;height:100%;transform:rotate(-90deg);">
+                        <!-- Background circle -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#E9ECEF" stroke-width="18"/>
+                        <!-- Fake Listing segment (37%) -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#198754" stroke-width="18"
+                            stroke-dasharray="117.8 196.3" stroke-dashoffset="0" stroke-linecap="round"/>
+                        <!-- Wrong Price segment (22%) -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#DC3545" stroke-width="18"
+                            stroke-dasharray="70.0 196.3" stroke-dashoffset="-117.8" stroke-linecap="round"/>
+                        <!-- Unavailable segment (19%) -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#FFC107" stroke-width="18"
+                            stroke-dasharray="60.5 196.3" stroke-dashoffset="-187.8" stroke-linecap="round"/>
+                        <!-- Suspicious Agent segment (13%) -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#0D6EFD" stroke-width="18"
+                            stroke-dasharray="41.4 196.3" stroke-dashoffset="-248.3" stroke-linecap="round"/>
+                        <!-- Other segment (9%) -->
+                        <circle cx="70" cy="70" r="50" fill="none" stroke="#6C757D" stroke-width="18"
+                            stroke-dasharray="28.7 196.3" stroke-dashoffset="-289.7" stroke-linecap="round"/>
+                    </svg>
+                    <div class="reports-donut-center">
+                        <div class="total">{{ total_reports|default:"32" }}</div>
+                        <div class="label">Total</div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for user in recent_users %}
-                        <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ user.full_name_or_username }}</h6>
-                                <small class="text-muted">{{ user.date_joined|timesince }} ago</small>
-                            </div>
-                            <p class="mb-1 text-muted">{{ user.email }}</p>
-                        </div>
-                        {% empty %}
-                        <div class="list-group-item text-center py-4 text-muted">No recent users</div>
-                        {% endfor %}
+
+                <!-- Category Legend -->
+                <div class="report-category">
+                    <div class="cat-label">
+                        <span class="cat-dot" style="background:#198754;"></span>
+                        Fake Listing
+                    </div>
+                    <div>
+                        <span class="cat-count">12</span>
+                        <span class="cat-pct">(37%)</span>
+                    </div>
+                </div>
+                <div class="report-category">
+                    <div class="cat-label">
+                        <span class="cat-dot" style="background:#DC3545;"></span>
+                        Wrong Price
+                    </div>
+                    <div>
+                        <span class="cat-count">7</span>
+                        <span class="cat-pct">(22%)</span>
+                    </div>
+                </div>
+                <div class="report-category">
+                    <div class="cat-label">
+                        <span class="cat-dot" style="background:#FFC107;"></span>
+                        Unavailable
+                    </div>
+                    <div>
+                        <span class="cat-count">6</span>
+                        <span class="cat-pct">(19%)</span>
+                    </div>
+                </div>
+                <div class="report-category">
+                    <div class="cat-label">
+                        <span class="cat-dot" style="background:#0D6EFD;"></span>
+                        Suspicious Agent
+                    </div>
+                    <div>
+                        <span class="cat-count">4</span>
+                        <span class="cat-pct">(13%)</span>
+                    </div>
+                </div>
+                <div class="report-category">
+                    <div class="cat-label">
+                        <span class="cat-dot" style="background:#6C757D;"></span>
+                        Other
+                    </div>
+                    <div>
+                        <span class="cat-count">3</span>
+                        <span class="cat-pct">(9%)</span>
                     </div>
                 </div>
             </div>

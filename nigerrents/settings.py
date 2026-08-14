@@ -87,7 +87,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'messaging.context_processors.unread_messages',
                 'notifications.context_processors.unread_notifications',
-            ],
+                'dashboard.context_processors.admin_sidebar_counts',
+],
         },
     },
 ]
