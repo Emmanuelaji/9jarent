@@ -1,15 +1,15 @@
-
 # accounts/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import CustomUser
 
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     """Enhanced admin for CustomUser with agent status management."""
-    
+
     list_display = (
         'username', 'full_name_or_username', 'email', 'role', 'agent_status_colored',
         'phone', 'company_name', 'state', 'is_staff', 'date_joined'
@@ -18,7 +18,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('username', 'first_name', 'last_name', 'email', 'phone', 'company_name')
     date_hierarchy = 'date_joined'
     ordering = ('-date_joined',)
-    
+
     fieldsets = (
         (None, {
             'fields': ('username', 'password')
@@ -28,7 +28,7 @@ class CustomUserAdmin(UserAdmin):
         }),
         ('Agent Profile', {
             'fields': (
-                'company_name', 'bio', 'profile_photo', 
+                'company_name', 'bio', 'profile_photo',
                 'state', 'city', 'office_address'
             ),
             'classes': ('collapse',),
@@ -56,28 +56,28 @@ class CustomUserAdmin(UserAdmin):
             'classes': ('collapse',),
         }),
     )
-    
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('username', 'email', 'password1', 'password2', 'role', 'agent_status'),
         }),
     )
-    
+
     readonly_fields = (
         'approved_at', 'approved_by',
         'rejected_at', 'rejected_by',
         'suspended_at', 'suspended_by',
         'last_login', 'date_joined'
     )
-    
+
     actions = ['approve_agents', 'reject_agents', 'suspend_agents', 'reactivate_agents']
-    
+
     def agent_status_colored(self, obj):
         """Display agent status with color coding."""
         if not obj.is_agent:
-            return format_html('<span style="color: gray;">—</span>')
-        
+            return mark_safe('<span style="color: gray;">—</span>')
+
         colors = {
             'PENDING': '#f0ad4e',    # Orange
             'APPROVED': '#5cb85c',   # Green
@@ -92,15 +92,15 @@ class CustomUserAdmin(UserAdmin):
         )
     agent_status_colored.short_description = 'Agent Status'
     agent_status_colored.admin_order_field = 'agent_status'
-    
+
     def full_name_or_username(self, obj):
         return obj.full_name_or_username
     full_name_or_username.short_description = 'Name'
-    
+
     # ============================================================================
     # ADMIN ACTIONS
     # ============================================================================
-    
+
     def approve_agents(self, request, queryset):
         """Bulk approve selected agents."""
         from django.utils import timezone
@@ -117,7 +117,7 @@ class CustomUserAdmin(UserAdmin):
                 count += 1
         self.message_user(request, f"{count} agent(s) approved successfully.")
     approve_agents.short_description = "Approve selected agents"
-    
+
     def reject_agents(self, request, queryset):
         """Bulk reject selected agents."""
         from django.utils import timezone
@@ -136,7 +136,7 @@ class CustomUserAdmin(UserAdmin):
                 count += 1
         self.message_user(request, f"{count} agent(s) rejected.")
     reject_agents.short_description = "Reject selected agents"
-    
+
     def suspend_agents(self, request, queryset):
         """Bulk suspend selected agents."""
         from django.utils import timezone
@@ -154,7 +154,7 @@ class CustomUserAdmin(UserAdmin):
                 count += 1
         self.message_user(request, f"{count} agent(s) suspended.")
     suspend_agents.short_description = "Suspend selected agents"
-    
+
     def reactivate_agents(self, request, queryset):
         """Bulk reactivate suspended agents back to APPROVED."""
         from django.utils import timezone
