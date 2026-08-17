@@ -1,4 +1,3 @@
-
 # Create accounts/permissions.py - decorators and mixins for authorization
 """
 Permission decorators and mixins for 9jaRent.
@@ -24,6 +23,10 @@ class AdminRequiredMixin(UserPassesTestMixin):
         return user.is_authenticated and user.is_admin
     
     def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            # Let LoginRequiredMixin (earlier in the MRO) redirect to login
+            # instead of leaking a 403 to anonymous visitors.
+            return super().handle_no_permission()
         raise PermissionDenied("You do not have permission to access this admin area.")
 
 
@@ -39,7 +42,9 @@ class ApprovedAgentRequiredMixin(UserPassesTestMixin):
     
     def handle_no_permission(self):
         user = self.request.user
-        if user.is_authenticated and user.is_agent:
+        if not user.is_authenticated:
+            return super().handle_no_permission()
+        if user.is_agent:
             if user.is_pending_agent:
                 raise PermissionDenied(
                     "Your agent application is pending approval. "
@@ -69,6 +74,8 @@ class AgentRequiredMixin(UserPassesTestMixin):
         return user.is_authenticated and user.is_agent
     
     def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
         raise PermissionDenied("You must be a registered agent to access this page.")
 
 
@@ -80,6 +87,8 @@ class PublicOrRenterMixin(UserPassesTestMixin):
         return user.is_authenticated and (user.role == 'PUBLIC' or user.is_admin)
     
     def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
         raise PermissionDenied("This feature is for renters only.")
 
 

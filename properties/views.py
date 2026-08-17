@@ -13,7 +13,7 @@ from urllib.parse import quote
 from django.conf import settings
 from django.urls import reverse_lazy
 
-from accounts.permissions import ApprovedAgentRequiredMixin, object_owner_required, admin_required
+from accounts.permissions import ApprovedAgentRequiredMixin, AgentRequiredMixin, object_owner_required, admin_required
 from .models import Property, State, LGA, PropertyImage
 from .forms import PropertyForm
 
@@ -264,7 +264,7 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
-class MyListingsView(LoginRequiredMixin, ListView):
+class MyListingsView(LoginRequiredMixin, AgentRequiredMixin, ListView):
     """Agent's own property listings dashboard."""
     model = Property
     template_name = 'properties/mine.html'
@@ -306,7 +306,7 @@ class MyListingsView(LoginRequiredMixin, ListView):
         return context
 
 
-class DraftListView(LoginRequiredMixin, ListView):
+class DraftListView(LoginRequiredMixin, AgentRequiredMixin, ListView):
     """Agent's draft properties."""
     model = Property
     template_name = 'properties/drafts.html'

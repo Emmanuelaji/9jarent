@@ -28,7 +28,12 @@ class RateLimitMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Skip rate limiting for admin and static/media
+        # Skip rate limiting for admin, static/media, and the automated test suite
+        # (which shares one process-wide cache across unrelated test methods).
+        from django.conf import settings
+        if getattr(settings, 'TESTING', False):
+            return self.get_response(request)
+
         path = request.path
         if path.startswith('/admin/') or path.startswith('/static/') or path.startswith('/media/'):
             return self.get_response(request)

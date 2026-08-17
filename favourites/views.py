@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import F
+from django.db.models.functions import Greatest
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView
@@ -48,7 +49,9 @@ def toggle_favourite(request, property_id):
         messages.success(request, "Added to your favourites.")
     else:
         favourite.delete()
-        Property.objects.filter(pk=property_obj.pk).update(favourite_count=F('favourite_count') - 1)
+        Property.objects.filter(pk=property_obj.pk, favourite_count__gt=0).update(
+            favourite_count=Greatest(F('favourite_count') - 1, 0)
+        )
         messages.success(request, "Removed from your favourites.")
 
     next_url = request.POST.get('next')

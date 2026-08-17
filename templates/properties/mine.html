@@ -2,9 +2,38 @@
 {% block content %}
 <div class="container py-5">
     <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
+
+    {% if agent_status == 'PENDING' %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-hourglass-half fa-2x mb-3" style="color: var(--amber-dark);"></i>
+            <h4 class="display-font mb-2">Your agent application is pending approval.</h4>
+            <p class="text-muted mb-0">An administrator is reviewing your application. You'll be able to list properties once approved.</p>
+        </div>
+    </div>
+    {% elif agent_status == 'REJECTED' %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-circle-xmark fa-2x mb-3" style="color: var(--terracotta);"></i>
+            <h4 class="display-font mb-2">Your agent application was rejected.</h4>
+            {% if rejection_reason %}<p class="mb-0" style="color: var(--terracotta);"><strong>Reason:</strong> {{ rejection_reason }}</p>{% endif %}
+        </div>
+    </div>
+    {% elif agent_status == 'SUSPENDED' %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-ban fa-2x mb-3" style="color: var(--terracotta);"></i>
+            <h4 class="display-font mb-2">Your agent account has been suspended.</h4>
+            <p class="text-muted mb-0">Please contact support for assistance.</p>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <h2 class="display-font mb-0">My Listings</h2>
+        {% if agent_status == 'APPROVED' %}
         <a href="{% url 'properties:create' %}" class="btn btn-amber"><i class="fas fa-plus me-1"></i> List a New Property</a>
+        {% endif %}
     </div>
     <div class="row mb-4 g-3">
         <div class="col-6 col-md-3">

@@ -112,13 +112,21 @@ class InspectionWorkflowTests(TestCase):
             status=InspectionRequest.Status.ACCEPTED
         )
         self.client.login(username='renter', password='testpass123')
-        response = self.client.get(reverse('inspections:my_requests'))
+        response = self.client.get(reverse('inspections:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Test Property')
         self.assertContains(response, 'Accepted')
 
     def test_unrelated_user_cannot_manipulate_inspection(self):
-        """User who doesn't own the inspection cannot modify it."""
+        """User who doesn't own the inspection cannot modify it.
+
+        accept/decline/complete/cancel filter the queryset directly by
+        owner (agent=... or renter=...), so an unrelated user gets a 404
+        rather than a 403 - this avoids confirming the object even exists
+        to someone who has no relationship to it. inspection_detail (viewable
+        by renter/agent/admin) uses an explicit permission check and returns
+        403 instead, since more than one role is legitimately allowed there.
+        """
         inspection = InspectionRequest.objects.create(
             property=self.property,
             renter=self.renter,
@@ -131,7 +139,7 @@ class InspectionWorkflowTests(TestCase):
         response = self.client.post(
             reverse('inspections:accept', kwargs={'pk': inspection.pk})
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
     def test_invalid_property_cannot_receive_inspection(self):
         """Cannot request inspection for non-published property."""

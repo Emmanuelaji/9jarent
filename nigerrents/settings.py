@@ -1,10 +1,16 @@
 import os
+import sys
 from pathlib import Path
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# True when running under `manage.py test` - lets middleware (e.g. rate
+# limiting) behave differently so the automated test suite isn't coupled
+# to a shared process-wide cache across unrelated test methods.
+TESTING = 'test' in sys.argv
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # In production, this MUST be set via environment variable.
@@ -48,14 +54,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'nigerrents.middleware.RateLimitMiddleware',
+    'nigerrents.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'nigerrents.urls'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
-
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
