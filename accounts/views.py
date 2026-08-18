@@ -9,13 +9,21 @@ from django.views.generic import CreateView, UpdateView, TemplateView, DetailVie
 from django.db import models
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
-from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm
+from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm
 from .models import CustomUser
 
 
 class RoleBasedLoginView(LoginView):
     """Login view that redirects users based on their role and status."""
     template_name = 'accounts/login.html'
+    form_class = EmailOrPhoneAuthenticationForm
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if not self.request.POST.get('remember'):
+            # Session ends when the browser closes instead of the default 2-week cookie age.
+            self.request.session.set_expiry(0)
+        return response
     
     def get_success_url(self):
         user = self.request.user
@@ -104,12 +112,13 @@ class RenterSignUpView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        self.object.backend = 'accounts.backends.EmailOrPhoneBackend'
         login(self.request, self.object)
         messages.success(self.request, "Welcome to 9jaRent! Your account has been created.")
         return response
 
     def get_success_url(self):
-        return reverse_lazy('accounts:signup_success')
+        return reverse_lazy('properties:home')
 
 
 class AgentPendingView(TemplateView):
@@ -187,7 +196,6 @@ class AgentPublicProfileView(DetailView):
             .aggregate(total_views=models.Sum('views'))['total_views'] or 0
         )
         return context
-
 
 
 class SignUpSuccessView(TemplateView):

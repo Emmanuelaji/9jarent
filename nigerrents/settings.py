@@ -60,6 +60,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'nigerrents.urls'
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Login accepts email, phone, or username (the login page offers Email/Phone
+# tabs) - ModelBackend stays as a fallback for Django admin / manage.py flows.
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrPhoneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 STATIC_URL = '/static/'

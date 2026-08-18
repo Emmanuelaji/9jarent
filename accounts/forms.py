@@ -1,9 +1,61 @@
 #accounts/forms.py
 
+import re
+
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from .models import CustomUser
+
+
+def generate_unique_username(email, first_name=''):
+    """
+    Neither signup form collects a username (the design has no username
+    field) - derive one from the email's local part, falling back to the
+    name, and disambiguate with a numeric suffix on collision.
+    """
+    base = re.sub(r'[^a-zA-Z0-9]', '', (email.split('@')[0] if email else first_name)).lower()
+    base = base or 'user'
+    candidate = base
+    suffix = 1
+    while CustomUser.objects.filter(username__iexact=candidate).exists():
+        suffix += 1
+        candidate = f"{base}{suffix}"
+    return candidate
+
+
+class EmailOrPhoneAuthenticationForm(AuthenticationForm):
+    """
+    Login form backing the Email/Phone tabbed login page. Whichever tab is
+    active submits its value under a different field name (`username` for
+    the email tab, `phone` for the phone tab); this form accepts either and
+    passes whichever was actually filled in through to authenticate() as
+    the identifier, which EmailOrPhoneBackend then resolves.
+    """
+    phone = forms.CharField(required=False, label="Phone Number")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].required = False
+        self.fields['username'].label = "Email Address"
+
+    def clean(self):
+        identifier = (self.data.get('username') or self.data.get('phone') or '').strip()
+        password = self.cleaned_data.get('password')
+
+        if identifier and password:
+            self.user_cache = self.get_user_cache(identifier, password)
+            if self.user_cache is None:
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
+
+    def get_user_cache(self, identifier, password):
+        from django.contrib.auth import authenticate
+        return authenticate(self.request, username=identifier, password=password)
+
 
 class AgentSignUpForm(UserCreationForm):
     """Form for agent registration. Creates a PENDING agent account."""
@@ -68,7 +120,7 @@ class AgentSignUpForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = [
-            'username', 'first_name', 'last_name', 'email', 
+            'first_name', 'last_name', 'email', 
             'phone', 'whatsapp_number', 'company_name',
             'state', 'city', 'office_address', 'bio',
             'password1', 'password2'
@@ -79,12 +131,6 @@ class AgentSignUpForm(UserCreationForm):
         if CustomUser.objects.filter(email__iexact=email).exists():
             raise ValidationError("An account with this email already exists.")
         return email
-    
-    def clean_username(self):
-        username = self.cleaned_data['username']
-        if CustomUser.objects.filter(username__iexact=username).exists():
-            raise ValidationError("This username is already taken.")
-        return username
     
     def clean_whatsapp_number(self):
         whatsapp = self.cleaned_data['whatsapp_number'].strip()
@@ -97,6 +143,7 @@ class AgentSignUpForm(UserCreationForm):
     
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.username = generate_unique_username(self.cleaned_data['email'], self.cleaned_data['first_name'])
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data.get('last_name', '')
@@ -136,7 +183,7 @@ class RenterSignUpForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'email', 'phone', 'password1', 'password2']
+        fields = ['first_name', 'email', 'phone', 'password1', 'password2']
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -144,14 +191,9 @@ class RenterSignUpForm(UserCreationForm):
             raise ValidationError("An account with this email already exists.")
         return email
 
-    def clean_username(self):
-        username = self.cleaned_data['username']
-        if CustomUser.objects.filter(username__iexact=username).exists():
-            raise ValidationError("This username is already taken.")
-        return username
-
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.username = generate_unique_username(self.cleaned_data['email'], self.cleaned_data['first_name'])
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.phone = self.cleaned_data.get('phone', '')
