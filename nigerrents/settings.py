@@ -12,6 +12,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # to a shared process-wide cache across unrelated test methods.
 TESTING = 'test' in sys.argv
 
+if TESTING:
+    # Speed up the test suite only: PBKDF2's production-strength iteration
+    # count makes every create_user()/login() call needlessly slow in tests.
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
 # SECURITY WARNING: keep the secret key used in production secret!
 # In production, this MUST be set via environment variable.
 SECRET_KEY = env('SECRET_KEY')

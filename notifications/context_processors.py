@@ -6,4 +6,7 @@ def unread_notifications(request):
     if not user or not user.is_authenticated:
         return {}
     count = Notification.objects.filter(user=user, is_read=False).count()
-    return {'unread_notification_count': count}
+    return {
+        'unread_notification_count': count,
+        'has_unread_notifications': count > 0,
+    }

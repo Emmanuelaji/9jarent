@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}My Drafts | 9jaRent{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h2 class="display-font mb-0">My Drafts</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'properties:mine' %}" class="btn btn-outline-secondary"><i class="fas fa-list me-1"></i> All Listings</a>
+            <a href="{% url 'properties:create' %}" class="btn btn-amber"><i class="fas fa-plus me-1"></i> List a New Property</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead><tr><th>Property</th><th>Location</th><th>Price</th><th>Last Updated</th><th></th></tr></thead>
+                <tbody>
+                    {% for draft in drafts %}
+                    <tr>
+                        <td>{{ draft.title }}</td>
+                        <td>{{ draft.area }}, {{ draft.state.name }}</td>
+                        <td class="mono-price">&#8358;{{ draft.price|floatformat:0 }}</td>
+                        <td>{{ draft.updated_at|date:"M d, Y" }}</td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'properties:edit' draft.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <form method="post" action="{% url 'properties:submit' draft.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-nigeria">Submit for Review</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-5">
+                        <p class="text-muted mb-3">You have no draft properties.</p>
+                        <a href="{% url 'properties:create' %}" class="btn btn-nigeria">List a Property</a>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

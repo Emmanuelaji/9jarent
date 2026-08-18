@@ -78,6 +78,11 @@ class PropertyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        # rental_period has a model-level default ('yearly'); don't force the
+        # agent to pick it on every submit - an omitted value falls back to
+        # the model default in clean_rental_period().
+        self.fields['rental_period'].required = False
         
         # Pre-populate agent fields from user profile if creating new property
         if self.user and not self.instance.pk:
@@ -85,6 +90,9 @@ class PropertyForm(forms.ModelForm):
             self.fields['agent_whatsapp'].initial = self.user.whatsapp_number or ''
             self.fields['agent_email'].initial = self.user.email
     
+    def clean_rental_period(self):
+        return self.cleaned_data.get('rental_period') or Property._meta.get_field('rental_period').default
+
     def clean_agent_whatsapp(self):
         whatsapp = self.cleaned_data['agent_whatsapp'].strip()
         if not whatsapp.startswith('234'):

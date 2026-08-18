@@ -30,7 +30,7 @@
                             <p class="text-muted mb-2">{{ agent.company_name }}</p>
                             {% endif %}
                             {% if user.is_authenticated and user != agent %}
-                            <a href="{% url 'reports:report_agent' agent.pk %}" class="btn btn-sm btn-outline-danger mt-2">
+                            <a href="{% url 'reports:submit_agent' agent.pk %}" class="btn btn-sm btn-outline-danger mt-2">
                                 <i class="fas fa-flag me-1"></i>Report Agent
                             </a>
                             {% endif %}

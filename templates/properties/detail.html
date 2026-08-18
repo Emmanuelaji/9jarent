@@ -158,7 +158,7 @@
                         <a href="mailto:{{ property.agent_email }}" class="btn btn-outline-secondary w-100 mb-3"><i class="fas fa-envelope"></i> Send Email</a>
                     {% endif %}
                     {% if user.is_authenticated and user.id != property.created_by_id %}
-                    <a href="{% url 'reports:report_property' property.id %}" class="btn btn-outline-danger w-100 mb-3 py-2">
+                    <a href="{% url 'reports:submit' property.id %}" class="btn btn-outline-danger w-100 mb-3 py-2">
                         <i class="fas fa-flag me-2"></i>Report Property
                     </a>
                     {% endif %}

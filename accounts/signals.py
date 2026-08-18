@@ -1,17 +1,14 @@
 # accounts/signals.py
 """
-Django signals for the accounts app.
+Signal handlers for the accounts app.
 
-Note: allauth is not currently in INSTALLED_APPS.
-If social auth is added later, uncomment the signal handlers below.
+NOTE: Platform notification auto-triggers (agent/property/inspection/message
+events) live in ``notifications.signals`` and are registered by the
+notifications app's ``ready()``. They must NOT be duplicated here — doing so
+double-registers every receiver (duplicate notifications) and, because this
+module resolves ``.models`` to ``accounts.models``, breaks app startup with
+``ImportError: cannot import name 'Notification'``.
+
+Account-specific signals (e.g. future email-OTP-on-signup triggers) belong
+in this module.
 """
-
-# from django.dispatch import receiver
-# from allauth.account.signals import user_signed_up
-#
-# @receiver(user_signed_up)
-# def assign_agent_role(request, user, **kwargs):
-#     """Assign agent role to users who sign up via social auth."""
-#     if not user.role or user.role == 'PUBLIC':
-#         user.role = 'MINOR_ADMIN'
-#         user.save(update_fields=['role'])

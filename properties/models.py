@@ -190,7 +190,6 @@ class Property(models.Model):
     def __str__(self): 
         return self.title
     
-    @property
     def is_available(self):
         """Check if property is available for rent."""
         return self.status == 'PUBLISHED'
