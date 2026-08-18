@@ -127,3 +127,37 @@ class CustomUser(AbstractUser):
         if self.first_name or self.last_name:
             return f"{self.first_name} {self.last_name}".strip()
         return self.username
+
+
+class EmailOTP(models.Model):
+    """
+    A one-time verification code emailed to a user, used for email
+    verification at signup (and reusable later for other email-based OTP
+    needs without a schema change).
+    """
+
+    class Purpose(models.TextChoices):
+        SIGNUP = 'SIGNUP', 'Signup Verification'
+
+    user = models.ForeignKey(
+        'accounts.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='email_otps',
+    )
+    code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.SIGNUP)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'purpose', 'is_used']),
+        ]
+
+    def __str__(self):
+        return f"OTP for {self.user} ({self.get_purpose_display()})"
+
+    def is_valid(self):
+        from django.utils import timezone
+        return not self.is_used and timezone.now() < self.expires_at
