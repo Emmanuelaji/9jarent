@@ -62,13 +62,22 @@ class RateLimitMiddleware:
         return self.get_response(request)
 
     def _get_client_ip(self, request):
-        """Get client IP from request, respecting X-Forwarded-For."""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
+        """
+        Get the client IP for rate-limiting purposes.
+
+        X-Forwarded-For is attacker-controlled unless the request actually
+        came through a trusted reverse proxy - blindly trusting it lets
+        anyone bypass rate limits by sending a different fake value on
+        every request. Only consult it when TRUST_PROXY_HEADERS is enabled
+        (set this only if the deployment sits behind a proxy/load balancer
+        that overwrites/strips client-supplied X-Forwarded-For itself).
+        """
+        from django.conf import settings
+        if getattr(settings, 'TRUST_PROXY_HEADERS', False):
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
 
 
 class SecurityHeadersMiddleware:
