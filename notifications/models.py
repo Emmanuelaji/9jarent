@@ -17,6 +17,8 @@ class Notification(models.Model):
         INSPECTION_ACCEPTED = 'inspection_accepted', 'Inspection Accepted'
         INSPECTION_DECLINED = 'inspection_declined', 'Inspection Declined'
         INSPECTION_COMPLETED = 'inspection_completed', 'Inspection Completed'
+        REPORT_SUBMITTED = 'report_submitted', 'Report Submitted'
+        REPORT_RESOLVED = 'report_resolved', 'Report Resolved'
         SYSTEM = 'system', 'System'
 
     user = models.ForeignKey(
