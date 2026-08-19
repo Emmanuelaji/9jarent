@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+handler400 = 'nigerrents.views.handler400'
 handler403 = 'nigerrents.views.handler403'
 handler404 = 'nigerrents.views.handler404'
 handler500 = 'nigerrents.views.handler500'
