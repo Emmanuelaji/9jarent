@@ -74,6 +74,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+# Only enable this if the deployment sits behind a reverse proxy/load
+# balancer that you control and that overwrites (not just appends to)
+# X-Forwarded-For - otherwise a client can spoof this header to bypass
+# RateLimitMiddleware's IP-based limits entirely. Off by default.
+TRUST_PROXY_HEADERS = env.bool('TRUST_PROXY_HEADERS', default=False)
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
@@ -160,6 +166,11 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='9jaRent <noreply@9jarent.com.ng>')
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
+
+# Base URL used to build absolute links in outgoing emails (Notification.link
+# and similar fields store relative paths). Set this to the real domain in
+# production's .env.
+SITE_URL = env('SITE_URL', default='http://localhost:8000')
 
 # Logging Configuration
 LOGGING = {
