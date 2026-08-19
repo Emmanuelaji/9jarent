@@ -643,3 +643,104 @@ class PropertySearchTests(TestCase):
         self.assertEqual(response.status_code, 200)
         # With 3 published properties and paginate_by=12, all should be on page 1
         self.assertEqual(len(response.context['properties']), 3)
+
+    def test_sort_by_price_low_to_high(self):
+        """?sort=price_low orders ascending by price."""
+        response = self.client.get(reverse('properties:list'), {'sort': 'price_low'})
+        titles = [p.title for p in response.context['properties']]
+        self.assertEqual(titles, ['Budget Flat', 'Lekki Flat', 'Abuja Duplex'])
+
+    def test_sort_by_price_high_to_low(self):
+        """?sort=price_high orders descending by price."""
+        response = self.client.get(reverse('properties:list'), {'sort': 'price_high'})
+        titles = [p.title for p in response.context['properties']]
+        self.assertEqual(titles, ['Abuja Duplex', 'Lekki Flat', 'Budget Flat'])
+
+    def test_unrecognized_sort_value_falls_back_to_default(self):
+        """An arbitrary/garbage ?sort= value doesn't crash - it's not a raw order_by() field."""
+        response = self.client.get(reverse('properties:list'), {'sort': 'created_by__email'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_malformed_price_params_are_ignored_not_500(self):
+        """Non-numeric min_price/max_price are ignored gracefully instead of raising."""
+        response = self.client.get(reverse('properties:list'), {'min_price': 'abc', 'max_price': 'xyz'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Lekki Flat')
+
+    def test_malformed_state_and_bedrooms_params_are_ignored_not_500(self):
+        """Non-numeric state/lga/bedrooms query params don't crash the search page."""
+        response = self.client.get(reverse('properties:list'), {'state': 'not-an-id', 'bedrooms': 'abc'})
+        self.assertEqual(response.status_code, 200)
+
+
+class PropertyViewCounterTests(TestCase):
+    """Test the atomic view-count increment on the property detail page."""
+
+    def setUp(self):
+        self.client = Client()
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Lekki', slug='lekki')
+        self.property = Property.objects.create(
+            title='Viewed Flat',
+            description='A flat with enough description text for validation.',
+            price=1500000,
+            state=self.state,
+            lga=self.lga,
+            area='Lekki Phase 1',
+            property_type='3-Bedroom Flat',
+            bedrooms=3,
+            bathrooms=2,
+            agent_name='Agent',
+            agent_whatsapp='2348012345678',
+            status='PUBLISHED',
+            views=0,
+        )
+
+    def test_viewing_property_increments_view_count(self):
+        self.client.get(reverse('properties:detail', kwargs={'slug': self.property.slug}))
+        self.property.refresh_from_db()
+        self.assertEqual(self.property.views, 1)
+
+    def test_repeated_views_increment_correctly(self):
+        """Each request adds exactly one, using an atomic DB-side update rather
+        than a Python-side read-modify-write that could drop increments."""
+        for _ in range(5):
+            self.client.get(reverse('properties:detail', kwargs={'slug': self.property.slug}))
+        self.property.refresh_from_db()
+        self.assertEqual(self.property.views, 5)
+
+
+class ErrorPageTests(TestCase):
+    """Custom error page templates render without crashing."""
+
+    def _request(self):
+        from django.test import RequestFactory
+        from django.contrib.auth.models import AnonymousUser
+        request = RequestFactory().get('/')
+        # Real requests reach these handlers only after the full middleware
+        # stack has run (AuthenticationMiddleware attaches request.user);
+        # RequestFactory skips that, and base.html's context processors
+        # expect request.user to exist.
+        request.user = AnonymousUser()
+        return request
+
+    def test_400_page_renders(self):
+        from nigerrents.views import handler400
+        response = handler400(self._request())
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b'Bad Request', response.content)
+
+    def test_403_page_renders(self):
+        from nigerrents.views import handler403
+        response = handler403(self._request())
+        self.assertEqual(response.status_code, 403)
+
+    def test_404_page_renders(self):
+        from nigerrents.views import handler404
+        response = handler404(self._request())
+        self.assertEqual(response.status_code, 404)
+
+    def test_500_page_renders(self):
+        from nigerrents.views import handler500
+        response = handler500(self._request())
+        self.assertEqual(response.status_code, 500)
