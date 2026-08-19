@@ -4,6 +4,11 @@
 from django.shortcuts import render
 
 
+def handler400(request, exception=None):
+    """Custom 400 Bad Request page."""
+    return render(request, '400.html', status=400)
+
+
 def handler403(request, exception=None):
     """Custom 403 Forbidden page."""
     return render(request, '403.html', status=403)
