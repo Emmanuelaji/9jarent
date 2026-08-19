@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }}</title>
+</head>
+<body style="margin:0; padding:0; background:#F8F9FA; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F9FA; padding: 24px 0;">
+<tr><td align="center">
+<table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; max-width:480px; width:100%;">
+    <tr>
+        <td style="background:#0B3D2E; padding: 24px 32px;">
+            <span style="color:#ffffff; font-size:20px; font-weight:700;">9ja<span style="color:#F2A93B;">Rent</span>.com.ng</span>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 32px;">
+            <h1 style="margin:0 0 16px; font-size:20px; color:#0B3D2E;">{{ title }}</h1>
+            <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#333333;">{{ message }}</p>
+            {% if link_url %}
+            <a href="{{ link_url }}" style="display:inline-block; background:#F2A93B; color:#0B3D2E; text-decoration:none; font-weight:700; padding:12px 24px; border-radius:8px; font-size:14px;">View on 9jaRent</a>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px 32px; background:#F8F9FA; border-top:1px solid #E9ECEF;">
+            <p style="margin:0; font-size:12px; color:#888888;">You're receiving this because of activity on your 9jaRent.com.ng account. &copy; 2026 9jaRent.</p>
+        </td>
+    </tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
