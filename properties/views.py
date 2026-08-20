@@ -1,17 +1,16 @@
 # properties/views.py with proper permission enforcement and DRAFT support
 
-from decimal import Decimal, InvalidOperation
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import F, Q, Sum
+from django.db.models import Q, Sum, F
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
 from urllib.parse import quote
+from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.urls import reverse_lazy
 
@@ -51,6 +50,7 @@ class PropertyListView(ListView):
     context_object_name = 'properties'
     paginate_by = 12
 
+    # Explicit whitelist - never pass a raw `?sort=` query value into .order_by()
     ALLOWED_SORTS = {
         'newest': '-created_at',
         'oldest': 'created_at',
@@ -95,7 +95,8 @@ class PropertyListView(ListView):
         if bedrooms and bedrooms.isdigit():
             queryset = queryset.filter(bedrooms__gte=int(bedrooms))
 
-        return queryset.order_by(self.ALLOWED_SORTS.get(sort, self.ALLOWED_SORTS['newest']))
+        order_by = self.ALLOWED_SORTS.get(sort, self.ALLOWED_SORTS['newest'])
+        return queryset.order_by(order_by)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -118,9 +119,8 @@ class PropertyDetailView(DetailView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        # Atomic DB-side increment - `obj.views += 1; obj.save()` is a
-        # Python-side read-modify-write that silently drops increments
-        # under concurrent requests.
+        # Atomic DB-side increment - a Python `obj.views += 1; obj.save()` here
+        # would race under concurrent requests and lose increments.
         Property.objects.filter(pk=obj.pk).update(views=F('views') + 1)
         obj.refresh_from_db(fields=['views'])
         return obj

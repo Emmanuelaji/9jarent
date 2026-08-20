@@ -46,11 +46,20 @@ class RateLimitMiddleware:
 
                 # Get current count
                 data = cache.get(cache_key)
+                now = time.time()
                 if data is None:
-                    cache.set(cache_key, {'count': 1, 'first_request': time.time()}, window)
+                    cache.set(cache_key, {'count': 1, 'first_request': now}, window)
                 else:
                     data['count'] += 1
-                    cache.set(cache_key, data, window)
+                    # Re-set with the TIME REMAINING in the original window, not a
+                    # fresh `window` seconds - otherwise a steady stream of requests
+                    # keeps pushing the expiry forward and the window never closes.
+                    remaining = window - (now - data['first_request'])
+                    if remaining <= 0:
+                        cache.set(cache_key, {'count': 1, 'first_request': now}, window)
+                        data = {'count': 1}
+                    else:
+                        cache.set(cache_key, data, remaining)
 
                     if data['count'] > max_requests:
                         return HttpResponseForbidden(
@@ -63,14 +72,14 @@ class RateLimitMiddleware:
 
     def _get_client_ip(self, request):
         """
-        Get the client IP for rate-limiting purposes.
+        Get the client IP from the request.
 
-        X-Forwarded-For is attacker-controlled unless the request actually
-        came through a trusted reverse proxy - blindly trusting it lets
-        anyone bypass rate limits by sending a different fake value on
-        every request. Only consult it when TRUST_PROXY_HEADERS is enabled
-        (set this only if the deployment sits behind a proxy/load balancer
-        that overwrites/strips client-supplied X-Forwarded-For itself).
+        X-Forwarded-For is client-supplied and trivially spoofable - trusting it
+        blindly lets anyone bypass rate limiting by sending a different fake value
+        per request. Only honor it when TRUST_PROXY_HEADERS is explicitly enabled,
+        which should only be done when the app sits behind a proxy/load balancer
+        that overwrites (never appends to) this header, so the value Django sees
+        is guaranteed proxy-set rather than attacker-set.
         """
         from django.conf import settings
         if getattr(settings, 'TRUST_PROXY_HEADERS', False):
