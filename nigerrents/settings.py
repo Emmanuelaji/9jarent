@@ -164,6 +164,10 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='9jaRent <noreply@9jarent.com.ng>')
+
+# Used to build absolute links in emails (notifications, etc) sent from
+# contexts with no request object to call request.build_absolute_uri() on.
+SITE_URL = env('SITE_URL', default='http://localhost:8000' if DEBUG else '')
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
 
 # Logging Configuration
