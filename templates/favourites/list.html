@@ -1,9 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'base_portal.html' %}
 {% block title %}My Favourites | 9jaRent{% endblock %}
-{% block content %}
-<div class="container py-5">
-    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Renter Portal</p>
-    <h2 class="display-font mb-4">My Favourites</h2>
+{% block portal_content %}
+<div class="mb-4">
+    <h2 class="display-font mb-1">My Favourites</h2>
+    <p class="text-muted mb-0">Properties you have saved.</p>
+</div>
 
     {% if favourites %}
     <div class="row">
@@ -49,5 +50,4 @@
         <a href="{% url 'properties:list' %}" class="btn btn-nigeria">Browse Properties</a>
     </div>
     {% endif %}
-</div>
 {% endblock %}

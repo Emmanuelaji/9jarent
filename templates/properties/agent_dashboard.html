@@ -1,5 +1,5 @@
 {% extends 'base_portal.html' %}
-{% block title %}My Properties | 9jaRent{% endblock %}
+{% block title %}Dashboard | 9jaRent{% endblock %}
 
 {% block portal_content %}
 {% if agent_status == 'PENDING' %}
@@ -30,47 +30,63 @@
 
 <div class="portal-welcome d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
-        <h2 class="display-font">My Properties</h2>
-        <p>{{ total_count }} total listing{{ total_count|pluralize }}</p>
+        <h2 class="display-font">Welcome back, {{ user.full_name_or_username }} <span>&#128075;</span></h2>
+        <p>Here's an overview of your listings and activities.</p>
     </div>
     {% if agent_status == 'APPROVED' %}
-    <a href="{% url 'properties:create' %}" class="btn btn-nigeria"><i class="fas fa-plus me-1"></i> List a New Property</a>
+    <a href="{% url 'properties:create' %}" class="btn btn-nigeria"><i class="fas fa-plus me-1"></i> Add Property</a>
     {% endif %}
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
         <div class="metric-card">
-            <div class="metric-label">Total Listings</div>
+            <div class="metric-label">Total Properties</div>
             <div class="metric-value">{{ total_count }}</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
         <div class="metric-card">
             <div class="metric-label">Published</div>
             <div class="metric-value" style="color: var(--emerald);">{{ published_count }}</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
         <div class="metric-card">
             <div class="metric-label">Pending Review</div>
             <div class="metric-value" style="color: var(--amber-dark);">{{ pending_count }}</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
         <div class="metric-card">
-            <div class="metric-label">Total Views</div>
-            <div class="metric-value"><i class="fas fa-eye" style="font-size: 1.1rem; color: var(--ink-soft);"></i> {{ total_views }}</div>
+            <div class="metric-label">Rejected</div>
+            <div class="metric-value" style="color: var(--terracotta);">{{ rejected_count }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-label">Rented</div>
+            <div class="metric-value">{{ rented_count }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-label">Inspection Requests</div>
+            <div class="metric-value">{{ inspection_requests_count }}</div>
         </div>
     </div>
 </div>
 
 <div class="data-card">
+    <div class="data-card-header">
+        <h5>My Properties</h5>
+    </div>
+    {% if recent_properties %}
     <div class="table-responsive">
         <table class="table data-table">
             <thead><tr><th>Property</th><th>Location</th><th>Price</th><th>Status</th><th>Views</th><th>Actions</th></tr></thead>
             <tbody>
-                {% for prop in my_properties %}
+                {% for prop in recent_properties %}
                 <tr>
                     <td>
                         <div class="prop-cell">
@@ -93,23 +109,18 @@
                         <a href="{% url 'properties:edit' prop.pk %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-pen"></i></a>
                     </td>
                 </tr>
-                {% empty %}
-                <tr><td colspan="6" class="text-center py-5">
-                    <p class="text-muted mb-3">You haven't listed a property yet.</p>
-                    {% if agent_status == 'APPROVED' %}<a href="{% url 'properties:create' %}" class="btn btn-nigeria">List Your First Property</a>{% endif %}
-                </td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    <div class="text-center py-3">
+        <a href="{% url 'properties:mine' %}" class="view-all">View all properties &rarr;</a>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-muted mb-3">You haven't listed a property yet.</p>
+        {% if agent_status == 'APPROVED' %}<a href="{% url 'properties:create' %}" class="btn btn-nigeria">List Your First Property</a>{% endif %}
+    </div>
+    {% endif %}
 </div>
-{% if is_paginated %}
-<nav class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
-        <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-        {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
-    </ul>
-</nav>
-{% endif %}
 {% endblock %}

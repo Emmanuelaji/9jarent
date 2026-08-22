@@ -56,10 +56,11 @@ class NotificationTests(TestCase):
         )
 
         self.client.login(username='renter', password='testpass123')
+        from datetime import date, timedelta
         self.client.post(
             reverse('inspections:request', kwargs={'property_id': prop.pk}),
             {
-                'requested_date': '2026-08-20',
+                'requested_date': (date.today() + timedelta(days=3)).isoformat(),
                 'requested_time': '10:00',
                 'renter_message': 'I want to inspect this property.'
             }

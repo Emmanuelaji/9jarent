@@ -10,6 +10,7 @@ urlpatterns = [
     path('properties/<slug:slug>/', views.PropertyDetailView.as_view(), name='detail'),
 
     # Agent property management (requires approved agent)
+    path('agent/dashboard/', views.AgentDashboardView.as_view(), name='agent_dashboard'),
     path('agent/properties/', views.MyListingsView.as_view(), name='mine'),
     path('agent/properties/drafts/', views.DraftListView.as_view(), name='drafts'),
     path('agent/properties/add/', views.PropertyCreateView.as_view(), name='create'),

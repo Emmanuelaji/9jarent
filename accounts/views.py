@@ -5,7 +5,7 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView, DetailView
+from django.views.generic import CreateView, UpdateView, TemplateView, DetailView, ListView
 from django.db import models
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
@@ -166,6 +166,74 @@ class CompleteProfileView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Profile updated successfully.")
         return super().form_valid(form)
+
+
+class AgentProfileEditView(LoginRequiredMixin, UpdateView):
+    """Ongoing 'Agent Profile' page in the portal sidebar (Settings-style), as
+    opposed to CompleteProfileView's one-time post-signup onboarding screen.
+    Same form/model - just a different template/URL for after onboarding."""
+    form_class = ProfileCompletionForm
+    template_name = 'accounts/profile_edit.html'
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_agent:
+            messages.error(request, "Only agents can access this page.")
+            return redirect('properties:home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('accounts:profile_edit')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Profile updated successfully.")
+        return super().form_valid(form)
+
+
+class AgentsDirectoryView(ListView):
+    """Public directory of verified/approved agents (Browse Properties > Agents)."""
+    model = CustomUser
+    template_name = 'accounts/agents_directory.html'
+    context_object_name = 'agents'
+    paginate_by = 12
+
+    ALLOWED_SORTS = {
+        'active': '-approved_at',
+        'listings': '-property_count',
+        'name': 'company_name',
+    }
+
+    def get_queryset(self):
+        qs = CustomUser.objects.filter(
+            role='MINOR_ADMIN', agent_status='APPROVED'
+        ).annotate(
+            property_count=models.Count('properties', filter=models.Q(properties__status='PUBLISHED'))
+        )
+
+        search = self.request.GET.get('search')
+        state = self.request.GET.get('state')
+        if search:
+            qs = qs.filter(
+                models.Q(company_name__icontains=search) |
+                models.Q(first_name__icontains=search) |
+                models.Q(last_name__icontains=search) |
+                models.Q(city__icontains=search)
+            )
+        if state:
+            qs = qs.filter(state=state)
+
+        sort = self.request.GET.get('sort', 'active')
+        order_by = self.ALLOWED_SORTS.get(sort, self.ALLOWED_SORTS['active'])
+        return qs.order_by(order_by)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['states'] = CustomUser.objects.filter(
+            role='MINOR_ADMIN', agent_status='APPROVED'
+        ).exclude(state__isnull=True).exclude(state='').values_list('state', flat=True).distinct().order_by('state')
+        return context
 
 
 class AgentPublicProfileView(DetailView):

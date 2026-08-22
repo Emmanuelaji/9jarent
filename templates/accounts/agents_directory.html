@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Verified Agents | 9jaRent{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">
+        <a href="{% url 'properties:home' %}" class="text-decoration-none" style="color: var(--emerald);">Home</a> &gt; Agents
+    </p>
+    <h2 class="display-font mb-4">Verified Agents</h2>
+
+    <form method="get" class="d-flex flex-wrap gap-2 mb-4">
+        <input type="text" name="search" value="{{ request.GET.search }}" class="form-control" style="max-width: 320px;" placeholder="Search agents by name, agency, location...">
+        <select name="state" class="form-select" style="max-width: 180px;" onchange="this.form.submit()">
+            <option value="">All States</option>
+            {% for state in states %}
+            <option value="{{ state }}" {% if request.GET.state == state %}selected{% endif %}>{{ state }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort" class="form-select" style="max-width: 180px;" onchange="this.form.submit()">
+            <option value="active" {% if request.GET.sort == 'active' or not request.GET.sort %}selected{% endif %}>Most Active</option>
+            <option value="listings" {% if request.GET.sort == 'listings' %}selected{% endif %}>Most Listings</option>
+            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+        </select>
+        <button type="submit" class="btn btn-nigeria">Search</button>
+    </form>
+
+    {% if agents %}
+    <div class="card border-0 shadow-sm">
+        <div class="list-group list-group-flush">
+            {% for agent in agents %}
+            <div class="list-group-item d-flex align-items-center justify-content-between gap-3 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    {% if agent.profile_photo %}
+                        <img src="{{ agent.profile_photo.url }}" alt="" class="rounded-circle" width="48" height="48" style="object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:var(--emerald);color:white;font-family:'Fraunces',serif;">{{ agent.first_name|default:agent.username|first|upper }}</div>
+                    {% endif %}
+                    <div>
+                        <strong>{{ agent.company_name|default:agent.full_name_or_username }}</strong>
+                        <p class="small text-muted mb-0">{{ agent.property_count }} active listing{{ agent.property_count|pluralize }}{% if agent.city %} &middot; {{ agent.city }}, {{ agent.state }}{% endif %}</p>
+                    </div>
+                </div>
+                <a href="{% url 'accounts:agent_public_profile' agent.username %}" class="btn btn-sm btn-outline-secondary">View Profile</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-user-tie fa-3x mb-3" style="color: var(--sage);"></i>
+        <h5 class="display-font">No agents found</h5>
+        <p class="text-muted">Try a different search or filter.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

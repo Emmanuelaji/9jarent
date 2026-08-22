@@ -1,11 +1,12 @@
-{% extends 'base.html' %}
+{% extends 'base_portal.html' %}
 {% block title %}Messages | 9jaRent{% endblock %}
-{% block content %}
-<div class="container-fluid py-4" style="max-width: 1140px;">
-    <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Messages</p>
-    <h2 class="display-font mb-4">Communicate with {% if user.is_agent %}renters about your properties{% else %}agents about properties{% endif %}.</h2>
+{% block portal_content %}
+<div class="mb-4">
+    <h2 class="display-font mb-1">Messages</h2>
+    <p class="text-muted mb-0">Communicate with {% if user.is_agent %}renters about your properties{% else %}agents about properties{% endif %}.</p>
+</div>
 
-    <div class="card border-0 shadow-sm" style="height: 70vh; min-height: 480px;">
+<div class="data-card" style="height: 70vh; min-height: 480px;">
         <div class="row g-0 h-100">
             <div class="col-md-4 border-end h-100 d-flex flex-column">
                 <div class="p-3 border-bottom">
@@ -75,7 +76,6 @@
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 {% block extra_js %}
 <style>

@@ -281,6 +281,38 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
+class AgentDashboardView(LoginRequiredMixin, AgentRequiredMixin, ListView):
+    """Agent portal home: stat cards + a preview of recent listings."""
+    model = Property
+    template_name = 'properties/agent_dashboard.html'
+    context_object_name = 'recent_properties'
+    paginate_by = None
+
+    def get_queryset(self):
+        return Property.objects.filter(
+            created_by=self.request.user
+        ).select_related('state', 'lga').prefetch_related('images').order_by('-created_at')[:5]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context['agent_status'] = user.agent_status
+        context['rejection_reason'] = user.rejection_reason if user.is_rejected_agent else None
+
+        qs = Property.objects.filter(created_by=user)
+        context['total_count'] = qs.count()
+        context['published_count'] = qs.filter(status='PUBLISHED').count()
+        context['pending_count'] = qs.filter(status='PENDING_REVIEW').count()
+        context['rejected_count'] = qs.filter(status='REJECTED').count()
+        context['rented_count'] = qs.filter(status='RENTED').count()
+
+        from inspections.models import InspectionRequest
+        context['inspection_requests_count'] = InspectionRequest.objects.filter(agent=user).count()
+
+        return context
+
+
 class MyListingsView(LoginRequiredMixin, AgentRequiredMixin, ListView):
     """Agent's own property listings dashboard."""
     model = Property

@@ -15,16 +15,42 @@ class NotificationListView(LoginRequiredMixin, ListView):
     context_object_name = 'notifications'
     paginate_by = 20
 
+    CATEGORY_TYPES = {
+        'messages': [Notification.Type.NEW_MESSAGE],
+        'inspections': [
+            Notification.Type.INSPECTION_REQUEST, Notification.Type.INSPECTION_ACCEPTED,
+            Notification.Type.INSPECTION_DECLINED, Notification.Type.INSPECTION_COMPLETED,
+        ],
+        'properties': [
+            Notification.Type.PROPERTY_APPROVED, Notification.Type.PROPERTY_REJECTED,
+            Notification.Type.PROPERTY_PUBLISHED,
+        ],
+        'agents': [
+            Notification.Type.AGENT_APPROVED, Notification.Type.AGENT_REJECTED, Notification.Type.AGENT_SUSPENDED,
+        ],
+        'reports': [Notification.Type.REPORT_SUBMITTED, Notification.Type.REPORT_RESOLVED],
+        'system': [Notification.Type.SYSTEM],
+    }
+
     def get_queryset(self):
-        return Notification.objects.filter(
-            user=self.request.user
-        ).order_by('-created_at')
+        qs = Notification.objects.filter(user=self.request.user)
+        category = self.request.GET.get('category', 'all')
+        if category == 'unread':
+            qs = qs.filter(is_read=False)
+        elif category in self.CATEGORY_TYPES:
+            qs = qs.filter(notification_type__in=self.CATEGORY_TYPES[category])
+        return qs.order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['unread_count'] = Notification.objects.filter(
-            user=self.request.user, is_read=False
-        ).count()
+        base_qs = Notification.objects.filter(user=self.request.user)
+        context['unread_count'] = base_qs.filter(is_read=False).count()
+        context['total_count'] = base_qs.count()
+        context['category'] = self.request.GET.get('category', 'all')
+        context['category_counts'] = {
+            name: base_qs.filter(notification_type__in=types).count()
+            for name, types in self.CATEGORY_TYPES.items()
+        }
         return context
 
 

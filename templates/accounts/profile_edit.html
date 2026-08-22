@@ -1,0 +1,53 @@
+{% extends 'base_portal.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Agent Profile | 9jaRent{% endblock %}
+
+{% block portal_content %}
+<div class="mb-4">
+    <h2 class="display-font mb-1">Agent Profile</h2>
+    <p class="text-muted mb-0">Update your profile information.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="data-card p-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{% url 'properties:agent_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-nigeria">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="data-card p-4 text-center">
+            <p class="small text-uppercase fw-semibold mb-3" style="color: var(--emerald); letter-spacing: 0.08em;"><i class="fas fa-eye me-1"></i> Profile Preview</p>
+            {% if user.profile_photo %}
+                <img src="{{ user.profile_photo.url }}" alt="" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:100px;height:100px;background:var(--sage);"><i class="fas fa-user fa-2x text-muted"></i></div>
+            {% endif %}
+            <h5 class="display-font mb-1">{{ user.company_name|default:user.full_name_or_username }}</h5>
+            <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt"></i> {{ user.city }}{% if user.city and user.state %}, {% endif %}{{ user.state }}</p>
+            {% if user.agent_status == 'APPROVED' %}<span class="verified-seal mb-3 d-inline-block"><i class="fas fa-shield-check"></i> Verified Agent</span>{% endif %}
+            <div class="row text-center mt-3 pt-3 border-top">
+                <div class="col-4">
+                    <div class="fw-bold">{{ user.properties.count }}</div>
+                    <div class="small text-muted">Properties</div>
+                </div>
+                <div class="col-4">
+                    <div class="fw-bold">{{ user.approved_at|timesince:""|default:"-" }}</div>
+                    <div class="small text-muted">Active</div>
+                </div>
+                <div class="col-4">
+                    <div class="fw-bold">98%</div>
+                    <div class="small text-muted">Response</div>
+                </div>
+            </div>
+            <a href="{% url 'accounts:agent_public_profile' user.username %}" class="btn btn-outline-secondary w-100 mt-3">View Public Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
