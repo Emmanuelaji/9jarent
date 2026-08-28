@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied
 
 from properties.models import Property, State, LGA
 from inspections.models import InspectionRequest

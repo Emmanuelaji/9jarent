@@ -1,6 +1,5 @@
 # dashboard/context_processors.py
 
-from django.db.models import Count, Q
 from properties.models import Property
 from inspections.models import InspectionRequest
 from reports.models import Report

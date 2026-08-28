@@ -1,8 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
-from django.views.decorators.http import require_POST
 from django.contrib import messages
 
 from properties.models import Property

@@ -1,12 +1,11 @@
 # properties/views.py with proper permission enforcement and DRAFT support
 
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Sum, F
-from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
 from urllib.parse import quote
@@ -14,8 +13,8 @@ from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.urls import reverse_lazy
 
-from accounts.permissions import ApprovedAgentRequiredMixin, AgentRequiredMixin, object_owner_required, admin_required
-from .models import Property, State, LGA, PropertyImage
+from accounts.permissions import ApprovedAgentRequiredMixin, AgentRequiredMixin, object_owner_required
+from .models import Property, State, PropertyImage
 from .forms import PropertyForm
 
 

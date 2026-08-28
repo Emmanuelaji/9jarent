@@ -8,7 +8,6 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, TemplateView, DetailView, ListView
 from django.db import models
 from django.shortcuts import redirect
-from django.core.exceptions import PermissionDenied
 from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm
 from .models import CustomUser
 

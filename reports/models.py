@@ -3,7 +3,6 @@ from django.db import models
 from django.urls import reverse
 
 from properties.models import Property
-from accounts.models import CustomUser
 
 
 class Report(models.Model):

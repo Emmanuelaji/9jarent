@@ -11,6 +11,11 @@
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="data-card p-4">
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="text" class="form-control" value="{{ user.email }}" disabled readonly>
+                <small class="text-muted">Contact support to change your login email.</small>
+            </div>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form|crispy }}

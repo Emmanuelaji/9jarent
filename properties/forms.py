@@ -2,7 +2,7 @@
 # properties/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Property, PropertyImage
+from .models import Property
 import os
 
 

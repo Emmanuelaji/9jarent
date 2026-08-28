@@ -3,12 +3,10 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 from properties.models import Property, State, LGA
-from inspections.models import InspectionRequest
 from messaging.models import Conversation, Message
 from .models import Notification
 
 User = get_user_model()
-
 
 class NotificationTests(TestCase):
     def setUp(self):

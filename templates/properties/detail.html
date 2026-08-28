@@ -92,7 +92,7 @@
                     <!-- Fee Breakdown -->
                     {% if property.service_charge or property.agency_fee or property.legal_fee or property.caution_fee or property.agreement_fee or property.other_fees %}
                     <hr>
-                    <h5 class="display-font">Fee Breakdown</h5>
+                    <h5 class="display-font" id="feeBreakdownFull">Fee Breakdown</h5>
                     <div class="table-responsive">
                         <table class="table table-sm table-borderless">
                             <tbody>
@@ -119,9 +119,38 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+            <div class="card border-0 shadow-sm sticky-top" id="sidebarCard" style="top: 20px;">
                 <div class="card-body p-4">
-                    <h5 class="card-title display-font">Contact Agent</h5>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title display-font mb-1">{{ property.title }}</h5>
+                        <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('sidebarCard').style.display='none';"></button>
+                    </div>
+                    <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.state.name }}</p>
+
+                    <span class="price-tag mono-price fs-4 d-block mb-1">&#8358;{{ property.price|floatformat:0 }}<small style="opacity:0.7;">/{{ property.get_rental_period_display }}</small></span>
+                    {% if property.service_charge %}<p class="text-muted small mb-3">Service charge not included</p>{% endif %}
+
+                    {% if property.agency_fee or property.legal_fee or property.caution_fee or property.agreement_fee %}
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="small text-uppercase" style="letter-spacing: 0.03em;">Estimated Move-in Cost</strong>
+                        <a href="#feeBreakdownFull" class="small text-nigeria" style="text-decoration: none;">See Breakdown</a>
+                    </div>
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr><td class="text-muted small">Annual Rent</td><td class="text-end mono-price small">&#8358;{{ property.price|floatformat:0 }}</td></tr>
+                            {% if property.agency_fee %}<tr><td class="text-muted small">Agency Fee</td><td class="text-end mono-price small">&#8358;{{ property.agency_fee|floatformat:0 }}</td></tr>{% endif %}
+                            {% if property.legal_fee %}<tr><td class="text-muted small">Legal Fee</td><td class="text-end mono-price small">&#8358;{{ property.legal_fee|floatformat:0 }}</td></tr>{% endif %}
+                            {% if property.caution_fee %}<tr><td class="text-muted small">Caution Fee</td><td class="text-end mono-price small">&#8358;{{ property.caution_fee|floatformat:0 }}</td></tr>{% endif %}
+                            {% if property.agreement_fee %}<tr><td class="text-muted small">Agreement Fee</td><td class="text-end mono-price small">&#8358;{{ property.agreement_fee|floatformat:0 }}</td></tr>{% endif %}
+                            <tr class="fw-bold" style="border-top: 1px solid #dee2e6;">
+                                <td class="small">Estimated Total</td>
+                                <td class="text-end mono-price small" style="color: var(--emerald);">&#8358;{{ property.total_move_in_cost|floatformat:0 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    <hr>
 
                     <!-- Agent Profile Card -->
                     <div class="d-flex align-items-center gap-3 mb-3">
