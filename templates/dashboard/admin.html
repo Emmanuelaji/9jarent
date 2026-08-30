@@ -1,359 +1,152 @@
-{% extends 'dashboard/admin_base.html' %}
+{% extends 'base_portal.html' %}
 {% load humanize %}
-
 {% block title %}Admin Dashboard | 9jaRent{% endblock %}
 
-{% block dashboard_content %}
-<!-- Welcome Section -->
-<div class="welcome-section d-flex justify-content-between align-items-start">
-    <div>
-        <h2>Welcome back, {{ user.full_name_or_username }} 👋</h2>
-        <p>Here's what's happening on your platform today.</p>
-    </div>
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="far fa-calendar-alt me-1"></i> Aug 10 - Aug 16, 2026
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#">Today</a></li>
-            <li><a class="dropdown-item" href="#">This Week</a></li>
-            <li><a class="dropdown-item" href="#">This Month</a></li>
-            <li><a class="dropdown-item" href="#">This Year</a></li>
-        </ul>
-    </div>
+{% block portal_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+<div>
+<h1 class="fs-3 fw-bold mb-1">Welcome back, {{ user.full_name_or_username }} <span style="font-size:1.5rem;">&#128075;</span></h1>
+<p class="text-muted mb-0">Here's what's happening on your platform today.</p>
+</div>
 </div>
 
-<!-- Metric Cards Row -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Total Users</div>
-            <div class="metric-value">{{ total_users|default:"2,842"|intcomma }}</div>
-            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+12.5%</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Total Agents</div>
-            <div class="metric-value">{{ total_agents|default:"486"|intcomma }}</div>
-            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+8.2%</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Pending Agents</div>
-            <div class="metric-value">{{ pending_agents|default:"18"|intcomma }}</div>
-            <div class="metric-change down"><i class="fas fa-arrow-down me-1"></i>-4.3%</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Total Properties</div>
-            <div class="metric-value">{{ total_listings|default:"1,256"|intcomma }}</div>
-            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+15.7%</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Published</div>
-            <div class="metric-value">{{ published_listings|default:"842"|intcomma }}</div>
-            <div class="metric-change up"><i class="fas fa-arrow-up me-1"></i>+10.1%</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4 col-xl-2">
-        <div class="metric-card">
-            <div class="metric-label">Pending Review</div>
-            <div class="metric-value">{{ pending_review_listings|default:"67"|intcomma }}</div>
-            <div class="metric-change down"><i class="fas fa-arrow-down me-1"></i>-2.4%</div>
-        </div>
-    </div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">{{ total_users|intcomma }}</div></div>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Total Agents</div><div class="stat-value">{{ total_agents|intcomma }}</div></div>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Pending Agents</div><div class="stat-value">{{ pending_agents|intcomma }}</div></div>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Total Properties</div><div class="stat-value">{{ total_listings|intcomma }}</div></div>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Published</div><div class="stat-value">{{ published_listings|intcomma }}</div></div>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
+<div class="stat-card"><div class="stat-label">Pending Review</div><div class="stat-value">{{ pending_review_listings|intcomma }}</div></div>
+</div>
 </div>
 
-<!-- Pending Tables Row -->
-<div class="row g-4 mb-4">
-    <!-- Pending Agent Applications -->
-    <div class="col-xl-6">
-        <div class="data-card">
-            <div class="data-card-header">
-                <h5><i class="fas fa-user-clock me-2 text-warning"></i>Pending Agent Applications</h5>
-                <a href="{% url 'dashboard:agents_pending' %}" class="view-all">View all</a>
-            </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Agent</th>
-                            <th>Company</th>
-                            <th>Location</th>
-                            <th>Applied On</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for agent in pending_agent_applications %}
-                        <tr>
-                            <td>
-                                <div class="agent-cell">
-                                    {% if agent.profile_photo %}
-                                        <img src="{{ agent.profile_photo.url }}" alt="">
-                                    {% else %}
-                                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--emerald),var(--emerald-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;">
-                                            {{ agent.first_name|first|default:agent.username|first|upper }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="agent-info">
-                                        <div class="agent-name">{{ agent.full_name_or_username }}</div>
-                                        <div class="agent-email">{{ agent.email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{ agent.company_name|default:"Independent" }}</td>
-                            <td>{{ agent.city|default:"—" }}, {{ agent.state|default:"—" }}</td>
-                            <td>{{ agent.date_joined|date:"M d, Y" }}</td>
-                            <td>
-                                <a href="{% url 'dashboard:agent_detail' agent.pk %}" class="btn-action btn-action-review">
-                                    <i class="fas fa-eye"></i> Review
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">
-                                <i class="fas fa-user-check fa-2x mb-2 text-success"></i><br>
-                                No pending agent applications
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pending Property Approvals -->
-    <div class="col-xl-6">
-        <div class="data-card">
-            <div class="data-card-header">
-                <h5><i class="fas fa-home me-2 text-primary"></i>Pending Property Approvals</h5>
-                <a href="{% url 'dashboard:admin' %}" class="view-all">View all</a>
-            </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Property</th>
-                            <th>Agent</th>
-                            <th>Location</th>
-                            <th>Price</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for prop in pending_properties %}
-                        <tr>
-                            <td>
-                                <strong>{{ prop.title|truncatechars:25 }}</strong><br>
-                                <small class="text-muted">{{ prop.property_type }}</small>
-                            </td>
-                            <td>
-                                {% if prop.created_by %}
-                                    {{ prop.created_by.full_name_or_username }}
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ prop.area|truncatechars:20 }}, {{ prop.lga.name|default:"—" }}</td>
-                            <td class="mono-price">₦{{ prop.price|floatformat:0|intcomma }}</td>
-                            <td>
-                                <a href="{% url 'properties:detail' prop.slug %}" target="_blank" class="btn-action btn-action-review">
-                                    <i class="fas fa-eye"></i> Review
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">
-                                <i class="fas fa-check-circle fa-2x mb-2 text-success"></i><br>
-                                No pending property approvals
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="row g-3 mb-4">
+<div class="col-lg-6">
+<div class="card-custom p-3">
+<div class="section-header"><h5 class="section-title">Pending Agent Applications</h5><a href="{% url 'dashboard:agents_pending' %}" class="view-all-link">View all <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i></a></div>
+<div class="table-responsive-custom">
+<table class="table-custom">
+<thead><tr><th>Agent</th><th>Company</th><th>Location</th><th>Applied On</th><th>Actions</th></tr></thead>
+<tbody>
+{% for agent in pending_agent_applications %}
+<tr>
+<td><div class="table-user">
+{% if agent.profile_photo %}<img src="{{ agent.profile_photo.url }}" alt="" class="table-user-img">
+{% else %}<div class="table-user-img d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;">{{ agent.first_name|default:agent.username|first|upper }}</div>{% endif %}
+<span class="table-user-name">{{ agent.full_name_or_username }}</span>
+</div></td>
+<td>{{ agent.company_name|default:"Independent" }}</td>
+<td>{{ agent.city|default:"—" }}, {{ agent.state|default:"—" }}</td>
+<td>{{ agent.date_joined|date:"M d, Y" }}</td>
+<td><a href="{% url 'dashboard:agent_detail' agent.pk %}" class="btn-review"><i class="bi bi-clipboard-check"></i> Review</a></td>
+</tr>
+{% empty %}
+<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-person-check fs-3 mb-2 d-block text-success"></i>No pending agent applications</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
 </div>
 
-<!-- Bottom Row: Platform Overview, Recent Activity, Reports Summary -->
-<div class="row g-4">
-    <!-- Platform Overview -->
-    <div class="col-lg-4">
-        <div class="chart-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0" style="font-size:0.95rem;font-weight:700;">Platform Overview</h5>
-                <div class="d-flex gap-3" style="font-size:0.75rem;">
-                    <span><i class="fas fa-circle me-1" style="color:var(--emerald);font-size:0.5rem;"></i>Users</span>
-                    <span><i class="fas fa-circle me-1" style="color:var(--amber);font-size:0.5rem;"></i>Properties</span>
-                </div>
-            </div>
-            <div class="chart-placeholder">
-                <div class="text-center">
-                    <i class="fas fa-chart-line fa-2x mb-2"></i><br>
-                    <small>Chart.js integration ready</small><br>
-                    <small class="text-muted">Add Chart.js script to enable</small>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="col-lg-6">
+<div class="card-custom p-3">
+<div class="section-header"><h5 class="section-title">Pending Property Approvals</h5><a href="{% url 'dashboard:admin' %}" class="view-all-link">View all <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i></a></div>
+<div class="table-responsive-custom">
+<table class="table-custom">
+<thead><tr><th>Property</th><th>Agent</th><th>Location</th><th>Price</th><th>Actions</th></tr></thead>
+<tbody>
+{% for prop in pending_properties %}
+<tr>
+<td><strong>{{ prop.title|truncatechars:25 }}</strong></td>
+<td>{% if prop.created_by %}{{ prop.created_by.full_name_or_username }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+<td>{{ prop.area|truncatechars:20 }}, {{ prop.lga.name|default:"—" }}</td>
+<td>&#8358;{{ prop.price|floatformat:0|intcomma }}</td>
+<td><a href="{% url 'properties:detail' prop.slug %}" target="_blank" class="btn-review"><i class="bi bi-clipboard-check"></i> Review</a></td>
+</tr>
+{% empty %}
+<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-check-circle fs-3 mb-2 d-block text-success"></i>No pending property approvals</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
 
-    <!-- Recent Activity -->
-    <div class="col-lg-4">
-        <div class="data-card">
-            <div class="data-card-header">
-                <h5><i class="fas fa-stream me-2 text-info"></i>Recent Activity</h5>
-            </div>
-            <div style="max-height: 280px; overflow-y: auto;">
-                {% for activity in recent_activity %}
-                <div class="activity-item">
-                    <div class="activity-icon {{ activity.type }}">
-                        <i class="fas fa-{{ activity.icon }}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>{{ activity.title }}</p>
-                        <div class="time">{{ activity.timestamp|timesince }} ago</div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="activity-item">
-                    <div class="activity-icon message">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>New agent application from <strong>Aisha Bello</strong></p>
-                        <div class="time">2 mins ago</div>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon property">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>Property <strong>"3 Bedrooms Flat"</strong> submitted for review</p>
-                        <div class="time">15 mins ago</div>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon inspection">
-                        <i class="fas fa-clipboard-check"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>Inspection request for <strong>4 Bedroom Duplex</strong></p>
-                        <div class="time">1 hour ago</div>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon message">
-                        <i class="fas fa-comment"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>New message from <strong>John Doe</strong></p>
-                        <div class="time">2 hours ago</div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+<div class="row g-3">
+<div class="col-lg-4">
+<div class="card-custom p-3">
+<h5 class="section-title mb-3">Platform Overview</h5>
+<div style="height:200px;position:relative;">
+<svg viewBox="0 0 400 180" style="width:100%;height:100%;">
+<line x1="40" y1="20" x2="380" y2="20" stroke="#f3f4f6" stroke-width="1"/>
+<line x1="40" y1="60" x2="380" y2="60" stroke="#f3f4f6" stroke-width="1"/>
+<line x1="40" y1="100" x2="380" y2="100" stroke="#f3f4f6" stroke-width="1"/>
+<line x1="40" y1="140" x2="380" y2="140" stroke="#f3f4f6" stroke-width="1"/>
+<polyline points="{{ chart_users_points }}" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+{% for x, y in chart_users_coords %}<circle cx="{{ x }}" cy="{{ y }}" r="4" fill="#16a34a" stroke="white" stroke-width="2"/>{% endfor %}
+<polyline points="{{ chart_properties_points }}" fill="none" stroke="#f5a623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+{% for x, y in chart_properties_coords %}<circle cx="{{ x }}" cy="{{ y }}" r="4" fill="#f5a623" stroke="white" stroke-width="2"/>{% endfor %}
+</svg>
+<div class="d-flex justify-content-between px-3" style="margin-top:-1.2rem;">
+{% for label in chart_day_labels %}<span class="fs-9" style="color:#9ca3af;">{{ label }}</span>{% endfor %}
+</div>
+</div>
+<div class="d-flex justify-content-center gap-4 mt-2">
+<div class="d-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></span><span class="fs-9 text-muted">Users</span></div>
+<div class="d-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#f5a623;"></span><span class="fs-9 text-muted">Properties</span></div>
+</div>
+</div>
+</div>
 
-    <!-- Reports Summary -->
-    <div class="col-lg-4">
-        <div class="data-card">
-            <div class="data-card-header">
-                <h5><i class="fas fa-chart-pie me-2 text-danger"></i>Reports Summary</h5>
-                <a href="{% url 'dashboard:reports_list' %}" class="view-all">View all</a>
-            </div>
-            <div class="p-3">
-                <!-- Donut Chart Placeholder -->
-                <div class="reports-donut">
-                    <svg viewBox="0 0 140 140" style="width:100%;height:100%;transform:rotate(-90deg);">
-                        <!-- Background circle -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#E9ECEF" stroke-width="18"/>
-                        <!-- Fake Listing segment (37%) -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#198754" stroke-width="18"
-                            stroke-dasharray="117.8 196.3" stroke-dashoffset="0" stroke-linecap="round"/>
-                        <!-- Wrong Price segment (22%) -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#DC3545" stroke-width="18"
-                            stroke-dasharray="70.0 196.3" stroke-dashoffset="-117.8" stroke-linecap="round"/>
-                        <!-- Unavailable segment (19%) -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#FFC107" stroke-width="18"
-                            stroke-dasharray="60.5 196.3" stroke-dashoffset="-187.8" stroke-linecap="round"/>
-                        <!-- Suspicious Agent segment (13%) -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#0D6EFD" stroke-width="18"
-                            stroke-dasharray="41.4 196.3" stroke-dashoffset="-248.3" stroke-linecap="round"/>
-                        <!-- Other segment (9%) -->
-                        <circle cx="70" cy="70" r="50" fill="none" stroke="#6C757D" stroke-width="18"
-                            stroke-dasharray="28.7 196.3" stroke-dashoffset="-289.7" stroke-linecap="round"/>
-                    </svg>
-                    <div class="reports-donut-center">
-                        <div class="total">{{ total_reports|default:"32" }}</div>
-                        <div class="label">Total</div>
-                    </div>
-                </div>
+<div class="col-lg-4">
+<div class="card-custom p-3">
+<h5 class="section-title mb-3">Recent Activity</h5>
+<div style="max-height: 280px; overflow-y: auto;">
+{% for activity in recent_activity %}
+<div class="activity-item"><div class="activity-icon {% if activity.type == 'agent' %}green{% elif activity.type == 'property' %}blue{% else %}purple{% endif %}"><i class="bi bi-{{ activity.icon }}"></i></div><div><div class="activity-text">{{ activity.title }}</div><div class="activity-time">{{ activity.timestamp|timesince }} ago</div></div></div>
+{% empty %}
+<p class="text-muted text-center py-3">No recent activity yet.</p>
+{% endfor %}
+</div>
+</div>
+</div>
 
-                <!-- Category Legend -->
-                <div class="report-category">
-                    <div class="cat-label">
-                        <span class="cat-dot" style="background:#198754;"></span>
-                        Fake Listing
-                    </div>
-                    <div>
-                        <span class="cat-count">12</span>
-                        <span class="cat-pct">(37%)</span>
-                    </div>
-                </div>
-                <div class="report-category">
-                    <div class="cat-label">
-                        <span class="cat-dot" style="background:#DC3545;"></span>
-                        Wrong Price
-                    </div>
-                    <div>
-                        <span class="cat-count">7</span>
-                        <span class="cat-pct">(22%)</span>
-                    </div>
-                </div>
-                <div class="report-category">
-                    <div class="cat-label">
-                        <span class="cat-dot" style="background:#FFC107;"></span>
-                        Unavailable
-                    </div>
-                    <div>
-                        <span class="cat-count">6</span>
-                        <span class="cat-pct">(19%)</span>
-                    </div>
-                </div>
-                <div class="report-category">
-                    <div class="cat-label">
-                        <span class="cat-dot" style="background:#0D6EFD;"></span>
-                        Suspicious Agent
-                    </div>
-                    <div>
-                        <span class="cat-count">4</span>
-                        <span class="cat-pct">(13%)</span>
-                    </div>
-                </div>
-                <div class="report-category">
-                    <div class="cat-label">
-                        <span class="cat-dot" style="background:#6C757D;"></span>
-                        Other
-                    </div>
-                    <div>
-                        <span class="cat-count">3</span>
-                        <span class="cat-pct">(9%)</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="col-lg-4">
+<div class="card-custom p-3">
+<div class="section-header"><h5 class="section-title">Reports Summary</h5><a href="{% url 'dashboard:reports_list' %}" class="view-all-link">View all <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i></a></div>
+{% if report_segments %}
+<div class="d-flex align-items-center gap-4">
+<div class="donut-chart">
+<svg viewBox="0 0 140 140" style="width:100%;height:100%;">
+{% for seg in report_segments %}
+<circle cx="70" cy="70" r="50" fill="none" stroke="{{ seg.color }}" stroke-width="20" stroke-dasharray="{{ seg.dasharray }}" stroke-dashoffset="{{ seg.dashoffset }}" transform="rotate(-90 70 70)"/>
+{% endfor %}
+</svg>
+<div class="donut-center"><div class="donut-center-label">Total</div><div class="donut-center-value">{{ total_reports }}</div></div>
+</div>
+<div class="flex-grow-1">
+{% for seg in report_segments %}
+<div class="d-flex align-items-center justify-content-between mb-2"><div class="d-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:{{ seg.color }};"></span><span class="fs-8">{{ seg.label }}</span></div><span class="fs-8 fw-semibold">{{ seg.count }} ({{ seg.percent }}%)</span></div>
+{% endfor %}
+</div>
+</div>
+{% else %}
+<p class="text-muted text-center py-4 mb-0">No reports yet.</p>
+{% endif %}
+</div>
+</div>
 </div>
 {% endblock %}

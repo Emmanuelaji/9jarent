@@ -1,78 +1,70 @@
-{% extends 'base.html' %}
+{% extends 'base_portal.html' %}
 {% load crispy_forms_tags %}
 {% block title %}Edit {{ object.title }} | 9jaRent{% endblock %}
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
-            <h2 class="display-font mb-4">Edit Property</h2>
+{% block portal_header %}<h1 class="fs-3 fw-bold mb-0">Edit Property</h1>{% endblock %}
 
-            {% if object.status == 'REJECTED' and object.rejection_reason %}
-            <div class="alert alert-danger border-0 mb-4">
-                <strong>Rejected by admin.</strong> Reason: {{ object.rejection_reason }}
-            </div>
-            {% endif %}
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div id="image-preview" class="d-flex flex-wrap gap-2 mb-3"></div>
-
-                        {% if object.images.all %}
-                        <p class="fw-semibold small mb-2">Current Images</p>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            {% for image in object.images.all %}
-                            <div class="position-relative">
-                                <img src="{{ image.image.url }}" alt="{{ object.title }}"
-                                     style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid {% if image.is_primary %}var(--emerald){% else %}var(--sage){% endif %};">
-                                {% if image.is_primary %}
-                                <span class="badge position-absolute top-0 start-0" style="background: var(--emerald);">Primary</span>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        {% if object.status == 'DRAFT' %}
-                        <div class="d-flex gap-2">
-                            <button type="submit" name="action" value="draft" class="btn btn-outline-secondary w-100 py-2">Save as Draft</button>
-                            <button type="submit" name="action" value="submit" class="btn btn-nigeria w-100 py-2">Submit for Approval</button>
-                        </div>
-                        {% elif object.status == 'REJECTED' %}
-                        <div class="d-flex gap-2">
-                            <button type="submit" name="action" value="save" class="btn btn-outline-secondary w-100 py-2">Save Changes</button>
-                            <button type="submit" name="action" value="resubmit" class="btn btn-nigeria w-100 py-2">Resubmit for Review</button>
-                        </div>
-                        {% else %}
-                        <button type="submit" name="action" value="save" class="btn btn-nigeria w-100 py-2">Save Changes</button>
-                        {% endif %}
-                    </form>
-
-                    {% if object.images.all %}
-                    <hr class="my-4">
-                    <p class="fw-semibold small mb-2">Remove Images</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for image in object.images.all %}
-                        <form method="post" action="{% url 'properties:delete_image' pk=object.pk image_id=image.pk %}"
-                              onsubmit="return confirm('Remove this image?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash me-1"></i> Image {{ forloop.counter }}{% if image.is_primary %} (primary){% endif %}
-                            </button>
-                        </form>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            <p class="mt-3 mb-0"><a href="{% url 'properties:mine' %}" class="small fw-semibold" style="color: var(--emerald);">&larr; Back to My Listings</a></p>
-        </div>
-    </div>
+{% block portal_content %}
+{% if object.status == 'REJECTED' and object.rejection_reason %}
+<div class="alert alert-danger border-0 mb-4">
+<strong>Rejected by admin.</strong> Reason: {{ object.rejection_reason }}
 </div>
+{% endif %}
+
+<div class="card-custom p-4">
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+{{ form|crispy }}
+<div id="image-preview" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+{% if object.images.all %}
+<p class="fw-semibold small mb-2">Current Images</p>
+<div class="d-flex flex-wrap gap-2 mb-3">
+{% for image in object.images.all %}
+<div class="position-relative">
+<img src="{{ image.image.url }}" alt="{{ object.title }}"
+     style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid {% if image.is_primary %}var(--brand-green){% else %}var(--border-color){% endif %};">
+{% if image.is_primary %}
+<span class="badge position-absolute top-0 start-0" style="background: var(--brand-green);">Primary</span>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% if object.status == 'DRAFT' %}
+<div class="d-flex gap-2">
+<button type="submit" name="action" value="draft" class="btn btn-outline-secondary w-100 py-2">Save as Draft</button>
+<button type="submit" name="action" value="submit" class="btn btn-brand-green w-100 py-2">Submit for Approval</button>
+</div>
+{% elif object.status == 'REJECTED' %}
+<div class="d-flex gap-2">
+<button type="submit" name="action" value="save" class="btn btn-outline-secondary w-100 py-2">Save Changes</button>
+<button type="submit" name="action" value="resubmit" class="btn btn-brand-green w-100 py-2">Resubmit for Review</button>
+</div>
+{% else %}
+<button type="submit" name="action" value="save" class="btn btn-brand-green w-100 py-2">Save Changes</button>
+{% endif %}
+</form>
+
+{% if object.images.all %}
+<hr class="my-4">
+<p class="fw-semibold small mb-2">Remove Images</p>
+<div class="d-flex flex-wrap gap-2">
+{% for image in object.images.all %}
+<form method="post" action="{% url 'properties:delete_image' pk=object.pk image_id=image.pk %}"
+      onsubmit="return confirm('Remove this image?');">
+{% csrf_token %}
+<button type="submit" class="btn btn-sm btn-outline-danger">
+<i class="bi bi-trash me-1"></i> Image {{ forloop.counter }}{% if image.is_primary %} (primary){% endif %}
+</button>
+</form>
+{% endfor %}
+</div>
+{% endif %}
+</div>
+<p class="mt-3 mb-0"><a href="{% url 'properties:mine' %}" class="small fw-semibold" style="color: var(--brand-green);">&larr; Back to My Listings</a></p>
 {% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -87,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.onload = function (e) {
                 var img = document.createElement('img');
                 img.src = e.target.result;
-                img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--sage);';
+                img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--border-color);';
                 preview.appendChild(img);
             };
             reader.readAsDataURL(file);

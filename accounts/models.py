@@ -30,6 +30,10 @@ class CustomUser(AbstractUser):
     company_name = models.CharField(max_length=200, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     profile_photo = models.ImageField(upload_to='agent_photos/', blank=True, null=True)
+    email_notifications_enabled = models.BooleanField(
+        default=True,
+        help_text="Whether notification emails are sent to this user. Toggled from Settings."
+    )
     office_address = models.TextField(blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)

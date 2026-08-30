@@ -1,306 +1,87 @@
 {% extends 'base.html' %}
-{% load humanize %}
-
-{% block extra_css %}
-<style>
-    /* Portal Layout (agent + renter dashboards) - mirrors admin dashboard shell */
-    .portal-wrapper {
-        display: flex;
-        min-height: calc(100vh - 60px);
-    }
-
-    .portal-sidebar {
-        width: 260px;
-        background: linear-gradient(180deg, #0B3D2E 0%, #0B6E4F 100%);
-        color: #fff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1040;
-        overflow-y: auto;
-        transition: all 0.3s ease;
-    }
-    .portal-sidebar.collapsed { width: 70px; }
-    .portal-sidebar.collapsed .sidebar-text,
-    .portal-sidebar.collapsed .sidebar-section-title,
-    .portal-sidebar.collapsed .user-info { display: none; }
-    .portal-sidebar.collapsed .sidebar-brand { font-size: 1rem; padding: 1rem 0.5rem; text-align: center; }
-    .portal-sidebar.collapsed .nav-link { justify-content: center; padding: 0.75rem 0.5rem; }
-    .portal-sidebar.collapsed .nav-link i { margin-right: 0; font-size: 1.1rem; }
-
-    .sidebar-brand {
-        font-family: 'Fraunces', Georgia, serif;
-        font-weight: 700;
-        font-size: 1.25rem;
-        padding: 1.25rem 1.5rem;
-        color: #fff;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .sidebar-brand .brand-dot { color: var(--amber); }
-
-    .sidebar-portal-label {
-        padding: 0.5rem 1.5rem 0;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: rgba(255,255,255,0.45);
-    }
-
-    .sidebar-user {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    .sidebar-user .avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); }
-    .sidebar-user .avatar-placeholder { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff; }
-    .sidebar-user .user-name { font-weight: 600; font-size: 0.9rem; color: #fff; }
-    .sidebar-user .user-role { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
-
-    .sidebar-nav { padding: 1rem 0; }
-    .sidebar-nav .nav-link {
-        color: rgba(255,255,255,0.75);
-        padding: 0.65rem 1.5rem;
-        font-size: 0.88rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        transition: all 0.2s ease;
-        border-left: 3px solid transparent;
-    }
-    .sidebar-nav .nav-link:hover,
-    .sidebar-nav .nav-link.active {
-        color: #fff;
-        background: rgba(255,255,255,0.08);
-        border-left-color: var(--amber);
-    }
-    .sidebar-nav .nav-link i { width: 20px; text-align: center; font-size: 0.95rem; }
-    .sidebar-nav .nav-link .badge-count {
-        margin-left: auto;
-        background: var(--terracotta);
-        color: #fff;
-        font-size: 0.65rem;
-        padding: 0.15rem 0.4rem;
-        border-radius: 10px;
-        font-weight: 600;
-    }
-    .sidebar-nav .nav-divider { border-top: 1px solid rgba(255,255,255,0.1); margin: 0.75rem 1.5rem; }
-
-    .portal-main { flex: 1; margin-left: 260px; background: #F8F9FA; min-height: 100vh; }
-    .portal-main.sidebar-collapsed { margin-left: 70px; }
-
-    .portal-header {
-        background: #fff;
-        padding: 0.9rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #E9ECEF;
-        position: sticky;
-        top: 0;
-        z-index: 1030;
-    }
-    .header-btn {
-        width: 38px; height: 38px; border-radius: 8px; border: 1px solid #E9ECEF;
-        background: #fff; display: flex; align-items: center; justify-content: center;
-        color: #6C757D; position: relative; transition: all 0.2s;
-    }
-    .header-btn:hover { background: #F8F9FA; color: var(--emerald); }
-    .header-btn .notification-dot {
-        position: absolute; top: 6px; right: 6px; width: 8px; height: 8px;
-        background: #DC3545; border-radius: 50%; border: 2px solid #fff;
-    }
-    .header-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-
-    .portal-content { padding: 1.5rem; }
-
-    .portal-welcome h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-    .portal-welcome p { color: #6C757D; font-size: 0.9rem; margin-bottom: 0; }
-
-    .metric-card {
-        background: #fff; border-radius: 12px; padding: 1.25rem;
-        border: 1px solid #E9ECEF; transition: all 0.2s ease; height: 100%;
-    }
-    .metric-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); transform: translateY(-2px); }
-    .metric-label { font-size: 0.8rem; color: #6C757D; font-weight: 500; margin-bottom: 0.5rem; }
-    .metric-value { font-size: 1.75rem; font-weight: 700; color: var(--ink); margin-bottom: 0.25rem; font-family: 'Fraunces', Georgia, serif; }
-
-    .data-card { background: #fff; border-radius: 12px; border: 1px solid #E9ECEF; overflow: hidden; }
-    .data-card-header {
-        padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
-        border-bottom: 1px solid #E9ECEF;
-    }
-    .data-card-header h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0; color: var(--ink); }
-    .data-card-header .view-all { font-size: 0.8rem; color: var(--emerald); font-weight: 600; }
-    .data-card-header .view-all:hover { color: var(--emerald-dark); }
-    .data-table { margin-bottom: 0; }
-    .data-table thead th {
-        background: #F8F9FA; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.03em; color: #6C757D; padding: 0.75rem 1.25rem; border-bottom: 1px solid #E9ECEF;
-    }
-    .data-table tbody td { padding: 0.875rem 1.25rem; font-size: 0.85rem; vertical-align: middle; border-bottom: 1px solid #F1F3F5; }
-    .data-table tbody tr:last-child td { border-bottom: none; }
-    .data-table tbody tr:hover { background: #F8F9FA; }
-    .data-table .prop-cell { display: flex; align-items: center; gap: 0.75rem; }
-    .data-table .prop-cell img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
-
-    .status-badge {
-        display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem;
-        border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
-    }
-    .status-pending { background: #FFF3CD; color: #856404; }
-    .status-published, .status-approved, .status-accepted, .status-completed { background: #D1E7DD; color: #0F5132; }
-    .status-rejected, .status-declined, .status-cancelled { background: #F8D7DA; color: #842029; }
-    .status-draft { background: #E9ECEF; color: #495057; }
-    .status-rented { background: #E2E3F3; color: #4A4B8C; }
-
-    @media (max-width: 991.98px) {
-        .portal-sidebar { transform: translateX(-100%); }
-        .portal-sidebar.show { transform: translateX(0); }
-        .portal-main { margin-left: 0; }
-    }
-    .portal-sidebar::-webkit-scrollbar { width: 4px; }
-    .portal-sidebar::-webkit-scrollbar-track { background: transparent; }
-    .portal-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-
-    {% block portal_extra_css %}{% endblock %}
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="portal-wrapper">
-    <aside class="portal-sidebar" id="portalSidebar">
-        <div class="sidebar-brand">
-            <span>9ja<span class="brand-dot">Rent</span></span>
-            <span class="sidebar-text">.com.ng</span>
-        </div>
-        <p class="sidebar-portal-label sidebar-text">{% if user.is_agent %}Agent Portal{% else %}Renter Portal{% endif %}</p>
-
-        <div class="sidebar-user">
-            {% if user.profile_photo %}
-                <img src="{{ user.profile_photo.url }}" alt="" class="avatar">
-            {% else %}
-                <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
-            {% endif %}
-            <div class="user-info">
-                <div class="user-name">{{ user.full_name_or_username }}</div>
-                <div class="user-role">{% if user.is_agent %}Agent{% else %}Renter{% endif %}</div>
-            </div>
-        </div>
-
-        <nav class="sidebar-nav">
-            {% if user.is_agent %}
-                <a class="nav-link {% if request.resolver_match.url_name == 'agent_dashboard' %}active{% endif %}" href="{% url 'properties:agent_dashboard' %}">
-                    <i class="fas fa-home"></i><span class="sidebar-text">Dashboard</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.url_name == 'mine' or request.resolver_match.url_name == 'drafts' %}active{% endif %}" href="{% url 'properties:mine' %}">
-                    <i class="fas fa-building"></i><span class="sidebar-text">My Properties</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}" href="{% url 'properties:create' %}">
-                    <i class="fas fa-plus-circle"></i><span class="sidebar-text">Add Property</span>
-                </a>
-                <a class="nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inspections:list' %}">
-                    <i class="fas fa-clipboard-check"></i><span class="sidebar-text">Inspections</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'messaging' %}active{% endif %}" href="{% url 'messaging:inbox' %}">
-                    <i class="fas fa-envelope"></i><span class="sidebar-text">Messages</span>
-                    {% if unread_message_count %}<span class="badge-count sidebar-text">{{ unread_message_count }}</span>{% endif %}
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'favourites' %}active{% endif %}" href="{% url 'favourites:list' %}">
-                    <i class="fas fa-heart"></i><span class="sidebar-text">Favourites</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}" href="{% url 'notifications:list' %}">
-                    <i class="fas fa-bell"></i><span class="sidebar-text">Notifications</span>
-                    {% if unread_notification_count %}<span class="badge-count sidebar-text">{{ unread_notification_count }}</span>{% endif %}
-                </a>
-                <a class="nav-link {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}" href="{% url 'accounts:profile_edit' %}">
-                    <i class="fas fa-user"></i><span class="sidebar-text">Profile</span>
-                </a>
-                <a class="nav-link" href="#"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
-            {% else %}
-                <a class="nav-link" href="{% url 'properties:home' %}">
-                    <i class="fas fa-home"></i><span class="sidebar-text">Dashboard</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'properties' %}active{% endif %}" href="{% url 'properties:list' %}">
-                    <i class="fas fa-search"></i><span class="sidebar-text">Browse Properties</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'favourites' %}active{% endif %}" href="{% url 'favourites:list' %}">
-                    <i class="fas fa-heart"></i><span class="sidebar-text">Favourites</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'messaging' %}active{% endif %}" href="{% url 'messaging:inbox' %}">
-                    <i class="fas fa-envelope"></i><span class="sidebar-text">Messages</span>
-                    {% if unread_message_count %}<span class="badge-count sidebar-text">{{ unread_message_count }}</span>{% endif %}
-                </a>
-                <a class="nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'inspections:list' %}">
-                    <i class="fas fa-clipboard-check"></i><span class="sidebar-text">Inspections</span>
-                </a>
-                <a class="nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}" href="{% url 'notifications:list' %}">
-                    <i class="fas fa-bell"></i><span class="sidebar-text">Notifications</span>
-                    {% if unread_notification_count %}<span class="badge-count sidebar-text">{{ unread_notification_count }}</span>{% endif %}
-                </a>
-                <a class="nav-link" href="#"><i class="fas fa-user"></i><span class="sidebar-text">Profile</span></a>
-                <a class="nav-link" href="#"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
-            {% endif %}
-            <div class="nav-divider"></div>
-            <a class="nav-link" href="{% url 'accounts:logout' %}">
-                <i class="fas fa-sign-out-alt"></i><span class="sidebar-text">Logout</span>
-            </a>
-        </nav>
-    </aside>
-
-    <div class="portal-main" id="portalMain">
-        <header class="portal-header">
-            <button class="btn btn-sm btn-outline-secondary d-lg-none" id="portalSidebarToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="header-actions d-flex align-items-center gap-3 ms-auto">
-                <a href="{% url 'notifications:list' %}" class="header-btn">
-                    <i class="fas fa-bell"></i>
-                    {% if unread_notification_count %}<span class="notification-dot"></span>{% endif %}
-                </a>
-                <div class="dropdown">
-                    <button class="header-btn" data-bs-toggle="dropdown">
-                        {% if user.profile_photo %}
-                            <img src="{{ user.profile_photo.url }}" alt="" class="header-avatar">
-                        {% else %}
-                            <i class="fas fa-user"></i>
-                        {% endif %}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% if user.is_agent %}<li><a class="dropdown-item" href="{% url 'accounts:profile_edit' %}"><i class="fas fa-user me-2"></i>Profile</a></li>{% endif %}
-                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </header>
-        <div class="portal-content">
-            {% block portal_content %}{% endblock %}
-        </div>
-    </div>
+<div class="sidebar-overlay"></div>
+<aside class="sidebar">
+<div class="sidebar-brand"><span class="brand-logo"><span class="brand-9ja">9ja</span>Rent.com.ng</span></div>
+<div class="sidebar-user">
+{% if user.profile_photo %}<img src="{{ user.profile_photo.url }}" alt="" class="sidebar-user-img">
+{% else %}<div class="sidebar-user-img d-flex align-items-center justify-content-center" style="background:rgba(255,255,255,0.15);color:#fff;font-weight:600;">{{ user.first_name|default:user.username|first|upper }}</div>{% endif %}
+<div>
+<div class="sidebar-user-name">{% if user.is_agent %}{{ user.company_name|default:user.full_name_or_username }}{% else %}{{ user.full_name_or_username }}{% endif %}</div>
+<div class="sidebar-user-role">{% if user.is_superuser %}{{ user.email }}{% elif user.is_agent %}Agent{% else %}Renter{% endif %}</div>
 </div>
-{% endblock %}
+</div>
+<div class="sidebar-divider">MAIN</div>
+<ul class="sidebar-nav">
+{% if user.is_superuser %}
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:admin' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:agents_pending' %}" class="sidebar-nav-link {% if 'agent' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-person-badge"></i><span>Agents</span></a></li>
+<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-building"></i><span>Properties</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:inspections_list' %}" class="sidebar-nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-clipboard-check"></i><span>Inspections</span></a></li>
+<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-envelope"></i><span>Messages</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:reports_list' %}" class="sidebar-nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-bar-chart"></i><span>Reports</span></a></li>
+<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-credit-card"></i><span>Payments</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'notifications:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span></a></li>
+<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+</ul>
+<div class="sidebar-divider">OTHER</div>
+<ul class="sidebar-nav">
+<li class="sidebar-nav-item"><a href="/django-admin/" class="sidebar-nav-link"><i class="bi bi-grid-3x3-gap"></i><span>Django Admin</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+</ul>
+{% elif user.is_agent %}
+<li class="sidebar-nav-item"><a href="{% url 'properties:agent_dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'agent_dashboard' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'properties:mine' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'mine' or request.resolver_match.url_name == 'drafts' %}active{% endif %}"><i class="bi bi-building"></i><span>My Properties</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'properties:create' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}"><i class="bi bi-plus-circle"></i><span>Add Property</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'inspections:list' %}" class="sidebar-nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-clipboard-check"></i><span>Inspections</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'messaging:inbox' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'messaging' %}active{% endif %}"><i class="bi bi-envelope"></i><span>Messages</span>{% if unread_message_count %}<span class="sidebar-badge">{{ unread_message_count }}</span>{% endif %}</a></li>
+<li class="sidebar-nav-item"><a href="{% url 'favourites:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'favourites' %}active{% endif %}"><i class="bi bi-heart"></i><span>Favourites</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'notifications:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span>{% if unread_notification_count %}<span class="sidebar-badge">{{ unread_notification_count }}</span>{% endif %}</a></li>
+<li class="sidebar-nav-item"><a href="{% url 'accounts:profile_edit' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}"><i class="bi bi-person"></i><span>Profile</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'accounts:settings' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+</ul>
+<div class="sidebar-divider">OTHER</div>
+<ul class="sidebar-nav">
+<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+</ul>
+{% else %}
+<li class="sidebar-nav-item"><a href="{% url 'properties:home' %}" class="sidebar-nav-link"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'properties:list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'properties' %}active{% endif %}"><i class="bi bi-search"></i><span>Browse Properties</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'inspections:list' %}" class="sidebar-nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-clipboard-check"></i><span>Inspections</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'messaging:inbox' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'messaging' %}active{% endif %}"><i class="bi bi-envelope"></i><span>Messages</span>{% if unread_message_count %}<span class="sidebar-badge">{{ unread_message_count }}</span>{% endif %}</a></li>
+<li class="sidebar-nav-item"><a href="{% url 'favourites:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'favourites' %}active{% endif %}"><i class="bi bi-heart"></i><span>Favourites</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'notifications:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span>{% if unread_notification_count %}<span class="sidebar-badge">{{ unread_notification_count }}</span>{% endif %}</a></li>
+<li class="sidebar-nav-item"><a href="{% url 'accounts:settings' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+</ul>
+<div class="sidebar-divider">OTHER</div>
+<ul class="sidebar-nav">
+<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+</ul>
+{% endif %}
+</aside>
 
-{% block extra_js %}
-<script>
-    document.getElementById('portalSidebarToggle')?.addEventListener('click', function() {
-        document.getElementById('portalSidebar').classList.toggle('show');
-    });
-    document.addEventListener('click', function(e) {
-        const sidebar = document.getElementById('portalSidebar');
-        const toggle = document.getElementById('portalSidebarToggle');
-        if (!sidebar || !toggle) return;
-        if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
-            if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                sidebar.classList.remove('show');
-            }
-        }
-    });
-</script>
+<main class="main-content">
+{% if user.is_superuser %}
+<div class="top-bar">
+<div class="d-flex align-items-center gap-3">
+<button class="mobile-menu-btn"><i class="bi bi-list"></i></button>
+<div class="top-bar-search"><i class="bi bi-search"></i><input type="text" placeholder="Search anything..."></div>
+</div>
+<div class="top-bar-actions">
+<a href="{% url 'notifications:list' %}" class="top-bar-notify"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="badge-dot"></span>{% endif %}</a>
+{% if user.profile_photo %}<img src="{{ user.profile_photo.url }}" alt="" class="top-bar-avatar">
+{% else %}<div class="top-bar-avatar d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;">{{ user.first_name|default:user.username|first|upper }}</div>{% endif %}
+</div>
+</div>
+{% else %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+<div class="d-flex align-items-center gap-3">
+<button class="mobile-menu-btn"><i class="bi bi-list"></i></button>
+{% block portal_header %}{% endblock %}
+</div>
+{% block portal_header_action %}{% endblock %}
+</div>
+{% endif %}
+{% block portal_content %}{% endblock %}
+</main>
 {% endblock %}

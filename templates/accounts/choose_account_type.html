@@ -1,59 +1,35 @@
-{% extends 'base.html' %}
+{% extends 'accounts/auth_base.html' %}
 {% block title %}Choose Account Type | 9jaRent{% endblock %}
-{% block content %}
-<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 76px); background: #F8F9FA;">
-    <div class="text-center" style="max-width: 600px; width: 100%; padding: 2rem;">
-        <!-- Logo -->
-        <div class="mb-5">
-            <span class="display-font" style="font-size: 1.5rem; font-weight: 700;">
-                <span style="color: #0B3D2E;">9ja</span><span style="color: #F2A93B;">Rent</span><span style="color: #0B3D2E;">.com.ng</span>
-            </span>
-        </div>
-        
-        <h2 class="display-font mb-2" style="font-size: 1.75rem;">Choose Account Type</h2>
-        <p class="text-muted mb-5">Select how you want to use 9jaRent</p>
-        
-        <div class="row g-4 justify-content-center">
-            <!-- Renter Card -->
-            <div class="col-md-5">
-                <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; padding: 2rem 1.5rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;" 
-                     onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)'" 
-                     onmouseout="this.style.transform='';this.style.boxShadow=''">
-                    <div class="mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" 
-                         style="width: 72px; height: 72px; background: #E7EFE6;">
-                        <i class="fas fa-user" style="font-size: 1.5rem; color: #0B6E4F;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2">I'm a Renter</h5>
-                    <p class="text-muted small mb-4">Find and contact agents about properties.</p>
-                    <a href="{% url 'accounts:renter_signup' %}" class="btn btn-outline-success w-100 py-2" 
-                       style="border-radius: 10px; border-color: #0B6E4F; color: #0B6E4F; font-weight: 600;">
-                        Choose Renter
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Agent Card -->
-            <div class="col-md-5">
-                <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; padding: 2rem 1.5rem; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;" 
-                     onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.08)'" 
-                     onmouseout="this.style.transform='';this.style.boxShadow=''">
-                    <div class="mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center" 
-                         style="width: 72px; height: 72px; background: #FFF3E0;">
-                        <i class="fas fa-briefcase" style="font-size: 1.5rem; color: #F2A93B;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2">I'm an Agent</h5>
-                    <p class="text-muted small mb-4">List properties and connect with potential renters.</p>
-                    <a href="{% url 'accounts:agent_signup' %}" class="btn w-100 py-2" 
-                       style="border-radius: 10px; background: #F2A93B; color: #16211C; font-weight: 600;">
-                        Choose Agent
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <p class="mt-5 text-muted small">
-            Already have an account? <a href="{% url 'accounts:login' %}" style="color: #0B6E4F; font-weight: 600;">Log in</a>
-        </p>
-    </div>
+{% block auth_card_width %}max-width: 640px;{% endblock %}
+
+{% block auth_content %}
+<h1 class="auth-title">Choose Account Type</h1>
+<p class="auth-subtitle">Select how you want to use 9jaRent</p>
+
+<div class="row g-3 mb-4">
+<div class="col-md-6">
+<a href="{% url 'accounts:renter_signup' %}" style="text-decoration:none;color:inherit;">
+<div class="account-type-card">
+<div class="icon-circle renter"><i class="bi bi-person"></i></div>
+<h4>I'm a Renter</h4>
+<p>Find and contact agents about properties.</p>
+<button type="button" class="btn btn-outline-green w-100">Choose Renter</button>
+</div>
+</a>
+</div>
+<div class="col-md-6">
+<a href="{% url 'accounts:agent_signup' %}" style="text-decoration:none;color:inherit;">
+<div class="account-type-card">
+<div class="icon-circle agent"><i class="bi bi-briefcase"></i></div>
+<h4>I'm an Agent</h4>
+<p>List properties and connect with potential renters.</p>
+<button type="button" class="btn btn-outline-orange w-100">Choose Agent</button>
+</div>
+</a>
+</div>
+</div>
+
+<div class="auth-footer">
+Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
 </div>
 {% endblock %}

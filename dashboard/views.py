@@ -123,10 +123,59 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, ListView):
             role='MINOR_ADMIN', agent_status='PENDING'
         ).order_by('date_joined')[:10]
 
-        # Reports by category (for summary chart)
-        context['reports_by_category'] = Report.objects.values('category').annotate(
-            count=Count('id')
-        ).order_by('-count')
+        # 7-day platform overview trend - real daily counts, not hardcoded points.
+        # Chart area is 330px wide (x: 50 to 380) and 160px tall (y: 20 to 160).
+        from datetime import timedelta
+        today = timezone.localdate()
+        days = [today - timedelta(days=i) for i in range(6, -1, -1)]
+        user_counts = [CustomUser.objects.filter(date_joined__date__lte=d).count() for d in days]
+        property_counts = [Property.objects.filter(created_at__date__lte=d).count() for d in days]
+        chart_max = max(user_counts + property_counts) or 1
+
+        def to_points(counts):
+            n = len(counts)
+            xs = [50 + i * (330 / (n - 1)) for i in range(n)] if n > 1 else [50]
+            return " ".join(f"{x:.0f},{160 - (c / chart_max * 140):.0f}" for x, c in zip(xs, counts))
+
+        context['chart_day_labels'] = [d.strftime('%b %d') for d in days]
+        context['chart_users_points'] = to_points(user_counts)
+        context['chart_properties_points'] = to_points(property_counts)
+        context['chart_users_coords'] = [
+            (50 + i * (330 / 6), 160 - (c / chart_max * 140)) for i, c in enumerate(user_counts)
+        ]
+        context['chart_properties_coords'] = [
+            (50 + i * (330 / 6), 160 - (c / chart_max * 140)) for i, c in enumerate(property_counts)
+        ]
+
+        # Reports by category (for summary chart) - real counts, not hardcoded
+        category_colors = {
+            Report.Category.FAKE_LISTING: '#198754',
+            Report.Category.WRONG_PRICE: '#DC3545',
+            Report.Category.UNAVAILABLE: '#FFC107',
+            Report.Category.SUSPICIOUS_AGENT: '#0D6EFD',
+            Report.Category.MISLEADING_INFO: '#6F42C1',
+            Report.Category.INAPPROPRIATE_CONTENT: '#FD7E14',
+            Report.Category.OTHER: '#6C757D',
+        }
+        category_counts = Report.objects.values('category').annotate(count=Count('id')).order_by('-count')
+        total_reports_count = sum(row['count'] for row in category_counts) or 1
+        circumference = 2 * 3.14159265 * 50  # r=50, matches the SVG circle below
+        segments = []
+        cumulative = 0.0
+        for row in category_counts:
+            count = row['count']
+            percent = round(count / total_reports_count * 100)
+            arc_length = count / total_reports_count * circumference
+            segments.append({
+                'label': Report.Category(row['category']).label,
+                'color': category_colors.get(row['category'], '#6C757D'),
+                'count': count,
+                'percent': percent,
+                'dasharray': f"{arc_length:.1f} {circumference:.1f}",
+                'dashoffset': f"-{cumulative:.1f}",
+            })
+            cumulative += arc_length
+        context['report_segments'] = segments
 
         return context
 

@@ -28,14 +28,19 @@ class RateLimitMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Skip rate limiting for admin, static/media, and the automated test suite
-        # (which shares one process-wide cache across unrelated test methods).
+        # Skip rate limiting for Django admin (/admin/), the custom admin
+        # dashboard app (/dashboard/ - moderators doing bulk approve/reject/
+        # resolve actions shouldn't trip limits meant for untrusted public
+        # traffic just because their URL happens to contain a rate-limited
+        # substring like /reports/), static/media, and the automated test
+        # suite (which shares one process-wide cache across unrelated test
+        # methods).
         from django.conf import settings
         if getattr(settings, 'TESTING', False):
             return self.get_response(request)
 
         path = request.path
-        if path.startswith('/admin/') or path.startswith('/static/') or path.startswith('/media/'):
+        if path.startswith('/admin/') or path.startswith('/dashboard/') or path.startswith('/static/') or path.startswith('/media/'):
             return self.get_response(request)
 
         # Check rate limits

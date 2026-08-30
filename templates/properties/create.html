@@ -1,28 +1,30 @@
-{% extends 'base.html' %}
+{% extends 'base_portal.html' %}
 {% load crispy_forms_tags %}
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <p class="text-uppercase small fw-semibold mb-1" style="color: var(--emerald); letter-spacing: 0.08em;">Agent Portal</p>
-            <h2 class="display-font mb-4">List a New Property</h2>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div id="image-preview" class="d-flex flex-wrap gap-2 mb-3"></div>
-                        <div class="alert alert-info border-0" style="background: var(--sage); color: var(--emerald-dark);">
-                            <small><i class="fas fa-info-circle"></i> Your listing will be marked as "Pending Review" and will go live once approved by an admin.</small>
-                        </div>
-                        <button type="submit" class="btn btn-nigeria w-100 py-2">Submit for Approval</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block title %}Add Property | 9jaRent{% endblock %}
+{% block portal_header %}
+<div>
+<h1 class="fs-3 fw-bold mb-1">Add Property</h1>
+<p class="text-muted mb-0">List a new property for rent.</p>
 </div>
 {% endblock %}
+
+{% block portal_content %}
+<div class="card-custom p-4">
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+{{ form|crispy }}
+<div id="image-preview" class="d-flex flex-wrap gap-2 mb-3"></div>
+<div class="alert alert-info border-0">
+<small><i class="bi bi-info-circle"></i> Your listing will be marked as "Pending Review" and will go live once approved by an admin.</small>
+</div>
+<div class="d-flex justify-content-end gap-2 mt-4">
+<a href="{% url 'properties:agent_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+<button type="submit" class="btn btn-brand-green">Submit for Review</button>
+</div>
+</form>
+</div>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -37,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.onload = function (e) {
                 var img = document.createElement('img');
                 img.src = e.target.result;
-                img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--sage);';
+                img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid var(--border-color);';
                 preview.appendChild(img);
             };
             reader.readAsDataURL(file);

@@ -265,6 +265,44 @@ class AgentPublicProfileView(DetailView):
         return context
 
 
+class SettingsView(LoginRequiredMixin, TemplateView):
+    """Account settings: notification prefs, password change, delete account."""
+    template_name = 'accounts/settings.html'
+
+    def post(self, request, *args, **kwargs):
+        from django.contrib.auth import update_session_auth_hash, logout
+        from django.contrib.auth.forms import PasswordChangeForm
+
+        action = request.POST.get('action')
+
+        if action == 'notifications':
+            request.user.email_notifications_enabled = 'email_notifications' in request.POST
+            request.user.save(update_fields=['email_notifications_enabled'])
+            messages.success(request, "Notification preferences updated.")
+            return redirect('accounts:settings')
+
+        elif action == 'password':
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Password changed successfully.")
+                return redirect('accounts:settings')
+            return self.render_to_response(self.get_context_data(password_form=form))
+
+        elif action == 'delete_account':
+            if request.POST.get('confirm_delete') == 'DELETE':
+                user = request.user
+                logout(request)
+                user.delete()
+                messages.success(request, "Your account has been deleted.")
+                return redirect('properties:home')
+            messages.error(request, 'Type "DELETE" exactly to confirm account deletion.')
+            return redirect('accounts:settings')
+
+        return redirect('accounts:settings')
+
+
 class SignUpSuccessView(TemplateView):
     """Registration success page shown after renter signup."""
     template_name = 'accounts/signup_success.html'

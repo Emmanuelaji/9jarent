@@ -250,3 +250,57 @@ class DashboardReportTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, report.description)
+
+
+class AdminRateLimitExemptionTests(TestCase):
+    """
+    Regression test: the rate-limit middleware exempts Django's built-in
+    admin (/admin/) but historically missed the custom admin dashboard app
+    (/dashboard/) entirely. Since /dashboard/reports/<pk>/resolve/ contains
+    the substring '/reports/', it was matched by the public-facing "3
+    reports per 5 minutes" rate limit meant for renters submitting reports -
+    so an admin resolving more than 3 reports in 5 minutes got locked out
+    of their own moderation queue. Must override TESTING so the middleware
+    actually runs its real logic instead of the test-suite bypass.
+    """
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='adminpass123'
+        )
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Ikeja', slug='ikeja')
+        self.agent = User.objects.create_user(
+            username='agent', email='agent@example.com', password='testpass123',
+            role='MINOR_ADMIN', agent_status='APPROVED', whatsapp_number='2348012345678'
+        )
+        self.renter = User.objects.create_user(
+            username='renter', email='renter@example.com', password='testpass123', role='PUBLIC'
+        )
+        self.property = Property.objects.create(
+            title='Test Flat', description='A flat with enough description text.',
+            price=500000, state=self.state, lga=self.lga, area='Ikeja',
+            property_type='2-Bedroom Flat', bedrooms=2, bathrooms=1,
+            agent_name='Agent', agent_whatsapp='2348012345678',
+            created_by=self.agent, status='PUBLISHED'
+        )
+
+    def test_admin_can_resolve_more_than_three_reports_in_a_row(self):
+        from django.test import override_settings
+        self.client.login(username='admin', password='adminpass123')
+        with override_settings(TESTING=False):
+            for i in range(5):
+                report = Report.objects.create(
+                    reporter=self.renter, property=self.property,
+                    category='fake_listing', description=f'Report number {i}'
+                )
+                response = self.client.post(
+                    reverse('dashboard:resolve_report', kwargs={'pk': report.pk}),
+                    {'status': 'resolved', 'admin_notes': 'Checked.'}
+                )
+                self.assertEqual(
+                    response.status_code, 302,
+                    f"Admin was blocked resolving report {i+1} - rate limit incorrectly applied to /dashboard/"
+                )
+                report.refresh_from_db()
+                self.assertEqual(report.status, 'resolved')

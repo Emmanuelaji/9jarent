@@ -1,387 +1,81 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}9jaRent.com.ng - Premier Property Rental in Nigeria{% endblock %}</title>
-    {% block meta_description %}<meta name="description" content="Find mini flats, self-contain, and luxury apartments for rent across all 36 states in Nigeria.">{% endblock %}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --emerald: #0B6E4F;
-            --emerald-dark: #084E38;
-            --emerald-light: #E7EFE6;
-            --amber: #F2A93B;
-            --amber-dark: #D8901F;
-            --terracotta: #C1512F;
-            --sand: #FBF7EF;
-            --sage: #E7EFE6;
-            --ink: #16211C;
-            --ink-soft: #4B5750;
-            --whatsapp: #25D366;
-            --border-light: #E9ECEF;
-        }
-        * { box-sizing: border-box; }
-        body {
-            background-color: var(--sand);
-            color: var(--ink);
-            font-family: 'Inter', -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        h1, h2, h3, h4, .display-font {
-            font-family: 'Fraunces', Georgia, serif;
-            font-weight: 600;
-            color: var(--ink);
-            letter-spacing: -0.01em;
-        }
-        .mono-price {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-        a { text-decoration: none; }
-
-        /* Navbar */
-        .navbar-9ja {
-            background-color: #fff;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-light);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-        }
-        .navbar-9ja .navbar-brand {
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: 1.35rem;
-            color: var(--ink) !important;
-        }
-        .navbar-9ja .navbar-brand .brand-9ja { color: var(--emerald); }
-        .navbar-9ja .navbar-brand .brand-rent { color: var(--amber); }
-        .navbar-9ja .nav-link {
-            color: var(--ink-soft) !important;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 0.5rem 0.9rem !important;
-            transition: color 0.15s ease;
-        }
-        .navbar-9ja .nav-link:hover { color: var(--emerald) !important; }
-        .navbar-9ja .nav-link.nav-cta {
-            background: var(--emerald);
-            color: #fff !important;
-            border-radius: 8px;
-            font-weight: 600;
-            padding: 0.5rem 1.2rem !important;
-        }
-        .navbar-9ja .nav-link.nav-cta:hover { background: var(--emerald-dark); color: #fff !important; }
-
-        /* User dropdown */
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--emerald-light);
-        }
-        .user-avatar-placeholder {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--emerald);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .dropdown-menu-9ja {
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            padding: 0.5rem;
-            min-width: 220px;
-        }
-        .dropdown-menu-9ja .dropdown-item {
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-            color: var(--ink-soft);
-            transition: all 0.15s ease;
-        }
-        .dropdown-menu-9ja .dropdown-item:hover {
-            background: var(--emerald-light);
-            color: var(--emerald-dark);
-        }
-        .dropdown-menu-9ja .dropdown-item i {
-            width: 20px;
-            text-align: center;
-            margin-right: 8px;
-            color: var(--emerald);
-        }
-        .dropdown-menu-9ja .dropdown-divider {
-            border-color: var(--border-light);
-            margin: 0.4rem 0.5rem;
-        }
-        .dropdown-menu-9ja .dropdown-header {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9CA3AF;
-            font-weight: 600;
-        }
-
-        /* Notification bell */
-        .notif-bell {
-            position: relative;
-            color: var(--ink-soft);
-            font-size: 1.1rem;
-            padding: 0.5rem;
-            transition: color 0.15s ease;
-        }
-        .notif-bell:hover { color: var(--emerald); }
-        .notif-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: var(--terracotta);
-            color: #fff;
-            font-size: 0.65rem;
-            font-weight: 700;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Buttons */
-        .btn-nigeria { background-color: var(--emerald); color: white; border: none; font-weight: 600; }
-        .btn-nigeria:hover { background-color: var(--emerald-dark); color: white; }
-        .btn-amber { background-color: var(--amber); color: var(--ink); border: none; font-weight: 600; }
-        .btn-amber:hover { background-color: var(--amber-dark); color: var(--ink); }
-        .text-nigeria { color: var(--emerald) !important; }
-        .whatsapp-btn { background-color: var(--whatsapp); color: white; font-weight: 700; border: none; }
-        .whatsapp-btn:hover { background-color: #128C7E; color: white; }
-
-        /* Cards */
-        .card { border-radius: 12px; border: 1px solid var(--border-light); }
-        .card.shadow-sm { box-shadow: 0 2px 14px rgba(22,33,28,0.06) !important; }
-
-        /* Price tag */
-        .price-tag {
-            position: relative;
-            display: inline-block;
-            background: var(--ink);
-            color: var(--sand);
-            padding: 0.3rem 0.75rem 0.3rem 0.6rem;
-            border-radius: 3px 6px 6px 3px;
-        }
-        .price-tag::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
-            background: var(--sand);
-            border-radius: 50%;
-            border: 2px solid var(--ink);
-        }
-
-        /* Verified seal */
-        .verified-seal {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            background: var(--sage);
-            color: var(--emerald-dark);
-            font-size: 0.78rem;
-            font-weight: 700;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            border: 1px solid rgba(11,110,79,0.25);
-        }
-
-        /* Form styling */
-        .form-control-9ja {
-            border-radius: 10px;
-            border: 1px solid var(--border-light);
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-        .form-control-9ja:focus {
-            border-color: var(--emerald);
-            box-shadow: 0 0 0 3px rgba(11,110,79,0.1);
-        }
-        .form-label-9ja {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--ink);
-            margin-bottom: 0.4rem;
-        }
-
-        /* Toggle tabs */
-        .toggle-tabs {
-            display: flex;
-            background: #fff;
-            border-radius: 30px;
-            padding: 4px;
-            border: 1px solid var(--border-light);
-        }
-        .toggle-tab {
-            flex: 1;
-            text-align: center;
-            padding: 0.5rem 1rem;
-            border-radius: 26px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            color: var(--ink-soft);
-            transition: all 0.2s ease;
-        }
-        .toggle-tab.active {
-            background: var(--emerald-dark);
-            color: #fff;
-        }
-
-        /* Social login buttons */
-        .social-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 0.7rem;
-            border-radius: 10px;
-            border: 1px solid var(--border-light);
-            background: #fff;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--ink);
-            transition: all 0.15s ease;
-            cursor: pointer;
-        }
-        .social-btn:hover { background: #f8f9fa; border-color: #d1d5db; }
-
-        /* Password strength */
-        .strength-bar {
-            height: 4px;
-            border-radius: 2px;
-            background: #E9ECEF;
-            overflow: hidden;
-            margin-top: 6px;
-        }
-        .strength-bar-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 0.3s ease, background 0.3s ease;
-        }
-
-        footer.site-footer { background-color: var(--ink); color: rgba(251,247,239,0.7); }
-        footer.site-footer .footer-brand { font-family: 'Fraunces', serif; color: var(--sand); font-weight: 700; }
-    </style>
-    {% block extra_css %}{% endblock %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}9jaRent.com.ng - Premier Property Rental in Nigeria{% endblock %}</title>
+{% block meta_description %}<meta name="description" content="Find mini flats, self-contain, and luxury apartments for rent across all 36 states in Nigeria.">{% endblock %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" integrity="sha256-pdY4ejLKO67E0CM2tbPtq1DJ3VGDVVdqAR6j3ZwdiE4=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-9ja">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <span class="brand-9ja">9ja</span><span class="brand-rent">Rent</span><span style="color:var(--ink-soft)">.com.ng</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: var(--border-light);">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}">Browse Properties</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'accounts:agents_directory' %}">Agents</a></li>
-                    {% if user.is_authenticated %}
-                        <!-- Notifications -->
-                        <li class="nav-item">
-                            <a class="notif-bell" href="{% url 'notifications:list' %}">
-                                <i class="far fa-bell"></i>
-                                {% if unread_notification_count %}<span class="notif-badge">{{ unread_notification_count }}</span>{% endif %}
-                            </a>
-                        </li>
-                        <!-- User Dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right: 0.5rem !important;">
-                                {% if user.profile_photo %}
-                                    <img src="{{ user.profile_photo.url }}" alt="{{ user.full_name_or_username }}" class="user-avatar">
-                                {% else %}
-                                    <div class="user-avatar-placeholder">{{ user.first_name|default:user.username|first|upper }}</div>
-                                {% endif %}
-                                <span class="d-none d-lg-inline small fw-semibold" style="color: var(--ink);">{{ user.first_name|default:user.username }}</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-9ja">
-                                <li class="dropdown-header">{{ user.full_name_or_username }}</li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:complete_profile' %}"><i class="far fa-user"></i> Profile</a></li>
-                                {% if user.is_staff or user.role == 'SUPER_ADMIN' %}
-                                    <li><a class="dropdown-item" href="{% url 'dashboard:admin' %}"><i class="fas fa-shield-halved"></i> Admin Dashboard</a></li>
-                                {% elif user.is_agent %}
-                                    <li><a class="dropdown-item" href="{% url 'properties:mine' %}"><i class="fas fa-list-check"></i> My Listings</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'properties:create' %}"><i class="fas fa-plus"></i> Add Property</a></li>
-                                {% else %}
-                                    <li><a class="dropdown-item" href="{% url 'favourites:list' %}"><i class="far fa-heart"></i> Favourites</a></li>
-                                {% endif %}
-                                <li><a class="dropdown-item" href="{% url 'inspections:list' %}"><i class="far fa-calendar-check"></i> Inspections</a></li>
-                                <li><a class="dropdown-item" href="{% url 'messaging:inbox' %}"><i class="far fa-comment-dots"></i> Messages{% if unread_message_count %} <span class="badge rounded-pill" style="background: var(--terracotta); font-size: 0.65rem;">{{ unread_message_count }}</span>{% endif %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'notifications:list' %}"><i class="far fa-bell"></i> Notifications{% if unread_notification_count %} <span class="badge rounded-pill" style="background: var(--terracotta); font-size: 0.65rem;">{{ unread_notification_count }}</span>{% endif %}</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
-                                            <i class="fas fa-arrow-right-from-bracket"></i> Log Out
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Log in</a></li>
-                        <li class="nav-item"><a class="nav-link nav-cta" href="{% url 'accounts:signup' %}">Sign Up Free</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <main>
-        {% if messages %}
-            <div class="container pt-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius: 10px;">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-            </div>
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
-    <footer class="site-footer py-5 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <div class="footer-brand fs-4 mb-2">9jaRent.com.ng</div>
-                    <p class="small mb-0" style="max-width: 360px;">Connecting renters directly with verified agents across Nigeria &mdash; no middlemen, just a WhatsApp message away.</p>
-                </div>
-                <div class="col-md-6 text-md-end small">
-                    <p class="mb-1">&copy; 2026 9jaRent.com.ng. All rights reserved.</p>
-                    <p class="mb-0">Built for renters and agents, statewide.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    {% block extra_js %}{% endblock %}
+<nav class="public-navbar">
+<div class="container">
+<div class="d-flex align-items-center justify-content-between">
+<a href="{% url 'properties:home' %}" class="brand-logo-dark text-decoration-none fs-4 fw-bold"></a>
+<div class="d-none d-lg-flex align-items-center gap-1">
+<a href="{% url 'properties:list' %}" class="nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'properties' %}active{% endif %}">Browse Properties</a>
+<a href="{% url 'accounts:agents_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'agents_directory' %}active{% endif %}">Agents</a>
+<a href="#" class="nav-link">About Us</a>
+<a href="#" class="nav-link">Contact</a>
+</div>
+<div class="d-flex align-items-center gap-2">
+{% if user.is_authenticated %}
+<a href="{% url 'favourites:list' %}" class="nav-icon-btn"><i class="bi bi-heart"></i></a>
+<a href="{% url 'messaging:inbox' %}" class="nav-icon-btn"><i class="bi bi-envelope"></i></a>
+<a href="{% url 'notifications:list' %}" class="nav-icon-btn"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="badge-dot"></span>{% endif %}</a>
+<div class="dropdown">
+<button class="d-flex align-items-center gap-2 bg-white border-0" data-bs-toggle="dropdown">
+{% if user.profile_photo %}<img src="{{ user.profile_photo.url }}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+{% else %}<div style="width:36px;height:36px;border-radius:50%;background:var(--brand-green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">{{ user.first_name|default:user.username|first|upper }}</div>{% endif %}
+<span class="fw-medium fs-8 d-none d-md-inline">{{ user.full_name_or_username }}</span>
+<i class="bi bi-chevron-down fs-9"></i>
+</button>
+<ul class="dropdown-menu dropdown-menu-end">
+{% if user.is_agent %}
+<li><a class="dropdown-item" href="{% url 'properties:agent_dashboard' %}">Dashboard</a></li>
+<li><a class="dropdown-item" href="{% url 'accounts:profile_edit' %}">Profile</a></li>
+{% else %}
+<li><a class="dropdown-item" href="{% url 'inspections:list' %}">My Inspections</a></li>
+{% endif %}
+<li><hr class="dropdown-divider"></li>
+<li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+</ul>
+</div>
+{% else %}
+<div class="dropdown">
+<button class="nav-icon-btn" data-bs-toggle="dropdown"><i class="bi bi-person"></i></button>
+<ul class="dropdown-menu dropdown-menu-end">
+<li><a class="dropdown-item" href="{% url 'accounts:login' %}">Login</a></li>
+<li><a class="dropdown-item" href="{% url 'accounts:signup' %}">Sign Up</a></li>
+</ul>
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+</nav>
+
+{% if messages %}
+<div class="container mt-3">
+{% for message in messages %}
+<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+{{ message }}
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script src="{% static 'js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

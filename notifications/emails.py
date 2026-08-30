@@ -24,6 +24,8 @@ def send_notification_email(notification):
     to_email = getattr(notification.user, 'email', None)
     if not to_email:
         return
+    if not getattr(notification.user, 'email_notifications_enabled', True):
+        return
 
     link_url = ''
     if notification.link:

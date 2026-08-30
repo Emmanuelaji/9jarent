@@ -1,114 +1,79 @@
 {% extends 'accounts/auth_base.html' %}
-{% block title %}Welcome Back | 9jaRent{% endblock %}
+{% block title %}Login | 9jaRent{% endblock %}
 
 {% block auth_content %}
-<div class="text-center mb-4">
-    <h3 class="fw-bold mb-1 display-font" style="font-size: 1.5rem;">Welcome Back</h3>
-    <p class="text-muted" style="font-size: 0.9rem;">Log in to your account to continue</p>
-</div>
+<h1 class="auth-title">Welcome Back</h1>
+<p class="auth-subtitle">Log in to your account to continue</p>
 
-<!-- Email/Phone Toggle -->
-<div class="toggle-tabs mb-4">
-    <button type="button" class="toggle-tab active" id="emailTab" onclick="switchTab('email')">Email</button>
-    <button type="button" class="toggle-tab" id="phoneTab" onclick="switchTab('phone')">Phone</button>
+<div class="auth-tabs">
+<button type="button" class="auth-tab active" id="emailTab" onclick="switchLoginTab('email')">Email</button>
+<button type="button" class="auth-tab" id="phoneTab" onclick="switchLoginTab('phone')">Phone</button>
 </div>
 
 <form method="post" action="{% url 'accounts:login' %}">
-    {% csrf_token %}
-    
-    <!-- Email Field -->
-    <div id="emailField">
-        <label class="form-label-9ja">Email Address</label>
-        <input type="email" name="username" class="form-control form-control-9ja mb-3" placeholder="Enter your email address" required>
-    </div>
-    
-    <!-- Phone Field (hidden by default) -->
-    <div id="phoneField" style="display: none;">
-        <label class="form-label-9ja">Phone Number</label>
-        <input type="tel" name="phone" class="form-control form-control-9ja mb-3" placeholder="080 1234 5678">
-    </div>
-    
-    <!-- Password -->
-    <div class="mb-3">
-        <label class="form-label-9ja">Password</label>
-        <div class="position-relative">
-            <input type="password" name="password" id="loginPassword" class="form-control form-control-9ja" placeholder="Enter your password" required>
-            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2" onclick="togglePassword('loginPassword')" style="color: var(--ink-soft); padding: 0;">
-                <i class="far fa-eye" id="loginPasswordEye"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Remember me + Forgot password -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="remember" id="rememberMe" style="border-color: var(--border-light);">
-            <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
-        </div>
-        <a href="{% url 'accounts:password_reset' %}" class="small fw-semibold" style="color: var(--emerald);">Forgot password?</a>
-    </div>
-    
-    <button type="submit" class="btn btn-amber w-100 py-2 mb-3" style="border-radius: 10px; font-weight: 600;">Log In</button>
+{% csrf_token %}
+<div class="mb-3" id="emailField">
+<label class="form-label-custom">Email Address</label>
+<input type="email" name="username" class="form-control-custom w-100" placeholder="Enter your email address" required>
+</div>
+<div class="mb-3" id="phoneField" style="display:none;">
+<label class="form-label-custom">Phone Number</label>
+<input type="tel" name="phone" class="form-control-custom w-100" placeholder="080 1234 5678">
+</div>
+<div class="mb-3">
+<label class="form-label-custom">Password</label>
+<div class="position-relative">
+<input type="password" name="password" id="loginPassword" class="form-control-custom w-100" placeholder="Enter your password" required>
+<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" onclick="togglePasswordVisibility('loginPassword', this)"><i class="bi bi-eye-slash"></i></button>
+</div>
+</div>
+<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" name="remember" id="remember">
+<label class="form-check-label fs-8 text-muted" for="remember">Remember me</label>
+</div>
+<a href="{% url 'accounts:password_reset' %}" class="fs-8 text-brand-green fw-medium">Forgot password?</a>
+</div>
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<button type="submit" class="btn btn-brand-orange w-100 mb-3">Log In</button>
 </form>
 
-<!-- Divider -->
-<div class="d-flex align-items-center gap-3 my-4">
-    <div class="flex-fill" style="height: 1px; background: var(--border-light);"></div>
-    <span class="small text-muted">or continue with</span>
-    <div class="flex-fill" style="height: 1px; background: var(--border-light);"></div>
+<div class="auth-divider">or continue with</div>
+
+<button type="button" class="social-btn" disabled title="Coming soon"><i class="bi bi-google text-danger"></i> Continue with Google</button>
+<button type="button" class="social-btn" disabled title="Coming soon"><i class="bi bi-apple"></i> Continue with Apple</button>
+
+<div class="auth-footer">
+Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up</a>
 </div>
+{% endblock %}
 
-<!-- Social Login -->
-<div class="d-flex gap-3 mb-4">
-    <button type="button" class="social-btn flex-fill">
-        <img src="https://www.google.com/favicon.ico" width="18" height="18" alt="Google">
-        <span>Continue with Google</span>
-    </button>
-    <button type="button" class="social-btn flex-fill">
-        <i class="fab fa-apple" style="font-size: 18px;"></i>
-        <span>Continue with Apple</span>
-    </button>
-</div>
-
-<p class="text-center small text-muted mb-0">
-    Don't have an account? <a href="{% url 'accounts:signup' %}" class="fw-semibold" style="color: var(--emerald);">Sign up</a>
-</p>
-
+{% block extra_js %}
 <script>
-function switchTab(tab) {
+function switchLoginTab(tab) {
     const emailTab = document.getElementById('emailTab');
     const phoneTab = document.getElementById('phoneTab');
     const emailField = document.getElementById('emailField');
     const phoneField = document.getElementById('phoneField');
-    
     if (tab === 'email') {
-        emailTab.classList.add('active');
-        phoneTab.classList.remove('active');
-        emailField.style.display = 'block';
-        phoneField.style.display = 'none';
+        emailTab.classList.add('active'); phoneTab.classList.remove('active');
+        emailField.style.display = 'block'; phoneField.style.display = 'none';
         emailField.querySelector('input').required = true;
         phoneField.querySelector('input').required = false;
     } else {
-        phoneTab.classList.add('active');
-        emailTab.classList.remove('active');
-        emailField.style.display = 'none';
-        phoneField.style.display = 'block';
+        phoneTab.classList.add('active'); emailTab.classList.remove('active');
+        emailField.style.display = 'none'; phoneField.style.display = 'block';
         emailField.querySelector('input').required = false;
         phoneField.querySelector('input').required = true;
     }
 }
-
-function togglePassword(fieldId) {
+function togglePasswordVisibility(fieldId, btn) {
     const field = document.getElementById(fieldId);
-    const eye = document.getElementById(fieldId + 'Eye');
+    const icon = btn.querySelector('i');
     if (field.type === 'password') {
-        field.type = 'text';
-        eye.classList.remove('fa-eye');
-        eye.classList.add('fa-eye-slash');
+        field.type = 'text'; icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye');
     } else {
-        field.type = 'password';
-        eye.classList.remove('fa-eye-slash');
-        eye.classList.add('fa-eye');
+        field.type = 'password'; icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash');
     }
 }
 </script>

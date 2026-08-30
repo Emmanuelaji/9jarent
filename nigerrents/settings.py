@@ -81,12 +81,21 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+from django.contrib.messages import constants as message_constants
+MESSAGE_TAGS = {message_constants.ERROR: 'danger'}
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # CompressedManifestStaticFilesStorage requires collectstatic to have
+        # run first (it 404s on any {% static %} reference not yet in its
+        # manifest) - fine for production, but forcing every contributor to
+        # run collectstatic before `manage.py test` is unnecessary friction.
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if TESTING
+        else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 MEDIA_URL = '/media/'

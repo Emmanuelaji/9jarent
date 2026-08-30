@@ -1,80 +1,66 @@
 {% extends 'base_portal.html' %}
 {% block title %}Notifications | 9jaRent{% endblock %}
+{% block portal_header %}
+<div>
+<h1 class="fs-3 fw-bold mb-1">Notifications</h1>
+<p class="text-muted mb-0">Stay updated with your activities.</p>
+</div>
+{% endblock %}
 
 {% block portal_content %}
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
-    <div>
-        <h2 class="display-font mb-1">Notifications</h2>
-        <p class="text-muted mb-0">Stay updated with your activities.</p>
-    </div>
-    {% if unread_count > 0 %}
-    <form method="post" action="{% url 'notifications:mark_all_read' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-check-double me-1"></i>Mark all as read</button>
-    </form>
-    {% endif %}
+<div class="card-custom p-0">
+<div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+<div class="d-flex align-items-center gap-3 flex-wrap">
+<a href="?category=all" class="badge {% if category == 'all' %}bg-brand-green text-white{% else %}text-muted fs-8{% endif %}" style="text-decoration:none;">All ({{ total_count }})</a>
+<a href="?category=unread" class="{% if category == 'unread' %}badge bg-brand-green text-white{% else %}text-muted fs-8{% endif %}" style="text-decoration:none;">Unread ({{ unread_count }})</a>
+<a href="?category=messages" class="{% if category == 'messages' %}badge bg-brand-green text-white{% else %}text-muted fs-8{% endif %}" style="text-decoration:none;">Messages ({{ category_counts.messages }})</a>
+<a href="?category=inspections" class="{% if category == 'inspections' %}badge bg-brand-green text-white{% else %}text-muted fs-8{% endif %}" style="text-decoration:none;">Inspections ({{ category_counts.inspections }})</a>
+<a href="?category=properties" class="{% if category == 'properties' %}badge bg-brand-green text-white{% else %}text-muted fs-8{% endif %}" style="text-decoration:none;">Properties ({{ category_counts.properties }})</a>
+</div>
+{% if unread_count > 0 %}
+<form method="post" action="{% url 'notifications:mark_all_read' %}" class="mb-0">
+{% csrf_token %}
+<button type="submit" class="btn btn-link text-brand-green fs-8 fw-medium p-0 border-0">Mark all as read</button>
+</form>
+{% endif %}
+</div>
+<div class="p-3">
+{% for notification in notifications %}
+<a href="{% url 'notifications:redirect' notification.pk %}" class="notification-item {% if not notification.is_read %}unread{% endif %}" style="text-decoration:none;color:inherit;">
+<div class="notification-icon
+{% if notification.notification_type == 'new_message' %}message
+{% elif notification.notification_type == 'inspection_request' or notification.notification_type == 'inspection_accepted' or notification.notification_type == 'inspection_declined' or notification.notification_type == 'inspection_completed' %}inspection
+{% elif notification.notification_type == 'property_approved' or notification.notification_type == 'property_rejected' or notification.notification_type == 'property_published' %}property
+{% else %}system{% endif %}">
+<i class="bi
+{% if notification.notification_type == 'property_approved' or notification.notification_type == 'inspection_accepted' %}bi-check-circle
+{% elif notification.notification_type == 'property_rejected' or notification.notification_type == 'inspection_declined' %}bi-x-circle
+{% elif notification.notification_type == 'new_message' %}bi-envelope
+{% elif notification.notification_type == 'inspection_request' %}bi-clipboard-check
+{% else %}bi-bell{% endif %}"></i>
+</div>
+<div class="notification-content">
+<div class="notification-text">{{ notification.message }}</div>
+<div class="notification-time">{{ notification.created_at|timesince }} ago</div>
+</div>
+</a>
+{% empty %}
+<div class="empty-state">
+<i class="bi bi-bell-slash empty-state-icon"></i>
+<div class="empty-state-title">No notifications</div>
+<p class="empty-state-text">You don't have any notifications in this category yet.</p>
+</div>
+{% endfor %}
+</div>
 </div>
 
-<div class="row g-4">
-    <div class="col-lg-3">
-        <div class="data-card p-2">
-            <a href="?category=all" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'all' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">All <span class="text-muted">{{ total_count }}</span></a>
-            <a href="?category=unread" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'unread' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">Unread <span class="text-muted">{{ unread_count }}</span></a>
-            <a href="?category=messages" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'messages' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">Messages <span class="text-muted">{{ category_counts.messages }}</span></a>
-            <a href="?category=inspections" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'inspections' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">Inspections <span class="text-muted">{{ category_counts.inspections }}</span></a>
-            <a href="?category=properties" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'properties' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">Properties <span class="text-muted">{{ category_counts.properties }}</span></a>
-            {% if user.is_agent %}<a href="?category=agents" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'agents' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">Agent Status <span class="text-muted">{{ category_counts.agents }}</span></a>{% endif %}
-            <a href="?category=system" class="list-group-item list-group-item-action d-flex justify-content-between border-0 rounded {% if category == 'system' %}bg-light fw-bold{% endif %}" style="padding: 0.6rem 0.9rem;">System <span class="text-muted">{{ category_counts.system }}</span></a>
-        </div>
-    </div>
-
-    <div class="col-lg-9">
-        <div class="data-card">
-            <div class="list-group list-group-flush">
-                {% for notification in notifications %}
-                <a href="{% url 'notifications:redirect' notification.pk %}"
-                   class="list-group-item list-group-item-action d-flex gap-3 py-3 {% if not notification.is_read %}bg-light{% endif %}">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background:
-                            {% if notification.notification_type == 'agent_approved' or notification.notification_type == 'property_approved' or notification.notification_type == 'inspection_accepted' %}var(--emerald)
-                            {% elif notification.notification_type == 'agent_rejected' or notification.notification_type == 'property_rejected' or notification.notification_type == 'inspection_declined' %}var(--terracotta)
-                            {% elif notification.notification_type == 'new_message' %}var(--ink)
-                            {% elif notification.notification_type == 'inspection_request' %}var(--amber)
-                            {% else %}var(--ink-soft){% endif %}; color: white;">
-                            <i class="fas
-                                {% if notification.notification_type == 'agent_approved' or notification.notification_type == 'property_approved' or notification.notification_type == 'inspection_accepted' %}fa-check
-                                {% elif notification.notification_type == 'agent_rejected' or notification.notification_type == 'property_rejected' or notification.notification_type == 'inspection_declined' %}fa-times
-                                {% elif notification.notification_type == 'new_message' %}fa-comment
-                                {% elif notification.notification_type == 'inspection_request' %}fa-calendar
-                                {% else %}fa-bell{% endif %}"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between">
-                            <span class="{% if not notification.is_read %}fw-bold{% endif %}">{{ notification.message }}</span>
-                            <small class="text-muted text-nowrap ms-2">{{ notification.created_at|timesince }} ago</small>
-                        </div>
-                    </div>
-                </a>
-                {% empty %}
-                <div class="text-center py-5">
-                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                    <h5>No notifications</h5>
-                    <p class="text-muted mb-0">You don't have any notifications in this category yet.</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        {% if is_paginated %}
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?category={{ category }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
-                <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-                {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?category={{ category }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
-</div>
+{% if is_paginated %}
+<nav class="mt-4">
+<ul class="pagination justify-content-center">
+{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?category={{ category }}&page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
+<li class="page-item active"><span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?category={{ category }}&page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
+</ul>
+</nav>
+{% endif %}
 {% endblock %}

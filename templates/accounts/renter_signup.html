@@ -1,114 +1,101 @@
-{% extends 'accounts/auth_base.html' %}
-{% block title %}Create Renter Account | 9jaRent{% endblock %}
-
-{% block auth_content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renter Sign Up | 9jaRent</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid p-0">
+<div class="row g-0 min-vh-100">
+<div class="col-lg-5 d-none d-lg-block">
+<div class="auth-hero">
+<div class="auth-hero-content">
+<h1 class="auth-hero-title">Find a place,<br>message the agent,<br><span class="highlight">move in.</span></h1>
+<p class="auth-hero-text">Connecting renters directly with verified agents across Nigeria.</p>
+<ul class="auth-hero-list">
+<li><i class="bi bi-check-circle-fill"></i> Verified agents</li>
+<li><i class="bi bi-check-circle-fill"></i> Real properties</li>
+<li><i class="bi bi-check-circle-fill"></i> Direct communication</li>
+<li><i class="bi bi-check-circle-fill"></i> No middlemen</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="col-lg-7 d-flex align-items-center justify-content-center py-5">
+<div style="width:100%;max-width:420px;padding:0 1.5rem;">
 <div class="text-center mb-4">
-    <h3 class="fw-bold mb-1 display-font" style="font-size: 1.5rem;">Create Renter Account</h3>
-    <p class="text-muted" style="font-size: 0.9rem;">Join thousands of renters finding their perfect homes.</p>
+<a href="{% url 'properties:home' %}" class="brand-logo-dark fs-3 fw-bold text-decoration-none"><span class="brand-9ja">9ja</span>Rent.com.ng</a>
 </div>
+<h2 class="fs-4 fw-bold text-center mb-1">Create Renter Account</h2>
+<p class="text-muted text-center fs-8 mb-4">Join thousands of renters finding their perfect homes.</p>
 
-<!-- Email/Phone Toggle -->
-<div class="toggle-tabs mb-4">
-    <button type="button" class="toggle-tab active" id="emailTab" onclick="switchTab('email')">Email</button>
-    <button type="button" class="toggle-tab" id="phoneTab" onclick="switchTab('phone')">Phone</button>
+{% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}{% endif %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+<form method="post">
+{% csrf_token %}
+<div class="mb-3">
+<label class="form-label-custom">Full Name</label>
+<input type="text" name="first_name" class="form-control-custom w-100" placeholder="Enter your full name" value="{{ form.first_name.value|default:'' }}" required>
+{% for error in form.first_name.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
 </div>
-
-<form method="post" action="{% url 'accounts:renter_signup' %}">
-    {% csrf_token %}
-    
-    <!-- Full Name -->
-    <div class="mb-3">
-        <label class="form-label-9ja">Full Name</label>
-        <input type="text" name="first_name" class="form-control form-control-9ja" placeholder="Enter your full name" required>
-    </div>
-    
-    <!-- Email -->
-    <div id="emailField">
-        <label class="form-label-9ja">Email Address</label>
-        <input type="email" name="email" class="form-control form-control-9ja mb-3" placeholder="Enter your email address" required>
-    </div>
-    
-    <!-- Phone -->
-    <div id="phoneField" style="display: none;">
-        <label class="form-label-9ja">Phone Number</label>
-        <input type="tel" name="phone" class="form-control form-control-9ja mb-3" placeholder="080 1234 5678">
-    </div>
-    
-    <!-- Password -->
-    <div class="mb-3">
-        <label class="form-label-9ja">Password</label>
-        <div class="position-relative">
-            <input type="password" name="password1" id="signupPassword" class="form-control form-control-9ja" placeholder="Create a password" required>
-            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2" onclick="togglePassword('signupPassword')" style="color: var(--ink-soft); padding: 0;">
-                <i class="far fa-eye" id="signupPasswordEye"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Confirm Password -->
-    <div class="mb-3">
-        <label class="form-label-9ja">Confirm Password</label>
-        <div class="position-relative">
-            <input type="password" name="password2" id="confirmPassword" class="form-control form-control-9ja" placeholder="Confirm your password" required>
-            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2" onclick="togglePassword('confirmPassword')" style="color: var(--ink-soft); padding: 0;">
-                <i class="far fa-eye" id="confirmPasswordEye"></i>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Terms -->
-    <div class="mb-4">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="agree_terms" id="agreeTerms" required style="border-color: var(--border-light);">
-            <label class="form-check-label small text-muted" for="agreeTerms">
-                I agree to the <a href="#" style="color: var(--emerald);">Terms & Conditions</a> and <a href="#" style="color: var(--emerald);">Privacy Policy</a>
-            </label>
-        </div>
-    </div>
-    
-    <button type="submit" class="btn btn-amber w-100 py-2 mb-3" style="border-radius: 10px; font-weight: 600;">Create Account</button>
+<div class="mb-3">
+<label class="form-label-custom">Email Address</label>
+<input type="email" name="email" class="form-control-custom w-100" placeholder="Enter your email address" value="{{ form.email.value|default:'' }}" required>
+{% for error in form.email.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
+</div>
+<div class="mb-3">
+<label class="form-label-custom">Phone Number (Optional)</label>
+<input type="tel" name="phone" class="form-control-custom w-100" placeholder="080 1234 5678" value="{{ form.phone.value|default:'' }}">
+{% for error in form.phone.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
+</div>
+<div class="mb-3">
+<label class="form-label-custom">Password</label>
+<div class="position-relative">
+<input type="password" name="password1" id="pw1" class="form-control-custom w-100" placeholder="Create a password" required>
+<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" onclick="toggleRenterPw('pw1', this)"><i class="bi bi-eye-slash"></i></button>
+</div>
+{% for error in form.password1.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
+</div>
+<div class="mb-4">
+<label class="form-label-custom">Confirm Password</label>
+<div class="position-relative">
+<input type="password" name="password2" id="pw2" class="form-control-custom w-100" placeholder="Confirm your password" required>
+<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" onclick="toggleRenterPw('pw2', this)"><i class="bi bi-eye-slash"></i></button>
+</div>
+{% for error in form.password2.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
+</div>
+<div class="mb-4">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="terms" required>
+<label class="form-check-label fs-8 text-muted" for="terms">I agree to the <a href="#" class="text-brand-green">Terms &amp; Conditions</a> and <a href="#" class="text-brand-green">Privacy Policy</a></label>
+</div>
+</div>
+<button type="submit" class="btn btn-brand-orange w-100 mb-3">Create Account</button>
 </form>
 
-<p class="text-center small text-muted mb-0">
-    Already have an account? <a href="{% url 'accounts:login' %}" class="fw-semibold" style="color: var(--emerald);">Log in</a>
-</p>
-
+<div class="auth-footer">
+Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/app.js' %}"></script>
 <script>
-function switchTab(tab) {
-    const emailTab = document.getElementById('emailTab');
-    const phoneTab = document.getElementById('phoneTab');
-    const emailField = document.getElementById('emailField');
-    const phoneField = document.getElementById('phoneField');
-    
-    if (tab === 'email') {
-        emailTab.classList.add('active');
-        phoneTab.classList.remove('active');
-        emailField.style.display = 'block';
-        phoneField.style.display = 'none';
-        emailField.querySelector('input').required = true;
-        if (phoneField.querySelector('input')) phoneField.querySelector('input').required = false;
-    } else {
-        phoneTab.classList.add('active');
-        emailTab.classList.remove('active');
-        emailField.style.display = 'none';
-        phoneField.style.display = 'block';
-        if (emailField.querySelector('input')) emailField.querySelector('input').required = false;
-        phoneField.querySelector('input').required = true;
-    }
-}
-
-function togglePassword(fieldId) {
+function toggleRenterPw(fieldId, btn) {
     const field = document.getElementById(fieldId);
-    const eye = document.getElementById(fieldId + 'Eye');
-    if (field.type === 'password') {
-        field.type = 'text';
-        eye.classList.remove('fa-eye');
-        eye.classList.add('fa-eye-slash');
-    } else {
-        field.type = 'password';
-        eye.classList.remove('fa-eye-slash');
-        eye.classList.add('fa-eye');
-    }
+    const icon = btn.querySelector('i');
+    if (field.type === 'password') { field.type = 'text'; icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye'); }
+    else { field.type = 'password'; icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash'); }
 }
 </script>
-{% endblock %}
+</body>
+</html>

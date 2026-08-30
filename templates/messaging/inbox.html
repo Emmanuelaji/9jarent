@@ -1,95 +1,94 @@
 {% extends 'base_portal.html' %}
 {% block title %}Messages | 9jaRent{% endblock %}
+{% block portal_header %}
+<div class="breadcrumb-custom mb-0"><a href="{% if user.is_agent %}{% url 'properties:agent_dashboard' %}{% else %}{% url 'properties:home' %}{% endif %}">Dashboard</a><span class="separator"><i class="bi bi-chevron-right"></i></span><span class="active">Messages</span></div>
+{% endblock %}
+
 {% block portal_content %}
-<div class="mb-4">
-    <h2 class="display-font mb-1">Messages</h2>
-    <p class="text-muted mb-0">Communicate with {% if user.is_agent %}renters about your properties{% else %}agents about properties{% endif %}.</p>
+<h1 class="fs-3 fw-bold mb-1">Messages</h1>
+<p class="text-muted mb-4">Communicate with {% if user.is_agent %}renters about your properties{% else %}agents about properties{% endif %}.</p>
+
+<div class="messages-layout">
+<div class="conversations-panel">
+<div class="conversations-header">
+<div class="conversations-title">Conversations</div>
+<div class="conversations-search">
+<i class="bi bi-search"></i>
+<input type="text" id="conversationSearch" placeholder="Search conversations...">
+</div>
+</div>
+<div class="conversations-list">
+{% for convo in conversations %}
+<a href="{% url 'messaging:detail' convo.pk %}" class="conversation-item {% if active_conversation.pk == convo.pk %}active{% endif %}" style="text-decoration:none;color:inherit;">
+{% if convo.other.profile_photo %}<img src="{{ convo.other.profile_photo.url }}" alt="" class="conversation-item-img">
+{% else %}<div class="conversation-item-img d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;">{{ convo.other.first_name|default:convo.other.username|first|upper }}</div>{% endif %}
+<div class="conversation-item-info">
+<div class="conversation-item-name">{{ convo.other.full_name_or_username }}</div>
+<div class="conversation-item-property">{{ convo.property.title }}</div>
+</div>
+<div class="conversation-item-meta">
+<div class="conversation-item-time">{{ convo.updated_at|timesince }} ago</div>
+{% if convo.unread %}<div class="conversation-item-badge">{{ convo.unread }}</div>{% endif %}
+</div>
+</a>
+{% empty %}
+<div class="empty-state">
+<i class="bi bi-chat-dots empty-state-icon"></i>
+<div class="empty-state-title">No conversations yet</div>
+<p class="empty-state-text">Message an agent from any property page to get started.</p>
+</div>
+{% endfor %}
+</div>
 </div>
 
-<div class="data-card" style="height: 70vh; min-height: 480px;">
-        <div class="row g-0 h-100">
-            <div class="col-md-4 border-end h-100 d-flex flex-column">
-                <div class="p-3 border-bottom">
-                    <input type="text" class="form-control" id="conversationSearch" placeholder="Search conversations...">
-                </div>
-                <div class="flex-grow-1" style="overflow-y: auto;">
-                    {% for convo in conversations %}
-                    <a href="{% url 'messaging:detail' convo.pk %}" class="d-flex align-items-start gap-2 p-3 text-decoration-none border-bottom conversation-row {% if active_conversation.pk == convo.pk %}active{% endif %}">
-                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:42px;height:42px;border-radius:50%;background:var(--sage);color:var(--emerald-dark);font-weight:600;">
-                            {{ convo.other.full_name_or_username|slice:":1"|upper }}
-                        </div>
-                        <div class="flex-grow-1 overflow-hidden">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong class="text-truncate" style="color: var(--ink);">{{ convo.other.full_name_or_username }}</strong>
-                                {% if convo.unread %}<span class="badge rounded-pill" style="background: var(--terracotta);">{{ convo.unread }}</span>{% endif %}
-                            </div>
-                            <p class="small text-muted text-truncate mb-0">{{ convo.property.title }}</p>
-                            {% with last=convo.last_message %}
-                            {% if last %}<p class="small text-truncate mb-0" style="color: var(--ink-soft);">{{ last.message }}</p>{% endif %}
-                            {% endwith %}
-                        </div>
-                    </a>
-                    {% empty %}
-                    <div class="text-center py-5 px-3">
-                        <i class="fas fa-comment-dots fa-2x mb-3" style="color: var(--sage);"></i>
-                        <p class="text-muted small mb-0">No conversations yet. Message an agent from a property page to get started.</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="col-md-8 h-100 d-flex flex-column">
-                {% if active_conversation %}
-                <div class="p-3 border-bottom d-flex align-items-center gap-2">
-                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px;border-radius:50%;background:var(--sage);color:var(--emerald-dark);font-weight:600;">
-                        {{ active_conversation.other.full_name_or_username|slice:":1"|upper }}
-                    </div>
-                    <div>
-                        <strong>{{ active_conversation.other.full_name_or_username }}</strong>
-                        <p class="small text-muted mb-0">{{ active_conversation.property.title }}</p>
-                    </div>
-                    <a href="{% url 'properties:detail' active_conversation.property.slug %}" class="btn btn-sm btn-outline-secondary ms-auto">View Property</a>
-                </div>
-                <div class="flex-grow-1 p-3" style="overflow-y: auto; background: var(--sand);">
-                    {% for msg in thread_messages %}
-                    <div class="d-flex mb-3 {% if msg.sender_id == user.id %}justify-content-end{% endif %}">
-                        <div class="p-2 px-3 rounded-3" style="max-width: 75%; {% if msg.sender_id == user.id %}background: var(--emerald); color: white;{% else %}background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.08);{% endif %}">
-                            <p class="mb-1" style="white-space: pre-wrap;">{{ msg.message }}</p>
-                            <small style="opacity: 0.7; font-size: 0.7rem;">{{ msg.created_at|date:"g:i A" }}</small>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted text-center mt-4">Say hello - ask about availability or request an inspection.</p>
-                    {% endfor %}
-                </div>
-                <form method="post" class="p-3 border-top d-flex gap-2 align-items-end">
-                    {% csrf_token %}
-                    <div class="flex-grow-1">{{ form.message }}</div>
-                    <button type="submit" class="btn btn-nigeria px-4"><i class="fas fa-paper-plane"></i></button>
-                </form>
-                {% else %}
-                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-4">
-                    <i class="fas fa-comments fa-3x mb-3" style="color: var(--sage);"></i>
-                    <h5 class="display-font">Select a conversation</h5>
-                    <p class="text-muted">Choose a conversation from the list to view messages.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+<div class="chat-window">
+{% if active_conversation %}
+<div class="chat-header">
+<div class="chat-header-user">
+{% if active_conversation.other.profile_photo %}<img src="{{ active_conversation.other.profile_photo.url }}" alt="" class="chat-header-img">
+{% else %}<div class="chat-header-img d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;">{{ active_conversation.other.first_name|default:active_conversation.other.username|first|upper }}</div>{% endif %}
+<div>
+<div class="chat-header-name">{{ active_conversation.other.full_name_or_username }}</div>
+<div class="chat-header-property">{{ active_conversation.property.title }}</div>
+</div>
+</div>
+</div>
+<div class="chat-messages">
+{% for msg in thread_messages %}
+<div class="message-bubble {% if msg.sender_id == user.id %}message-outgoing{% else %}message-incoming{% endif %}">
+<div>{{ msg.message }}</div>
+<div class="message-time">{{ msg.created_at|date:"g:i A" }}{% if msg.sender_id == user.id and msg.is_read %} <i class="bi bi-check2-all message-read"></i>{% endif %}</div>
+</div>
+{% endfor %}
+</div>
+<form method="post" class="chat-composer">
+{% csrf_token %}
+<div class="chat-composer-input">
+{{ form.message }}
+</div>
+<button type="submit" class="chat-composer-send"><i class="bi bi-send-fill"></i></button>
+</form>
+{% else %}
+<div class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+<i class="bi bi-chat-square-text empty-state-icon"></i>
+<div class="empty-state-title">Select a conversation</div>
+<p class="empty-state-text">Choose a conversation from the list to view messages.</p>
+</div>
+{% endif %}
+</div>
+</div>
 {% endblock %}
+
 {% block extra_js %}
-<style>
-.conversation-row:hover, .conversation-row.active { background: var(--sage); }
-</style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var box = document.querySelector('.flex-grow-1[style*="overflow-y: auto; background"]');
+    var box = document.querySelector('.chat-messages');
     if (box) { box.scrollTop = box.scrollHeight; }
     var search = document.getElementById('conversationSearch');
     if (search) {
         search.addEventListener('input', function () {
             var q = search.value.toLowerCase();
-            document.querySelectorAll('.conversation-row').forEach(function (row) {
+            document.querySelectorAll('.conversation-item').forEach(function (row) {
                 row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
         });
