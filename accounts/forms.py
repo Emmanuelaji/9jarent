@@ -57,109 +57,101 @@ class EmailOrPhoneAuthenticationForm(AuthenticationForm):
         return authenticate(self.request, username=identifier, password=password)
 
 
-class AgentSignUpForm(UserCreationForm):
-    """Form for agent registration. Creates a PENDING agent account."""
-    
-    first_name = forms.CharField(
-        max_length=150, 
-        required=True, 
-        label="Full Name",
-        help_text="Your full name as it will appear to renters."
-    )
-    last_name = forms.CharField(
-        max_length=150, 
-        required=False, 
-        label="Last Name"
-    )
+class AgentSignUpStep1Form(forms.ModelForm):
+    """Step 1 of agent signup: agency info + email. Creates a PENDING agent
+    account with an unusable password and email_verified=False - the account
+    only becomes fully usable once steps 2 (email verification) and 3
+    (password creation) complete."""
+
     email = forms.EmailField(
-        required=True, 
+        required=True,
         help_text="Used for account recovery and listing notifications."
     )
     phone = forms.CharField(
-        required=True, 
-        max_length=20, 
-        label="Phone Number", 
+        required=True,
+        max_length=20,
+        label="Phone Number",
         help_text="e.g. 08012345678"
     )
     whatsapp_number = forms.CharField(
-        required=True, 
-        max_length=20, 
-        label="WhatsApp Number", 
+        required=True,
+        max_length=20,
+        label="WhatsApp Number",
         help_text="Format: 234XXXXXXXXXX — this is what renters will message."
     )
     company_name = forms.CharField(
-        required=False, 
-        max_length=200, 
-        label="Company / Agency Name (optional)"
+        required=True,
+        max_length=200,
+        label="Agency / Company Name"
     )
-    state = forms.CharField(
-        required=True, 
-        max_length=100, 
-        label="State",
-        help_text="e.g. Lagos, Abuja, Oyo"
-    )
-    city = forms.CharField(
-        required=True, 
-        max_length=100, 
-        label="City / LGA",
-        help_text="e.g. Lekki, Ikeja, Wuse"
-    )
+    state = forms.CharField(required=True, max_length=100, label="State")
+    city = forms.CharField(required=True, max_length=100, label="City")
     office_address = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 3}),
-        label="Office Address (optional)",
-        help_text="Your physical office address."
+        widget=forms.Textarea(attrs={'rows': 2}),
+        label="Office Address",
     )
     bio = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={'rows': 4}),
-        label="About You / Agency Description",
+        widget=forms.Textarea(attrs={'rows': 4, 'maxlength': 500}),
+        label="Agency Description",
         help_text="Tell renters about your experience and services."
     )
-    
+
     class Meta:
         model = CustomUser
-        fields = [
-            'first_name', 'last_name', 'email', 
-            'phone', 'whatsapp_number', 'company_name',
-            'state', 'city', 'office_address', 'bio',
-            'password1', 'password2'
-        ]
-    
+        fields = ['company_name', 'state', 'city', 'office_address', 'phone', 'whatsapp_number', 'email', 'bio']
+
     def clean_email(self):
         email = self.cleaned_data['email']
         if CustomUser.objects.filter(email__iexact=email).exists():
             raise ValidationError("An account with this email already exists.")
         return email
-    
+
     def clean_whatsapp_number(self):
         whatsapp = self.cleaned_data['whatsapp_number'].strip()
-        # Basic validation: should start with country code
         if not whatsapp.startswith('234'):
             raise ValidationError("WhatsApp number must start with 234 (e.g. 2348012345678).")
         if len(whatsapp) < 13:
             raise ValidationError("WhatsApp number seems too short. Use format: 234XXXXXXXXXX")
         return whatsapp
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = generate_unique_username(self.cleaned_data['email'], self.cleaned_data['first_name'])
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data.get('last_name', '')
-        user.phone = self.cleaned_data['phone']
-        user.whatsapp_number = self.cleaned_data['whatsapp_number']
-        user.company_name = self.cleaned_data.get('company_name', '')
-        user.state = self.cleaned_data['state']
-        user.city = self.cleaned_data['city']
-        user.office_address = self.cleaned_data.get('office_address', '')
-        user.bio = self.cleaned_data.get('bio', '')
+        user.username = generate_unique_username(self.cleaned_data['email'])
         user.role = 'MINOR_ADMIN'
-        user.agent_status = 'PENDING'  # CRITICAL: Always pending on signup
-        
+        user.agent_status = 'PENDING'
+        user.email_verified = False
+        user.set_unusable_password()
         if commit:
             user.save()
         return user
+
+
+class OTPVerifyForm(forms.Form):
+    """Step 2: enter the 6-digit code emailed in step 1."""
+    code = forms.CharField(
+        max_length=6, min_length=6, required=True, label="Verification Code",
+        widget=forms.TextInput(attrs={'inputmode': 'numeric', 'autocomplete': 'one-time-code', 'placeholder': '123456'})
+    )
+
+
+class AgentSignUpStep3Form(forms.Form):
+    """Step 3: name + password, finalizing the account created in step 1."""
+    first_name = forms.CharField(max_length=150, required=True, label="Full Name")
+    last_name = forms.CharField(max_length=150, required=False, label="Last Name")
+    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
+    password2 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1, p2 = cleaned_data.get('password1'), cleaned_data.get('password2')
+        if p1 and p2 and p1 != p2:
+            raise ValidationError("The two password fields didn't match.")
+        if p1:
+            from django.contrib.auth.password_validation import validate_password
+            validate_password(p1)
+        return cleaned_data
 
 
 class RenterSignUpForm(UserCreationForm):

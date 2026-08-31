@@ -10,6 +10,7 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.db import models
 
 from accounts.permissions import AdminRequiredMixin, admin_required
 from properties.models import Property
@@ -409,6 +410,45 @@ def reactivate_agent(request, pk):
     return redirect('dashboard:agents_suspended')
 
 
+class PropertyModerationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """All properties, filterable by status and searchable by title/agent - the
+    list view the admin sidebar's 'Properties' link was previously missing."""
+    model = Property
+    template_name = 'dashboard/properties_list.html'
+    context_object_name = 'properties_page'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Property.objects.select_related('created_by', 'state', 'lga').order_by('-created_at')
+
+        status = self.request.GET.get('status')
+        if status and status in dict(Property.STATUS_CHOICES):
+            queryset = queryset.filter(status=status)
+
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(title__icontains=search) |
+                models.Q(created_by__first_name__icontains=search) |
+                models.Q(created_by__last_name__icontains=search) |
+                models.Q(created_by__company_name__icontains=search)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_search'] = self.request.GET.get('search', '')
+        context['status_choices'] = Property.STATUS_CHOICES
+        context['status_counts'] = {
+            value: Property.objects.filter(status=value).count()
+            for value, _ in Property.STATUS_CHOICES
+        }
+        context['status_counts']['total'] = Property.objects.count()
+        return context
+
+
 # ============================================================================
 # AGENT LIST VIEWS
 # ============================================================================
@@ -617,3 +657,37 @@ def resolve_report(request, pk):
             return redirect('dashboard:report_detail', pk=report.pk)
 
     return redirect('dashboard:report_detail', pk=report.pk)
+
+
+# ============================================================================
+# MESSAGING OVERSIGHT
+# ============================================================================
+
+class ConversationModerationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """
+    Admin overview of platform conversations - participants, property, and
+    activity metadata only. Deliberately does NOT expose message content:
+    these are private renter<->agent conversations, and reading their
+    contents by default is a real privacy decision that shouldn't be made
+    silently as part of a UI reskin. If full moderation (e.g. investigating
+    a specific reported conversation) is needed later, that's a deliberate
+    follow-up feature, not this view.
+    """
+    template_name = 'dashboard/messages_list.html'
+    context_object_name = 'conversations'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from messaging.models import Conversation
+        return Conversation.objects.select_related(
+            'property', 'renter', 'agent'
+        ).annotate(
+            message_count=Count('messages')
+        ).order_by('-updated_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from messaging.models import Conversation, Message
+        context['total_conversations'] = Conversation.objects.count()
+        context['total_messages'] = Message.objects.count()
+        return context

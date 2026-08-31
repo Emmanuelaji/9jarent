@@ -1,0 +1,108 @@
+{% extends 'base_portal.html' %}
+{% load humanize %}
+{% load dashboard_extras %}
+{% block title %}Properties | 9jaRent Admin{% endblock %}
+{% block portal_header %}
+<div>
+<h1 class="fs-3 fw-bold mb-1"><i class="bi bi-building me-2"></i>Properties</h1>
+<p class="text-muted mb-0">Review and manage all property listings</p>
+</div>
+{% endblock %}
+
+{% block portal_content %}
+<ul class="nav nav-tabs-custom mb-4 flex-wrap">
+<li class="nav-item"><a class="nav-link {% if not current_status %}active{% endif %}" href="?status=">All ({{ status_counts.total }})</a></li>
+{% for value, label in status_choices %}
+<li class="nav-item"><a class="nav-link {% if current_status == value %}active{% endif %}" href="?status={{ value }}">{{ label }} ({{ status_counts|get_item:value|default:0 }})</a></li>
+{% endfor %}
+</ul>
+
+<div class="card-custom p-3 mb-4">
+<form method="get" class="d-flex gap-2">
+{% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+<input type="text" name="search" value="{{ current_search }}" class="form-control-custom flex-grow-1" placeholder="Search by title, agent name, or company...">
+<button type="submit" class="btn btn-brand-green">Search</button>
+{% if current_search %}<a href="?status={{ current_status }}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+</form>
+</div>
+
+<div class="card-custom p-0">
+{% if properties_page %}
+<div class="table-responsive-custom">
+<table class="table-custom">
+<thead><tr><th>Property</th><th>Agent</th><th>Location</th><th>Price</th><th>Status</th><th>Listed</th><th>Actions</th></tr></thead>
+<tbody>
+{% for prop in properties_page %}
+<tr>
+<td><div class="d-flex align-items-center gap-2">
+{% if prop.images.first %}<img src="{{ prop.images.first.image.url }}" alt="" style="width:44px;height:34px;border-radius:6px;object-fit:cover;">
+{% else %}<div style="width:44px;height:34px;border-radius:6px;background:var(--border-light);"></div>{% endif %}
+<strong>{{ prop.title|truncatechars:28 }}</strong>
+</div></td>
+<td>{% if prop.created_by %}{{ prop.created_by.full_name_or_username }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+<td>{{ prop.area }}, {{ prop.state.name }}</td>
+<td>&#8358;{{ prop.price|floatformat:0|intcomma }}</td>
+<td><span class="badge-status badge-{{ prop.status|lower }}">{{ prop.get_status_display }}</span></td>
+<td><small class="text-muted">{{ prop.created_at|naturaltime }}</small></td>
+<td>
+<div class="d-flex gap-1">
+<a href="{% url 'properties:detail' prop.slug %}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+{% if prop.status == 'PENDING_REVIEW' %}
+<form method="post" action="{% url 'dashboard:approve_property' prop.pk %}" class="d-inline" onsubmit="return confirm('Approve this property?');">
+{% csrf_token %}
+<button type="submit" class="btn btn-sm btn-brand-green"><i class="bi bi-check-lg"></i></button>
+</form>
+<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ prop.pk }}"><i class="bi bi-x-lg"></i></button>
+{% elif prop.status == 'PUBLISHED' %}
+<form method="post" action="{% url 'dashboard:unpublish_property' prop.pk %}" class="d-inline" onsubmit="return confirm('Unpublish this property for re-review?');">
+{% csrf_token %}
+<button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-arrow-counterclockwise"></i></button>
+</form>
+{% endif %}
+</div>
+</td>
+</tr>
+{% if prop.status == 'PENDING_REVIEW' %}
+<div class="modal fade" id="rejectModal{{ prop.pk }}" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header"><h5 class="modal-title">Reject Property</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+<form method="post" action="{% url 'dashboard:reject_property' prop.pk %}">
+{% csrf_token %}
+<div class="modal-body">
+<p>Rejecting: <strong>{{ prop.title }}</strong></p>
+<label class="form-label-custom">Reason for rejection <span class="text-danger">*</span></label>
+<textarea name="reason" class="form-control-custom w-100" rows="3" required placeholder="Please provide a clear reason..."></textarea>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+<button type="submit" class="btn btn-danger">Reject Property</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+{% endif %}
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% else %}
+<div class="empty-state">
+<i class="bi bi-building empty-state-icon"></i>
+<div class="empty-state-title">No properties found</div>
+<p class="empty-state-text">Try a different filter or search.</p>
+</div>
+{% endif %}
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+<ul class="pagination justify-content-center">
+{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">Previous</a></li>{% endif %}
+<li class="page-item active"><span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">Next</a></li>{% endif %}
+</ul>
+</nav>
+{% endif %}
+{% endblock %}

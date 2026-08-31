@@ -5,10 +5,14 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView, DetailView, ListView
+from django.views.generic import CreateView, UpdateView, TemplateView, DetailView, ListView, FormView
 from django.db import models
 from django.shortcuts import redirect
-from .forms import AgentSignUpForm, RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm
+from django.utils import timezone
+from .forms import (
+    AgentSignUpStep1Form, OTPVerifyForm, AgentSignUpStep3Form,
+    RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm,
+)
 from .models import CustomUser
 
 
@@ -51,34 +55,125 @@ class RoleBasedLoginView(LoginView):
         return reverse_lazy('properties:home')
 
 
-class AgentSignUpView(CreateView):
+class AgentSignUpStep1View(CreateView):
     """
-    Agent registration view.
-    Creates a PENDING agent account.
-    Does NOT auto-login with full privileges.
+    Step 1 of agent signup: agency info + email.
+
+    Creates the CustomUser row immediately (unusable password,
+    email_verified=False) so an EmailOTP - which requires a real user FK -
+    can be issued and emailed. The account isn't fully usable until step 3
+    sets a real password; if the user abandons the flow here, they're left
+    with an unusable-password, unverified account rather than nothing, which
+    is an acceptable tradeoff for keeping the OTP model's existing schema
+    (EmailOTP.user is a required FK) rather than inventing separate
+    pre-account session storage for step 1's data.
     """
-    form_class = AgentSignUpForm
+    form_class = AgentSignUpStep1Form
     template_name = 'accounts/signup.html'
-    
+
     def dispatch(self, request, *args, **kwargs):
-        # Prevent already-authenticated users from signing up again
         if request.user.is_authenticated:
             messages.info(request, "You are already logged in.")
             return redirect('properties:home')
         return super().dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
         response = super().form_valid(form)
-        
-        # CRITICAL: Do NOT auto-login with full agent privileges
-        # Instead, show pending message
+        from .emails import create_and_send_otp
+        create_and_send_otp(self.object)
+        self.request.session['agent_signup_user_id'] = self.object.pk
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy('accounts:agent_signup_verify')
+
+
+class AgentSignUpVerifyView(FormView):
+    """Step 2: verify the emailed OTP code."""
+    form_class = OTPVerifyForm
+    template_name = 'accounts/signup_verify.html'
+
+    def _get_pending_user(self):
+        user_id = self.request.session.get('agent_signup_user_id')
+        if not user_id:
+            return None
+        return CustomUser.objects.filter(
+            pk=user_id, role='MINOR_ADMIN', email_verified=False
+        ).first()
+
+    def dispatch(self, request, *args, **kwargs):
+        self.pending_user = self._get_pending_user()
+        if not self.pending_user:
+            messages.info(request, "Let's start your agent registration.")
+            return redirect('accounts:agent_signup')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pending_email'] = self.pending_user.email
+        return context
+
+    def form_valid(self, form):
+        from .models import EmailOTP
+        code = form.cleaned_data['code']
+        otp = EmailOTP.objects.filter(
+            user=self.pending_user, purpose=EmailOTP.Purpose.SIGNUP,
+            code=code, is_used=False, expires_at__gt=timezone.now()
+        ).first()
+        if not otp:
+            form.add_error('code', "That code is invalid or has expired. You can request a new one below.")
+            return self.form_invalid(form)
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+        self.pending_user.email_verified = True
+        self.pending_user.save(update_fields=['email_verified'])
+        return redirect('accounts:agent_signup_setup')
+
+    def post(self, request, *args, **kwargs):
+        if 'resend' in request.POST:
+            from .emails import create_and_send_otp
+            create_and_send_otp(self.pending_user)
+            messages.success(request, f"A new code has been sent to {self.pending_user.email}.")
+            return redirect('accounts:agent_signup_verify')
+        return super().post(request, *args, **kwargs)
+
+
+class AgentSignUpSetupView(FormView):
+    """Step 3: set name + password, finalizing the account."""
+    form_class = AgentSignUpStep3Form
+    template_name = 'accounts/signup_setup.html'
+
+    def _get_pending_user(self):
+        user_id = self.request.session.get('agent_signup_user_id')
+        if not user_id:
+            return None
+        return CustomUser.objects.filter(pk=user_id, role='MINOR_ADMIN', email_verified=True).first()
+
+    def dispatch(self, request, *args, **kwargs):
+        self.pending_user = self._get_pending_user()
+        if not self.pending_user:
+            messages.info(request, "Let's start your agent registration.")
+            return redirect('accounts:agent_signup')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        user = self.pending_user
+        user.first_name = form.cleaned_data['first_name']
+        user.last_name = form.cleaned_data.get('last_name', '')
+        user.set_password(form.cleaned_data['password1'])
+        user.save(update_fields=['first_name', 'last_name', 'password'])
+
+        from .emails import send_welcome_email
+        send_welcome_email(user)
+
+        self.request.session.pop('agent_signup_user_id', None)
         messages.success(
-            self.request, 
+            self.request,
             "Your agent application has been submitted and is awaiting administrator approval. "
             "You will be notified once your application is reviewed."
         )
-        return response
-    
+        return super().form_valid(form)
+
     def get_success_url(self):
         return reverse_lazy('accounts:pending')
 

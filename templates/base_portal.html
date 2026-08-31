@@ -16,18 +16,31 @@
 {% if user.is_superuser %}
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:admin' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:agents_pending' %}" class="sidebar-nav-link {% if 'agent' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-person-badge"></i><span>Agents</span></a></li>
-<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-building"></i><span>Properties</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:properties_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'properties_list' %}active{% endif %}"><i class="bi bi-building"></i><span>Properties</span></a></li>
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:inspections_list' %}" class="sidebar-nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-clipboard-check"></i><span>Inspections</span></a></li>
-<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-envelope"></i><span>Messages</span></a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:messages_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'messages_list' %}active{% endif %}"><i class="bi bi-envelope"></i><span>Messages</span></a></li>
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:reports_list' %}" class="sidebar-nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-bar-chart"></i><span>Reports</span></a></li>
 <li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-credit-card"></i><span>Payments</span></a></li>
 <li class="sidebar-nav-item"><a href="{% url 'notifications:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span></a></li>
-<li class="sidebar-nav-item"><a href="#" class="sidebar-nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+<li class="sidebar-nav-item">
+  <a href="{% url 'accounts:settings' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+    <i class="bi bi-gear"></i><span>Settings</span>
+  </a>
+</li>
+
 </ul>
 <div class="sidebar-divider">OTHER</div>
 <ul class="sidebar-nav">
-<li class="sidebar-nav-item"><a href="/django-admin/" class="sidebar-nav-link"><i class="bi bi-grid-3x3-gap"></i><span>Django Admin</span></a></li>
-<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+<li class="sidebar-nav-item">
+  <a href="{% url 'admin:index' %}" class="sidebar-nav-link">
+    <i class="bi bi-grid-3x3-gap"></i><span>Django Admin</span>
+  </a>
+</li>
+
+<li class="sidebar-nav-item"><form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+    {% csrf_token %}
+    <button type="submit" class="sidebar-nav-link border-0 bg-transparent w-100 text-start"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+  </form></li>
 </ul>
 {% elif user.is_agent %}
 <li class="sidebar-nav-item"><a href="{% url 'properties:agent_dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'agent_dashboard' %}active{% endif %}"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
@@ -42,7 +55,11 @@
 </ul>
 <div class="sidebar-divider">OTHER</div>
 <ul class="sidebar-nav">
-<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+<li class="sidebar-nav-item">
+  <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+    {% csrf_token %}
+    <button type="submit" class="sidebar-nav-link border-0 bg-transparent w-100 text-start"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+  </form></li>
 </ul>
 {% else %}
 <li class="sidebar-nav-item"><a href="{% url 'properties:home' %}" class="sidebar-nav-link"><i class="bi bi-house-door"></i><span>Dashboard</span></a></li>
@@ -55,7 +72,12 @@
 </ul>
 <div class="sidebar-divider">OTHER</div>
 <ul class="sidebar-nav">
-<li class="sidebar-nav-item"><a href="{% url 'accounts:logout' %}" class="sidebar-nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a></li>
+<li class="sidebar-nav-item">
+  <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+    {% csrf_token %}
+    <button type="submit" class="sidebar-nav-link border-0 bg-transparent w-100 text-start"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+  </form>
+</li>
 </ul>
 {% endif %}
 </aside>

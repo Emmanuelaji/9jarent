@@ -10,9 +10,13 @@ urlpatterns = [
     path('', views.AdminDashboardView.as_view(), name='admin'),
 
     # Property moderation
+    path('properties/', views.PropertyModerationListView.as_view(), name='properties_list'),
     path('properties/<int:pk>/approve/', views.approve_property, name='approve_property'),
     path('properties/<int:pk>/reject/', views.reject_property, name='reject_property'),
     path('properties/<int:pk>/unpublish/', views.unpublish_property, name='unpublish_property'),
+
+    # Messaging oversight (metadata only - see ConversationModerationListView)
+    path('messages/', views.ConversationModerationListView.as_view(), name='messages_list'),
 
     # Agent moderation
     path('agents/pending/', views.PendingAgentsView.as_view(), name='agents_pending'),

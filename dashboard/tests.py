@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from properties.models import Property, State, LGA
 from inspections.models import InspectionRequest
 from reports.models import Report
+from messaging.models import Conversation, Message
 
 User = get_user_model()
 
@@ -304,3 +305,92 @@ class AdminRateLimitExemptionTests(TestCase):
                 )
                 report.refresh_from_db()
                 self.assertEqual(report.status, 'resolved')
+
+
+class PropertyModerationListViewTests(TestCase):
+    """Admin properties list - filtering and real moderation actions."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='adminpass123'
+        )
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Ikeja', slug='ikeja')
+        self.agent = User.objects.create_user(
+            username='agent', email='agent@example.com', password='testpass123',
+            role='MINOR_ADMIN', agent_status='APPROVED', whatsapp_number='2348012345678'
+        )
+        self.pending_property = Property.objects.create(
+            title='Pending Flat', description='A flat with enough description text.',
+            price=500000, state=self.state, lga=self.lga, area='Ikeja',
+            property_type='2-Bedroom Flat', bedrooms=2, bathrooms=1,
+            agent_name='Agent', agent_whatsapp='2348012345678',
+            created_by=self.agent, status='PENDING_REVIEW'
+        )
+
+    def test_properties_list_accessible_by_admin(self):
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('dashboard:properties_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Pending Flat')
+
+    def test_properties_list_filters_by_status(self):
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('dashboard:properties_list') + '?status=PUBLISHED')
+        self.assertNotContains(response, 'Pending Flat')
+
+    def test_admin_can_approve_property_from_list_page(self):
+        self.client.login(username='admin', password='adminpass123')
+        self.client.post(reverse('dashboard:approve_property', kwargs={'pk': self.pending_property.pk}))
+        self.pending_property.refresh_from_db()
+        self.assertEqual(self.pending_property.status, 'PUBLISHED')
+
+    def test_non_admin_cannot_access_properties_list(self):
+        self.client.login(username='agent', password='testpass123')
+        response = self.client.get(reverse('dashboard:properties_list'))
+        self.assertEqual(response.status_code, 403)
+
+
+class ConversationModerationListViewTests(TestCase):
+    """Admin messages overview - must show activity metadata, never message content."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='adminpass123'
+        )
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Ikeja', slug='ikeja')
+        self.agent = User.objects.create_user(
+            username='agent', email='agent@example.com', password='testpass123',
+            role='MINOR_ADMIN', agent_status='APPROVED', whatsapp_number='2348012345678'
+        )
+        self.renter = User.objects.create_user(
+            username='renter', email='renter@example.com', password='testpass123', role='PUBLIC'
+        )
+        self.property = Property.objects.create(
+            title='Test Flat', description='A flat with enough description text.',
+            price=500000, state=self.state, lga=self.lga, area='Ikeja',
+            property_type='2-Bedroom Flat', bedrooms=2, bathrooms=1,
+            agent_name='Agent', agent_whatsapp='2348012345678',
+            created_by=self.agent, status='PUBLISHED'
+        )
+        self.conversation = Conversation.objects.create(
+            property=self.property, renter=self.renter, agent=self.agent
+        )
+        Message.objects.create(
+            conversation=self.conversation, sender=self.renter,
+            message='This exact private message text must never appear to admins.'
+        )
+
+    def test_messages_list_accessible_by_admin(self):
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('dashboard:messages_list'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_messages_list_shows_metadata_not_content(self):
+        """Regression guard: admin oversight must never leak private message text."""
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('dashboard:messages_list'))
+        self.assertNotContains(response, 'This exact private message text must never appear to admins.')
+        self.assertContains(response, self.renter.username)
+        self.assertContains(response, self.property.title)

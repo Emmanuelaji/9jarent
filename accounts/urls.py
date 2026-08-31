@@ -1,7 +1,8 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import (
-    RoleBasedLoginView, AgentSignUpView, RenterSignUpView, AccountTypeChoiceView,
+    RoleBasedLoginView, AgentSignUpStep1View, AgentSignUpVerifyView, AgentSignUpSetupView,
+    RenterSignUpView, AccountTypeChoiceView,
     CompleteProfileView, AgentProfileEditView, AgentPendingView, AgentPublicProfileView,
     AgentsDirectoryView, SignUpSuccessView, SettingsView,
 )
@@ -12,7 +13,9 @@ urlpatterns = [
     path('login/', RoleBasedLoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('signup/', AccountTypeChoiceView.as_view(), name='signup'),
-    path('signup/agent/', AgentSignUpView.as_view(), name='agent_signup'),
+    path('signup/agent/', AgentSignUpStep1View.as_view(), name='agent_signup'),
+    path('signup/agent/verify/', AgentSignUpVerifyView.as_view(), name='agent_signup_verify'),
+    path('signup/agent/setup/', AgentSignUpSetupView.as_view(), name='agent_signup_setup'),
     path('signup/renter/', RenterSignUpView.as_view(), name='renter_signup'),
     path('signup/success/', SignUpSuccessView.as_view(), name='signup_success'),
     path('pending/', AgentPendingView.as_view(), name='pending'),

@@ -62,7 +62,7 @@
 
 <div class="col-lg-6">
 <div class="card-custom p-3">
-<div class="section-header"><h5 class="section-title">Pending Property Approvals</h5><a href="{% url 'dashboard:admin' %}" class="view-all-link">View all <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i></a></div>
+<div class="section-header"><h5 class="section-title">Pending Property Approvals</h5><a href="{% url 'dashboard:properties_list' %}?status=PENDING_REVIEW" class="view-all-link">View all <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i></a></div>
 <div class="table-responsive-custom">
 <table class="table-custom">
 <thead><tr><th>Property</th><th>Agent</th><th>Location</th><th>Price</th><th>Actions</th></tr></thead>
