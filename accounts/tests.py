@@ -26,34 +26,46 @@ class AgentRegistrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         
     def test_agent_registration_creates_pending_agent(self):
-        """Test that agent signup creates a PENDING agent, not approved."""
-        signup_data = {
-            'username': 'testagent',
-            'first_name': 'Test',
-            'last_name': 'Agent',
-            'email': 'testagent@example.com',
-            'phone': '08012345678',
-            'whatsapp_number': '2348012345678',
+        """Test that completing the full agent signup wizard creates a PENDING agent, not approved."""
+        from accounts.models import EmailOTP
+
+        step1_data = {
             'company_name': 'Test Agency',
             'state': 'Lagos',
             'city': 'Lekki',
             'office_address': '123 Test Street',
+            'phone': '08012345678',
+            'whatsapp_number': '2348012345678',
+            'email': 'testagent@example.com',
             'bio': 'Test agent bio',
-            'password1': 'StrongPass123!',
-            'password2': 'StrongPass123!',
         }
-        
-        response = self.client.post(self.signup_url, signup_data)
-        
-        # Should redirect to pending page
+        response = self.client.post(self.signup_url, step1_data)
+        self.assertRedirects(response, reverse('accounts:agent_signup_verify'))
+
+        user = User.objects.get(email='testagent@example.com')
+        self.assertEqual(user.role, 'MINOR_ADMIN')
+        self.assertEqual(user.agent_status, 'PENDING')
+        self.assertFalse(user.email_verified)
+        self.assertFalse(user.has_usable_password())
+
+        otp = EmailOTP.objects.get(user=user, purpose='SIGNUP', is_used=False)
+        response = self.client.post(reverse('accounts:agent_signup_verify'), {'code': otp.code})
+        self.assertRedirects(response, reverse('accounts:agent_signup_setup'))
+        user.refresh_from_db()
+        self.assertTrue(user.email_verified)
+
+        response = self.client.post(reverse('accounts:agent_signup_setup'), {
+            'first_name': 'Test', 'last_name': 'Agent',
+            'password1': 'StrongPass123!', 'password2': 'StrongPass123!',
+        })
         self.assertRedirects(response, self.pending_url)
-        
-        # Verify user was created with PENDING status
-        user = User.objects.get(username='testagent')
+
+        user.refresh_from_db()
         self.assertEqual(user.role, 'MINOR_ADMIN')
         self.assertEqual(user.agent_status, 'PENDING')
         self.assertFalse(user.is_approved_agent)
         self.assertTrue(user.is_pending_agent)
+        self.assertTrue(user.has_usable_password())
         
     def test_new_agent_cannot_create_property(self):
         """Test that a pending agent cannot create properties."""
@@ -153,29 +165,32 @@ class AgentRegistrationTests(TestCase):
         self.assertEqual(response.status_code, 403)
         
     def test_agent_signup_does_not_auto_login(self):
-        """Test that agent signup does not auto-login with privileges."""
-        signup_data = {
-            'username': 'newagent',
-            'first_name': 'New',
-            'last_name': 'Agent',
-            'email': 'newagent@example.com',
-            'phone': '08012345678',
-            'whatsapp_number': '2348012345678',
-            'company_name': 'New Agency',
-            'state': 'Abuja',
-            'city': 'Wuse',
-            'office_address': '',
-            'bio': '',
-            'password1': 'StrongPass123!',
-            'password2': 'StrongPass123!',
+        """Test that agent signup does not auto-login with privileges at any step."""
+        from accounts.models import EmailOTP
+
+        step1_data = {
+            'company_name': 'New Agency', 'state': 'Abuja', 'city': 'Wuse',
+            'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
+            'email': 'newagent@example.com', 'bio': '',
         }
-        
-        response = self.client.post(self.signup_url, signup_data)
-        
-        # Should NOT be logged in as approved agent
-        # The view should redirect to pending page without full login
-        # or with restricted session
+        response = self.client.post(self.signup_url, step1_data)
+        self.assertRedirects(response, reverse('accounts:agent_signup_verify'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        user = User.objects.get(email='newagent@example.com')
+        otp = EmailOTP.objects.get(user=user, purpose='SIGNUP', is_used=False)
+        response = self.client.post(reverse('accounts:agent_signup_verify'), {'code': otp.code})
+        self.assertRedirects(response, reverse('accounts:agent_signup_setup'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        response = self.client.post(reverse('accounts:agent_signup_setup'), {
+            'first_name': 'New', 'last_name': 'Agent',
+            'password1': 'StrongPass123!', 'password2': 'StrongPass123!',
+        })
+        # Should NOT be logged in as approved agent - the view redirects to the
+        # pending page without establishing a session at all.
         self.assertRedirects(response, self.pending_url)
+        self.assertNotIn('_auth_user_id', self.client.session)
         
     def test_unauthorized_user_cannot_access_admin_dashboard(self):
         """Test that non-admin users cannot access admin dashboard."""
@@ -279,3 +294,89 @@ class AgentRegistrationTests(TestCase):
             reverse('properties:edit', kwargs={'pk': prop.pk})
         )
         self.assertEqual(response.status_code, 403)
+
+
+class LogoutTests(TestCase):
+    """
+    Regression tests for a real production bug: Django 5.0 made LogoutView
+    POST-only (GET logout requests now 405), but every logout link in the
+    templates was a plain <a href> (a GET request) - so clicking "Logout"
+    silently did nothing and left the user authenticated.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='logouttest', email='logout@example.com', password='testpass123'
+        )
+
+    def test_get_logout_does_not_log_out(self):
+        """Confirms the underlying Django behavior this bug depended on."""
+        self.client.login(username='logouttest', password='testpass123')
+        response = self.client.get(reverse('accounts:logout'))
+        self.assertEqual(response.status_code, 405)
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_post_logout_logs_out(self):
+        """The actual fix: logout links must POST, not GET."""
+        self.client.login(username='logouttest', password='testpass123')
+        response = self.client.post(reverse('accounts:logout'))
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_portal_sidebar_logout_is_a_post_form_not_a_get_link(self):
+        """Guards against regressing back to a plain <a href> logout link."""
+        self.client.login(username='logouttest', password='testpass123')
+        response = self.client.get(reverse('properties:home'))
+        content = response.content.decode()
+        # A bare `href="...logout/"` anchor (no accompanying POST form) would
+        # mean the link is broken again exactly like before the fix.
+        self.assertIn('action="/accounts/logout/"', content)
+
+
+class AgentSignUpWizardEdgeCaseTests(TestCase):
+    """Edge cases for the 3-step agent signup wizard beyond the happy path."""
+
+    def test_wrong_otp_code_does_not_verify(self):
+        self.client.post(reverse('accounts:agent_signup'), {
+            'company_name': 'Edge Co', 'state': 'Lagos', 'city': 'Ikeja',
+            'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
+            'email': 'edgecase@example.com', 'bio': '',
+        })
+        response = self.client.post(reverse('accounts:agent_signup_verify'), {'code': '000000'})
+        self.assertEqual(response.status_code, 200)  # re-renders the form with an error
+        user = User.objects.get(email='edgecase@example.com')
+        self.assertFalse(user.email_verified)
+
+    def test_step2_redirects_to_step1_without_session_state(self):
+        """Visiting step 2 directly (no prior step 1) shouldn't crash - it
+        should bounce back to step 1."""
+        response = self.client.get(reverse('accounts:agent_signup_verify'))
+        self.assertRedirects(response, reverse('accounts:agent_signup'))
+
+    def test_step3_redirects_to_step1_without_verified_email(self):
+        """Visiting step 3 directly (email not yet verified) shouldn't let
+        someone finish account setup without ever confirming their email."""
+        self.client.post(reverse('accounts:agent_signup'), {
+            'company_name': 'Edge Co 2', 'state': 'Lagos', 'city': 'Ikeja',
+            'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
+            'email': 'edgecase2@example.com', 'bio': '',
+        })
+        response = self.client.get(reverse('accounts:agent_signup_setup'))
+        self.assertRedirects(response, reverse('accounts:agent_signup'))
+
+    def test_resend_code_invalidates_previous_code(self):
+        from accounts.models import EmailOTP
+        self.client.post(reverse('accounts:agent_signup'), {
+            'company_name': 'Edge Co 3', 'state': 'Lagos', 'city': 'Ikeja',
+            'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
+            'email': 'edgecase3@example.com', 'bio': '',
+        })
+        user = User.objects.get(email='edgecase3@example.com')
+        first_otp = EmailOTP.objects.get(user=user, is_used=False)
+
+        self.client.post(reverse('accounts:agent_signup_verify'), {'resend': '1'})
+        first_otp.refresh_from_db()
+        self.assertTrue(first_otp.is_used)
+
+        new_otp = EmailOTP.objects.get(user=user, is_used=False)
+        self.assertNotEqual(new_otp.pk, first_otp.pk)

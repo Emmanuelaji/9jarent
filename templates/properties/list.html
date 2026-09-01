@@ -1,100 +1,145 @@
 {% extends 'base.html' %}
+{% block title %}{% if request.resolver_match.url_name == 'home' %}9jaRent.com.ng - Find Verified Rentals Across Nigeria{% else %}Browse Properties | 9jaRent{% endif %}{% endblock %}
+
 {% block content %}
-<div style="background: linear-gradient(135deg, var(--ink) 0%, var(--emerald-dark) 100%); padding: 3rem 0 2.5rem;">
-    <div class="container">
-        <p class="text-uppercase small fw-semibold mb-2" style="color: var(--amber); letter-spacing: 0.08em;">Browse Listings</p>
-        <h1 class="display-font mb-3" style="color: var(--sand); font-size: 2.4rem;">Find a place, message the agent, move in.</h1>
-        {% if not user.is_authenticated %}
-        <p class="mb-3"><a href="{% url 'accounts:agent_signup' %}" style="color: var(--amber); font-weight: 600;">Are you an agent? List your property free &rarr;</a></p>
-        {% endif %}
-        <form method="get" class="row g-2 bg-white p-3 rounded-3 shadow">
-            <div class="col-md-3">
-                <input type="text" name="search" class="form-control border-0" placeholder="Search area, title..." value="{{ request.GET.search }}">
-            </div>
-            <div class="col-md-2">
-                <select name="state" class="form-select border-0">
-                    <option value="">All States</option>
-                    {% for state in states %}
-                        <option value="{{ state.id }}" {% if request.GET.state == state.id|stringformat:"s" %}selected{% endif %}>{{ state.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="property_type" class="form-select border-0">
-                    <option value="">Property Type</option>
-                    <option value="Mini Flat" {% if request.GET.property_type == 'Mini Flat' %}selected{% endif %}>Mini Flat</option>
-                    <option value="Self-Contain" {% if request.GET.property_type == 'Self-Contain' %}selected{% endif %}>Self-Contain</option>
-                    <option value="1-Bedroom Flat" {% if request.GET.property_type == '1-Bedroom Flat' %}selected{% endif %}>1-Bedroom Flat</option>
-                    <option value="2-Bedroom Flat" {% if request.GET.property_type == '2-Bedroom Flat' %}selected{% endif %}>2-Bedroom Flat</option>
-                    <option value="Duplex" {% if request.GET.property_type == 'Duplex' %}selected{% endif %}>Duplex</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="max_price" class="form-control border-0" placeholder="Max Price (₦)" value="{{ request.GET.max_price }}">
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-amber w-100"><i class="fas fa-search"></i> Search</button>
-            </div>
-        </form>
-    </div>
+<div style="background: linear-gradient(135deg, var(--brand-green) 0%, #0B6E4F 100%); padding: {% if request.resolver_match.url_name == 'home' %}4rem 0 3rem{% else %}2.5rem 0 2rem{% endif %};">
+<div class="container">
+{% if request.resolver_match.url_name == 'home' %}
+<p class="text-uppercase small fw-semibold mb-2" style="color: var(--brand-orange); letter-spacing: 0.08em;">Verified agents. Real properties.</p>
+<h1 class="fw-bold mb-3" style="color: #fff; font-size: 2.5rem;">Find a place, message the agent, <span style="color: var(--brand-orange);">move in.</span></h1>
+<p class="mb-4" style="color: rgba(255,255,255,0.8); max-width: 560px;">Connecting renters directly with verified agents across Nigeria - no middlemen, no fake listings.</p>
+{% else %}
+<p class="text-uppercase small fw-semibold mb-2" style="color: var(--brand-orange); letter-spacing: 0.08em;">Browse Listings</p>
+<h1 class="fw-bold mb-3" style="color: #fff; font-size: 1.8rem;">{{ properties.paginator.count|default:0 }} propert{{ properties.paginator.count|pluralize:"y,ies" }} available</h1>
+{% endif %}
+
+{% if not user.is_authenticated %}
+<p class="mb-3"><a href="{% url 'accounts:agent_signup' %}" style="color: var(--brand-orange); font-weight: 600; text-decoration: none;">Are you an agent? List your property free &rarr;</a></p>
+{% endif %}
+
+<form method="get" class="row g-2 bg-white p-3 rounded-3 shadow">
+<div class="col-md-3">
+<input type="text" name="search" class="form-control border-0" placeholder="Search area, title..." value="{{ request.GET.search }}">
 </div>
+<div class="col-md-2">
+<select name="state" class="form-select border-0">
+<option value="">All States</option>
+{% for state in states %}
+<option value="{{ state.id }}" {% if request.GET.state == state.id|stringformat:"s" %}selected{% endif %}>{{ state.name }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="col-md-2">
+<select name="property_type" class="form-select border-0">
+<option value="">Property Type</option>
+{% for value, label in property_types %}
+<option value="{{ value }}" {% if request.GET.property_type == value %}selected{% endif %}>{{ label }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="col-md-2">
+<input type="number" name="max_price" class="form-control border-0" placeholder="Max Price (₦)" value="{{ request.GET.max_price }}">
+</div>
+<div class="col-md-2">
+<select name="sort" class="form-select border-0">
+<option value="newest" {% if request.GET.sort == 'newest' or not request.GET.sort %}selected{% endif %}>Newest</option>
+<option value="price_low" {% if request.GET.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+<option value="price_high" {% if request.GET.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+</select>
+</div>
+<div class="col-md-1">
+<button type="submit" class="btn btn-brand-orange w-100"><i class="bi bi-search"></i></button>
+</div>
+</form>
+</div>
+</div>
+
+{% if request.resolver_match.url_name == 'home' %}
+<div class="bg-white border-bottom">
+<div class="container py-4">
+<div class="row g-4 text-center">
+<div class="col-6 col-md-3">
+<i class="bi bi-patch-check-fill fs-3" style="color: var(--brand-green);"></i>
+<p class="small fw-semibold mb-0 mt-2">Verified Agents</p>
+</div>
+<div class="col-6 col-md-3">
+<i class="bi bi-house-check fs-3" style="color: var(--brand-green);"></i>
+<p class="small fw-semibold mb-0 mt-2">Real Properties</p>
+</div>
+<div class="col-6 col-md-3">
+<i class="bi bi-chat-dots fs-3" style="color: var(--brand-green);"></i>
+<p class="small fw-semibold mb-0 mt-2">Direct Messaging</p>
+</div>
+<div class="col-6 col-md-3">
+<i class="bi bi-cash-coin fs-3" style="color: var(--brand-green);"></i>
+<p class="small fw-semibold mb-0 mt-2">No Middlemen</p>
+</div>
+</div>
+</div>
+</div>
+{% endif %}
+
 <div class="container py-5">
-    <div class="row">
-        {% for property in properties %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm position-relative">
-                {% if user.is_authenticated %}
-                <form method="post" action="{% url 'favourites:toggle' property.id %}" class="position-absolute" style="top: 10px; right: 10px; z-index: 2;">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                    <button type="submit" class="btn btn-sm p-0 d-flex align-items-center justify-content-center" style="width:34px;height:34px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);border:none;" title="{% if property.id in favourited_ids %}Remove from favourites{% else %}Save to favourites{% endif %}">
-                        <i class="{% if property.id in favourited_ids %}fas{% else %}far{% endif %} fa-heart" style="color: var(--terracotta);"></i>
-                    </button>
-                </form>
-                {% endif %}
-                {% if property.video %}
-                    <div class="bg-dark text-white d-flex align-items-center justify-content-center" style="height: 200px; border-radius: 12px 12px 0 0;"><i class="fas fa-video fa-2x"></i></div>
-                {% elif property.images.first %}
-                    <img src="{{ property.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover; border-radius: 12px 12px 0 0;" alt="{{ property.title }}" loading="lazy">
-                {% else %}
-                    <div class="d-flex align-items-center justify-content-center" style="height: 200px; background: var(--sage); border-radius: 12px 12px 0 0; color: var(--ink-soft);">No Media Yet</div>
-                {% endif %}
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title text-truncate mb-0" style="font-size: 1.05rem;">{{ property.title }}</h5>
-                        {% if property.agent_is_verified %}<span class="verified-seal"><i class="fas fa-shield-check"></i></span>{% endif %}
-                    </div>
-                    <span class="price-tag mono-price mb-2 d-inline-block">&#8358;{{ property.price|floatformat:0 }}</span>
-                    <p class="text-muted small mt-2 mb-2"><i class="fas fa-map-marker-alt"></i> {{ property.area }}, {{ property.state.name }}</p>
-                    <div class="d-flex gap-2 mb-3">
-                        <span class="badge bg-light text-dark border"><i class="fas fa-bed"></i> {{ property.bedrooms }}</span>
-                        <span class="badge bg-light text-dark border"><i class="fas fa-bath"></i> {{ property.bathrooms }}</span>
-                    </div>
-                    <a href="{% url 'properties:detail' property.slug %}" class="btn btn-nigeria w-100">View Details</a>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <h4 class="display-font">No properties found matching your criteria.</h4>
-            <p class="text-muted">Try a different state or clear your filters.</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% if is_paginated %}
-    <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
-            {% endif %}
-            <li class="page-item active"><span class="page-link" style="background-color: var(--emerald); border-color: var(--emerald);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
+{% if request.resolver_match.url_name == 'home' %}
+<h2 class="fs-3 fw-bold mb-4">Recently Listed</h2>
+{% endif %}
+<div class="row g-4">
+{% for property in properties %}
+<div class="col-md-6 col-lg-4">
+<div class="property-card position-relative">
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'favourites:toggle' property.id %}" class="position-absolute" style="top: 0.75rem; right: 0.75rem; z-index: 2;">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.get_full_path }}">
+<button type="submit" class="fav-card-heart" title="{% if property.id in favourited_ids %}Remove from favourites{% else %}Save to favourites{% endif %}">
+<i class="bi {% if property.id in favourited_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+</button>
+</form>
+{% endif %}
+<a href="{% url 'properties:detail' property.slug %}" style="text-decoration:none;color:inherit;">
+{% if property.images.first %}
+<img src="{{ property.images.first.image.url }}" class="property-card-img" alt="{{ property.title }}" loading="lazy">
+{% else %}
+<div class="property-card-img d-flex align-items-center justify-content-center" style="background: var(--border-light); color: var(--text-muted);">No Media Yet</div>
+{% endif %}
+<div class="property-card-body">
+<div class="d-flex justify-content-between align-items-start mb-1">
+<div class="property-card-title text-truncate">{{ property.title }}</div>
+{% if property.agent_is_verified %}<span class="verified-badge ms-1" style="flex-shrink:0;"><i class="bi bi-check-circle-fill"></i></span>{% endif %}
+</div>
+<div class="property-card-location"><i class="bi bi-geo-alt"></i> {{ property.area }}, {{ property.state.name }}</div>
+<div class="property-card-price mb-2">&#8358;{{ property.price|floatformat:0 }} <span>/ {{ property.get_rental_period_display }}</span></div>
+<div class="d-flex gap-2">
+<span class="badge" style="background: var(--border-light); color: var(--text-dark); font-weight: 500;"><i class="bi bi-door-closed"></i> {{ property.bedrooms }}</span>
+<span class="badge" style="background: var(--border-light); color: var(--text-dark); font-weight: 500;"><i class="bi bi-droplet"></i> {{ property.bathrooms }}</span>
+</div>
+</div>
+</a>
+</div>
+</div>
+{% empty %}
+<div class="col-12 text-center py-5">
+<i class="bi bi-search fs-1 mb-3 d-block" style="color: var(--border-color);"></i>
+<h4 class="fw-bold">No properties found matching your criteria.</h4>
+<p class="text-muted">Try a different state or clear your filters.</p>
+</div>
+{% endfor %}
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+<ul class="pagination justify-content-center">
+{% if page_obj.has_previous %}
+<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+{% endif %}
+<li class="page-item active"><span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+{% if page_obj.has_next %}
+<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+<li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+{% endif %}
+</ul>
+</nav>
+{% endif %}
 </div>
 {% endblock %}
