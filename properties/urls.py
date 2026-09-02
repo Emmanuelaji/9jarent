@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.PropertyListView.as_view(), name='home'),
     path('properties/', views.PropertyListView.as_view(), name='list'),
     path('properties/<slug:slug>/', views.PropertyDetailView.as_view(), name='detail'),
+    path('ajax/lgas/', views.lgas_for_state, name='ajax_lgas'),
 
     # Agent property management (requires approved agent)
     path('agent/dashboard/', views.AgentDashboardView.as_view(), name='agent_dashboard'),

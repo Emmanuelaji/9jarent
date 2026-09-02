@@ -1,4 +1,3 @@
-
 # properties/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
@@ -83,7 +82,39 @@ class PropertyForm(forms.ModelForm):
         # agent to pick it on every submit - an omitted value falls back to
         # the model default in clean_rental_period().
         self.fields['rental_period'].required = False
-        
+
+        # Cascading State -> LGA dropdown: app.js's initLgaCascade() reads
+        # these data attributes to know where to fetch LGAs from and which
+        # one (if any) to preserve as already-selected. Covers both loading
+        # an existing property to edit AND re-rendering after a failed
+        # validation on create (where self.data has the submitted lga id
+        # but nothing has been saved to self.instance yet).
+        from django.urls import reverse
+        self.fields['lga'].widget.attrs['data-ajax-url'] = reverse('properties:ajax_lgas')
+
+        selected_state_id = None
+        selected_lga_id = None
+        if self.is_bound:
+            selected_state_id = self.data.get('state') or None
+            selected_lga_id = self.data.get('lga') or None
+        elif self.instance.pk:
+            selected_state_id = self.instance.state_id
+            selected_lga_id = self.instance.lga_id
+
+        if selected_lga_id:
+            self.fields['lga'].widget.attrs['data-initial-value'] = selected_lga_id
+        if selected_state_id:
+            # Narrow to that state's LGAs so a plain GET render doesn't show
+            # every LGA in the country in one flat list before JS has run.
+            from .models import LGA
+            self.fields['lga'].queryset = LGA.objects.filter(state_id=selected_state_id)
+        elif not self.is_bound:
+            # Genuinely blank new form (no state chosen yet, nothing
+            # submitted) - start empty rather than listing all 774 LGAs;
+            # the cascade JS populates real options once a state is picked.
+            from .models import LGA
+            self.fields['lga'].queryset = LGA.objects.none()
+
         # Pre-populate agent fields from user profile if creating new property
         if self.user and not self.instance.pk:
             self.fields['agent_name'].initial = self.user.full_name_or_username

@@ -10,9 +10,10 @@ class StateAdmin(admin.ModelAdmin):
 
 @admin.register(LGA)
 class LGAAdmin(admin.ModelAdmin):
-    list_display = ('name', 'state')
+    list_display = ('name', 'state', 'slug')
     list_filter = ('state',)
     search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
 
 class PropertyImageInline(admin.TabularInline):
     model = PropertyImage

@@ -7,14 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Sum, F
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from urllib.parse import quote
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.urls import reverse_lazy
 
 from accounts.permissions import ApprovedAgentRequiredMixin, AgentRequiredMixin, object_owner_required
-from .models import Property, State, PropertyImage
+from .models import Property, State, LGA, PropertyImage
 from .forms import PropertyForm
 
 
@@ -465,3 +465,19 @@ def archive_property(request, pk):
     else:
         messages.warning(request, "This property cannot be archived.")
     return redirect('properties:mine')
+
+
+def lgas_for_state(request):
+    """
+    AJAX endpoint powering the cascading State -> LGA dropdown on the
+    property create/edit forms. Returns {"lgas": [{"id": ..., "name": ...}]}
+    for the state given in ?state=<id>, or an empty list if no/invalid state
+    is given - the frontend treats that the same as "nothing selected yet".
+    """
+    state_id = request.GET.get('state')
+    lgas = []
+    if state_id and state_id.isdigit():
+        lgas = list(
+            LGA.objects.filter(state_id=state_id).order_by('name').values('id', 'name')
+        )
+    return JsonResponse({'lgas': lgas})

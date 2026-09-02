@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initFormValidation();
     initPasswordStrength();
     initDateRangePicker();
+    initLgaCascade();
 });
 
 // ============================================
@@ -397,5 +398,57 @@ function selectAccountType(type) {
     if (selectedCard) {
         selectedCard.style.borderColor = 'var(--brand-green)';
         selectedCard.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
+    }
+}
+
+// ============================================
+// Cascading State -> LGA dropdown (property forms)
+// ============================================
+function initLgaCascade() {
+    const stateSelect = document.getElementById('id_state');
+    const lgaSelect = document.getElementById('id_lga');
+    if (!stateSelect || !lgaSelect) return;
+
+    const ajaxUrl = lgaSelect.dataset.ajaxUrl;
+    if (!ajaxUrl) return;
+
+    function loadLgas(stateId, selectedLgaId) {
+        lgaSelect.disabled = true;
+        if (!stateId) {
+            lgaSelect.innerHTML = '<option value="">Select a state first</option>';
+            lgaSelect.disabled = false;
+            return;
+        }
+        lgaSelect.innerHTML = '<option value="">Loading...</option>';
+        fetch(`${ajaxUrl}?state=${encodeURIComponent(stateId)}`)
+            .then(response => response.json())
+            .then(data => {
+                lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+                data.lgas.forEach(lga => {
+                    const opt = document.createElement('option');
+                    opt.value = lga.id;
+                    opt.textContent = lga.name;
+                    if (selectedLgaId && String(lga.id) === String(selectedLgaId)) {
+                        opt.selected = true;
+                    }
+                    lgaSelect.appendChild(opt);
+                });
+                lgaSelect.disabled = false;
+            })
+            .catch(() => {
+                lgaSelect.innerHTML = '<option value="">Could not load LGAs - try reselecting the state</option>';
+                lgaSelect.disabled = false;
+            });
+    }
+
+    stateSelect.addEventListener('change', function () {
+        loadLgas(this.value, null);
+    });
+
+    // On page load (e.g. editing an existing property), preserve whatever
+    // LGA was already selected server-side instead of wiping it.
+    const initialLgaId = lgaSelect.dataset.initialValue;
+    if (stateSelect.value) {
+        loadLgas(stateSelect.value, initialLgaId);
     }
 }
