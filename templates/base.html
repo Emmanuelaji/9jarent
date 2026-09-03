@@ -28,7 +28,7 @@
 {% if user.is_authenticated %}
 <a href="{% url 'favourites:list' %}" class="nav-icon-btn"><i class="bi bi-heart"></i></a>
 <a href="{% url 'messaging:inbox' %}" class="nav-icon-btn"><i class="bi bi-envelope"></i></a>
-<a href="{% url 'notifications:list' %}" class="nav-icon-btn"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="badge-dot"></span>{% endif %}</a>
+<a href="{% url 'notifications:list' %}" class="nav-icon-btn"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="top-bar-notify-count">{% if unread_notification_count > 9 %}9+{% else %}{{ unread_notification_count }}{% endif %}</span>{% endif %}</a>
 <div class="dropdown">
 <button class="d-flex align-items-center gap-2 bg-white border-0" data-bs-toggle="dropdown">
 {% if user.profile_photo %}<img src="{{ user.profile_photo.url }}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">

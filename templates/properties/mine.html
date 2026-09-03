@@ -1,4 +1,5 @@
 {% extends 'base_portal.html' %}
+{% load humanize %}
 {% block title %}My Properties | 9jaRent{% endblock %}
 {% block portal_header %}<h1 class="fs-3 fw-bold mb-0">My Properties</h1>{% endblock %}
 {% block portal_header_action %}
@@ -55,12 +56,23 @@
 {% else %}<div style="width:60px;height:45px;border-radius:0.375rem;background:var(--border-light);"></div>{% endif %}
 <span class="fw-medium">{{ prop.title }}</span></div></td>
 <td>{{ prop.area }}, {{ prop.state.name }}</td>
-<td>&#8358;{{ prop.price|floatformat:0 }} /{{ prop.get_rental_period_display }}</td>
+<td>&#8358;{{ prop.price|floatformat:2|intcomma }} /{{ prop.get_rental_period_display }}</td>
 <td><span class="badge-status badge-{{ prop.status|lower }}">{{ prop.get_status_display }}</span></td>
 <td>{{ prop.views }}</td>
 <td><div class="d-flex gap-1">
-{% if prop.status == 'PUBLISHED' %}<a href="{% url 'properties:detail' prop.slug %}" class="action-btn"><i class="bi bi-eye"></i></a>{% endif %}
-<a href="{% url 'properties:edit' prop.pk %}" class="action-btn"><i class="bi bi-pencil"></i></a>
+{% if prop.status == 'PUBLISHED' %}
+<a href="{% url 'properties:detail' prop.slug %}" class="action-btn" title="View"><i class="bi bi-eye"></i></a>
+<form method="post" action="{% url 'properties:rented' prop.pk %}" class="d-inline" onsubmit="return confirm('Mark this property as rented? It will no longer be publicly listed.');">
+{% csrf_token %}
+<button type="submit" class="action-btn" title="Mark as Rented"><i class="bi bi-key"></i></button>
+</form>
+{% elif prop.status == 'RENTED' %}
+<form method="post" action="{% url 'properties:available' prop.pk %}" class="d-inline" onsubmit="return confirm('Mark this property as available again? It will be publicly listed again.');">
+{% csrf_token %}
+<button type="submit" class="action-btn" title="Mark as Available"><i class="bi bi-arrow-counterclockwise"></i></button>
+</form>
+{% endif %}
+<a href="{% url 'properties:edit' prop.pk %}" class="action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
 </div></td>
 </tr>
 {% empty %}

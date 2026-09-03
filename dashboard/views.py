@@ -410,6 +410,34 @@ def reactivate_agent(request, pk):
     return redirect('dashboard:agents_suspended')
 
 
+@login_required
+def delete_agent(request, pk):
+    """
+    Permanently delete an agent account. Requires the admin to type the
+    agent's exact username to confirm - this is irreversible.
+    """
+    if not request.user.is_admin:
+        raise PermissionDenied("Admin access required.")
+    if request.method != 'POST':
+        return HttpResponseForbidden("This action requires POST.")
+
+    agent = get_object_or_404(CustomUser, pk=pk, role='MINOR_ADMIN')
+
+    if request.POST.get('confirm_username') != agent.username:
+        messages.error(request, f"Type the agent's exact username ({agent.username}) to confirm deletion.")
+        return redirect('dashboard:agent_detail', pk=agent.pk)
+
+    from properties.models import Property
+    Property.objects.filter(created_by=agent).exclude(status='ARCHIVED').update(
+        status='ARCHIVED', updated_at=timezone.now()
+    )
+
+    username = agent.username
+    agent.delete()
+    messages.success(request, f"Agent '{username}' and their account have been permanently deleted. Their properties were archived, not deleted.")
+    return redirect('dashboard:agents_approved')
+
+
 class PropertyModerationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
     """All properties, filterable by status and searchable by title/agent - the
     list view the admin sidebar's 'Properties' link was previously missing."""
@@ -664,15 +692,6 @@ def resolve_report(request, pk):
 # ============================================================================
 
 class ConversationModerationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
-    """
-    Admin overview of platform conversations - participants, property, and
-    activity metadata only. Deliberately does NOT expose message content:
-    these are private renter<->agent conversations, and reading their
-    contents by default is a real privacy decision that shouldn't be made
-    silently as part of a UI reskin. If full moderation (e.g. investigating
-    a specific reported conversation) is needed later, that's a deliberate
-    follow-up feature, not this view.
-    """
     template_name = 'dashboard/messages_list.html'
     context_object_name = 'conversations'
     paginate_by = 20

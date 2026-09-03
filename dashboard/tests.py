@@ -394,3 +394,78 @@ class ConversationModerationListViewTests(TestCase):
         self.assertNotContains(response, 'This exact private message text must never appear to admins.')
         self.assertContains(response, self.renter.username)
         self.assertContains(response, self.property.title)
+
+
+class DeleteAgentTests(TestCase):
+    """Admin agent-deletion requires typed confirmation and must archive
+    (not orphan) the agent's properties - Property.created_by is SET_NULL,
+    so a bare user.delete() would leave properties behind, still PUBLISHED
+    and publicly listed, attached to no one."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='adminpass123'
+        )
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Ikeja', slug='ikeja')
+        self.agent = User.objects.create_user(
+            username='deleteme', email='deleteme@example.com', password='testpass123',
+            role='MINOR_ADMIN', agent_status='APPROVED', whatsapp_number='2348012345678'
+        )
+        self.agent_property = Property.objects.create(
+            title='Agent Property', description='A flat with enough description text.',
+            price=500000, state=self.state, lga=self.lga, area='Ikeja',
+            property_type='2-Bedroom Flat', bedrooms=2, bathrooms=1,
+            agent_name='Agent', agent_whatsapp='2348012345678',
+            created_by=self.agent, status='PUBLISHED'
+        )
+
+    def test_wrong_confirmation_does_not_delete(self):
+        self.client.login(username='admin', password='adminpass123')
+        self.client.post(
+            reverse('dashboard:delete_agent', kwargs={'pk': self.agent.pk}),
+            {'confirm_username': 'not-the-right-username'}
+        )
+        self.assertTrue(User.objects.filter(pk=self.agent.pk).exists())
+
+    def test_correct_confirmation_deletes_agent_and_archives_properties(self):
+        self.client.login(username='admin', password='adminpass123')
+        self.client.post(
+            reverse('dashboard:delete_agent', kwargs={'pk': self.agent.pk}),
+            {'confirm_username': self.agent.username}
+        )
+        self.assertFalse(User.objects.filter(pk=self.agent.pk).exists())
+        self.agent_property.refresh_from_db()
+        self.assertEqual(self.agent_property.status, 'ARCHIVED')
+
+    def test_non_admin_cannot_delete_agent(self):
+        self.client.login(username='deleteme', password='testpass123')
+        response = self.client.post(
+            reverse('dashboard:delete_agent', kwargs={'pk': self.agent.pk}),
+            {'confirm_username': self.agent.username}
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(User.objects.filter(pk=self.agent.pk).exists())
+
+
+class AdminSettingsTests(TestCase):
+    """Admins get a distinct settings page without self-service account
+    deletion (the shared agent/renter template's blocks don't even render
+    under the admin topbar shell, and self-deleting the only superuser is
+    a real way to lock everyone out)."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='adminpass123'
+        )
+
+    def test_admin_settings_page_has_no_delete_account_option(self):
+        self.client.login(username='admin', password='adminpass123')
+        response = self.client.get(reverse('accounts:settings'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'deleteAccountModal')
+
+    def test_admin_cannot_self_delete_via_direct_post(self):
+        self.client.login(username='admin', password='adminpass123')
+        self.client.post(reverse('accounts:settings'), {'action': 'delete_account', 'confirm_delete': 'DELETE'})
+        self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())

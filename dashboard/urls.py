@@ -28,6 +28,7 @@ urlpatterns = [
     path('agents/<int:pk>/reject/', views.reject_agent, name='reject_agent'),
     path('agents/<int:pk>/suspend/', views.suspend_agent, name='suspend_agent'),
     path('agents/<int:pk>/reactivate/', views.reactivate_agent, name='reactivate_agent'),
+    path('agents/<int:pk>/delete/', views.delete_agent, name='delete_agent'),
 
     # Inspection management
     path('inspections/', views.InspectionListView.as_view(), name='inspections_list'),

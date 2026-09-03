@@ -361,8 +361,15 @@ class AgentPublicProfileView(DetailView):
 
 
 class SettingsView(LoginRequiredMixin, TemplateView):
-    """Account settings: notification prefs, password change, delete account."""
-    template_name = 'accounts/settings.html'
+    """Account settings: notification prefs, password change, delete account
+    (delete account is intentionally NOT offered to admins - self-service
+    deletion of the only superuser account is a real way to lock everyone
+    out of the admin dashboard, so that stays a manual/Django-Admin action)."""
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ['dashboard/settings.html']
+        return ['accounts/settings.html']
 
     def post(self, request, *args, **kwargs):
         from django.contrib.auth import update_session_auth_hash, logout
@@ -386,8 +393,15 @@ class SettingsView(LoginRequiredMixin, TemplateView):
             return self.render_to_response(self.get_context_data(password_form=form))
 
         elif action == 'delete_account':
+            if request.user.is_superuser:
+                messages.error(request, "Admin accounts can't be self-deleted here. This has to be done from Django Admin.")
+                return redirect('accounts:settings')
             if request.POST.get('confirm_delete') == 'DELETE':
                 user = request.user
+                from properties.models import Property
+                Property.objects.filter(created_by=user).exclude(status='ARCHIVED').update(
+                    status='ARCHIVED', updated_at=timezone.now()
+                )
                 logout(request)
                 user.delete()
                 messages.success(request, "Your account has been deleted.")

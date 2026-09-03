@@ -90,7 +90,7 @@
 <div class="top-bar-search"><i class="bi bi-search"></i><input type="text" placeholder="Search anything..."></div>
 </div>
 <div class="top-bar-actions">
-<a href="{% url 'notifications:list' %}" class="top-bar-notify"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="badge-dot"></span>{% endif %}</a>
+<a href="{% url 'notifications:list' %}" class="top-bar-notify"><i class="bi bi-bell"></i>{% if unread_notification_count %}<span class="top-bar-notify-count">{% if unread_notification_count > 9 %}9+{% else %}{{ unread_notification_count }}{% endif %}</span>{% endif %}</a>
 {% if user.profile_photo %}<img src="{{ user.profile_photo.url }}" alt="" class="top-bar-avatar">
 {% else %}<div class="top-bar-avatar d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;">{{ user.first_name|default:user.username|first|upper }}</div>{% endif %}
 </div>

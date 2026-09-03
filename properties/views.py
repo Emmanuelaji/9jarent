@@ -426,6 +426,23 @@ def mark_property_rented(request, pk):
 
 @login_required
 @object_owner_required(Property, 'created_by')
+def mark_property_available(request, pk):
+    """Mark a RENTED property as available again (back to PUBLISHED)."""
+    if request.method != 'POST':
+        return HttpResponseForbidden("This action requires POST.")
+
+    prop = get_object_or_404(Property, pk=pk, created_by=request.user)
+    if prop.status == 'RENTED':
+        prop.status = 'PUBLISHED'
+        prop.save(update_fields=['status', 'updated_at'])
+        messages.success(request, "Property marked as available again.")
+    else:
+        messages.warning(request, "Only rented properties can be marked as available.")
+    return redirect('properties:mine')
+
+
+@login_required
+@object_owner_required(Property, 'created_by')
 def delete_property_image(request, pk, image_id):
     """Delete one image from a property. Owner or admin only, POST only."""
     if request.method != 'POST':

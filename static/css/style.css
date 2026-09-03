@@ -423,6 +423,23 @@ a {
     border: 2px solid var(--white);
 }
 
+.top-bar-notify-count {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: var(--danger);
+    color: var(--white);
+    border-radius: 999px;
+    border: 2px solid var(--white);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+}
+
 .top-bar-avatar {
     width: 40px;
     height: 40px;
@@ -725,6 +742,7 @@ a {
 }
 
 .nav-icon-btn {
+    position: relative;
     width: 40px;
     height: 40px;
     display: flex;
