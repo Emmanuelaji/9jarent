@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from properties.models import State, LGA
 
 User = get_user_model()
 
@@ -10,7 +11,9 @@ class AgentRegistrationTests(TestCase):
         self.signup_url = reverse('accounts:agent_signup')
         self.pending_url = reverse('accounts:pending')
         self.login_url = reverse('accounts:login')
-        
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Lekki', slug='lekki')
+
         # Create admin user
         self.admin_user = User.objects.create_superuser(
             username='admin',
@@ -31,8 +34,8 @@ class AgentRegistrationTests(TestCase):
 
         step1_data = {
             'company_name': 'Test Agency',
-            'state': 'Lagos',
-            'city': 'Lekki',
+            'state': self.state.id,
+            'city': self.lga.id,
             'office_address': '123 Test Street',
             'phone': '08012345678',
             'whatsapp_number': '2348012345678',
@@ -169,7 +172,7 @@ class AgentRegistrationTests(TestCase):
         from accounts.models import EmailOTP
 
         step1_data = {
-            'company_name': 'New Agency', 'state': 'Abuja', 'city': 'Wuse',
+            'company_name': 'New Agency', 'state': self.state.id, 'city': self.lga.id,
             'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
             'email': 'newagent@example.com', 'bio': '',
         }
@@ -336,9 +339,13 @@ class LogoutTests(TestCase):
 class AgentSignUpWizardEdgeCaseTests(TestCase):
     """Edge cases for the 3-step agent signup wizard beyond the happy path."""
 
+    def setUp(self):
+        self.state = State.objects.create(name='Lagos', slug='lagos')
+        self.lga = LGA.objects.create(state=self.state, name='Ikeja', slug='ikeja')
+
     def test_wrong_otp_code_does_not_verify(self):
         self.client.post(reverse('accounts:agent_signup'), {
-            'company_name': 'Edge Co', 'state': 'Lagos', 'city': 'Ikeja',
+            'company_name': 'Edge Co', 'state': self.state.id, 'city': self.lga.id,
             'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
             'email': 'edgecase@example.com', 'bio': '',
         })
@@ -357,7 +364,7 @@ class AgentSignUpWizardEdgeCaseTests(TestCase):
         """Visiting step 3 directly (email not yet verified) shouldn't let
         someone finish account setup without ever confirming their email."""
         self.client.post(reverse('accounts:agent_signup'), {
-            'company_name': 'Edge Co 2', 'state': 'Lagos', 'city': 'Ikeja',
+            'company_name': 'Edge Co 2', 'state': self.state.id, 'city': self.lga.id,
             'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
             'email': 'edgecase2@example.com', 'bio': '',
         })
@@ -367,7 +374,7 @@ class AgentSignUpWizardEdgeCaseTests(TestCase):
     def test_resend_code_invalidates_previous_code(self):
         from accounts.models import EmailOTP
         self.client.post(reverse('accounts:agent_signup'), {
-            'company_name': 'Edge Co 3', 'state': 'Lagos', 'city': 'Ikeja',
+            'company_name': 'Edge Co 3', 'state': self.state.id, 'city': self.lga.id,
             'office_address': '', 'phone': '08012345678', 'whatsapp_number': '2348012345678',
             'email': 'edgecase3@example.com', 'bio': '',
         })

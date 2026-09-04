@@ -6,6 +6,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from .models import CustomUser
+from properties.models import State, LGA
 
 
 def generate_unique_username(email, first_name=''):
@@ -84,8 +85,20 @@ class AgentSignUpStep1Form(forms.ModelForm):
         max_length=200,
         label="Agency / Company Name"
     )
-    state = forms.CharField(required=True, max_length=100, label="State")
-    city = forms.CharField(required=True, max_length=100, label="City")
+    state = forms.ModelChoiceField(
+        queryset=State.objects.all().order_by('name'),
+        required=True,
+        label="State",
+        empty_label="Select state",
+        widget=forms.Select(attrs={'class': 'form-control-custom w-100'}),
+    )
+    city = forms.ModelChoiceField(
+        queryset=LGA.objects.none(),
+        required=True,
+        label="City / LGA",
+        empty_label="Select a state first",
+        widget=forms.Select(attrs={'id': 'id_lga', 'class': 'form-control-custom w-100'}),
+    )
     office_address = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'rows': 2}),
@@ -100,7 +113,29 @@ class AgentSignUpStep1Form(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ['company_name', 'state', 'city', 'office_address', 'phone', 'whatsapp_number', 'email', 'bio']
+        # state/city are intentionally NOT here even though CustomUser has
+        # matching CharFields - they're declared above as ModelChoiceFields
+        # pointing at properties.State/properties.LGA (for the cascading
+        # dropdown), not at CustomUser fields. If Django's ModelForm tried
+        # to construct_instance() them from Meta.fields, it would assign the
+        # State/LGA model objects directly onto CustomUser's CharFields.
+        # save() below converts them to plain name strings instead.
+        fields = ['company_name', 'office_address', 'phone', 'whatsapp_number', 'email', 'bio']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Cascading State -> LGA dropdown, same JS/AJAX endpoint as the
+        # property form (properties:ajax_lgas already returns {id, name}
+        # for any State - reused as-is here).
+        from django.urls import reverse
+        self.fields['city'].widget.attrs['data-ajax-url'] = reverse('properties:ajax_lgas')
+        if self.is_bound:
+            selected_state_id = self.data.get('state') or None
+            selected_lga_id = self.data.get('city') or None
+            if selected_lga_id:
+                self.fields['city'].widget.attrs['data-initial-value'] = selected_lga_id
+            if selected_state_id:
+                self.fields['city'].queryset = LGA.objects.filter(state_id=selected_state_id)
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -122,6 +157,8 @@ class AgentSignUpStep1Form(forms.ModelForm):
         user.role = 'MINOR_ADMIN'
         user.agent_status = 'PENDING'
         user.email_verified = False
+        user.state = self.cleaned_data['state'].name
+        user.city = self.cleaned_data['city'].name
         user.set_unusable_password()
         if commit:
             user.save()

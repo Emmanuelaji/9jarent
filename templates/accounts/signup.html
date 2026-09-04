@@ -51,12 +51,12 @@
 </div>
 <div class="col-md-6">
 <label class="form-label-custom">State</label>
-<input type="text" name="state" value="{{ form.state.value|default:'' }}" class="form-control-custom w-100" placeholder="Select state" required>
+{{ form.state }}
 {% for error in form.state.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
 </div>
 <div class="col-md-6">
-<label class="form-label-custom">City</label>
-<input type="text" name="city" value="{{ form.city.value|default:'' }}" class="form-control-custom w-100" placeholder="Select city" required>
+<label class="form-label-custom">City / LGA</label>
+{{ form.city }}
 {% for error in form.city.errors %}<div class="text-danger fs-9 mt-1">{{ error }}</div>{% endfor %}
 </div>
 <div class="col-md-6">
