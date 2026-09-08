@@ -5,6 +5,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q, Sum, F
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden, JsonResponse
@@ -193,17 +194,20 @@ class PropertyCreateView(LoginRequiredMixin, ApprovedAgentRequiredMixin, CreateV
         if not form.instance.agent_email:
             form.instance.agent_email = user.email
 
-        response = super().form_valid(form)
+        # Property row + its images are one logical unit - if an image
+        # upload fails partway through, we don't want a Property left behind
+        # with only some of its pictures attached.
+        with transaction.atomic():
+            response = super().form_valid(form)
 
-        # Handle image uploads
-        images = self.request.FILES.getlist('images')
-        for index, image_file in enumerate(images):
-            PropertyImage.objects.create(
-                property=self.object,
-                image=image_file,
-                is_primary=(index == 0),
-                order_index=index,
-            )
+            images = self.request.FILES.getlist('images')
+            for index, image_file in enumerate(images):
+                PropertyImage.objects.create(
+                    property=self.object,
+                    image=image_file,
+                    is_primary=(index == 0),
+                    order_index=index,
+                )
 
         return response
 
@@ -268,14 +272,15 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
         # Append any newly uploaded images
         images = self.request.FILES.getlist('images')
         if images:
-            existing_count = self.object.images.count()
-            for index, image_file in enumerate(images):
-                PropertyImage.objects.create(
-                    property=self.object,
-                    image=image_file,
-                    is_primary=(existing_count == 0 and index == 0),
-                    order_index=existing_count + index,
-                )
+            with transaction.atomic():
+                existing_count = self.object.images.count()
+                for index, image_file in enumerate(images):
+                    PropertyImage.objects.create(
+                        property=self.object,
+                        image=image_file,
+                        is_primary=(existing_count == 0 and index == 0),
+                        order_index=existing_count + index,
+                    )
 
         return response
 

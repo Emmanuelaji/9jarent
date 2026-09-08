@@ -35,7 +35,7 @@
 {% for prop in properties_page %}
 <tr>
 <td><div class="d-flex align-items-center gap-2">
-{% if prop.images.first %}<img src="{{ prop.images.first.image.url }}" alt="" style="width:44px;height:34px;border-radius:6px;object-fit:cover;">
+{% if prop.images.first %}<img src="{{ prop.images.first.display_url }}" alt="" style="width:44px;height:34px;border-radius:6px;object-fit:cover;">
 {% else %}<div style="width:44px;height:34px;border-radius:6px;background:var(--border-light);"></div>{% endif %}
 <strong>{{ prop.title|truncatechars:28 }}</strong>
 </div></td>

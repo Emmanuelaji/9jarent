@@ -178,6 +178,11 @@ class Property(models.Model):
             models.Index(fields=['status', 'created_at']),
             models.Index(fields=['created_by', 'status']),
             models.Index(fields=['featured', 'status']),
+            # Covers the most common "browse properties" filter combination
+            # (published listings in a state/LGA, sorted/filtered by price)
+            # in a single index instead of relying on the planner to combine
+            # several narrower ones.
+            models.Index(fields=['status', 'state', 'lga', 'price']),
         ]
     
     def save(self, *args, **kwargs):
@@ -248,9 +253,69 @@ class PropertyImage(models.Model):
     
     def __str__(self): 
         return f"Image for {self.property.title}"
+
+    def display_url(self):
+        """Thumbnail if one exists, otherwise the original image.
+
+        Deliberately a plain method, not @property: this model's FK field
+        is itself named `property` (see PropertyImage.property below), which
+        shadows the `property` builtin inside this class body, so
+        `@property` here would raise TypeError at import time. A plain
+        method works identically in templates - Django auto-calls
+        zero-arg callables in template variable resolution - so nothing
+        else needs to change.
+
+        Also NOT done as `{{ x.thumbnail.url|default:x.image.url }}` in
+        templates: accessing .url on a blank ImageField raises ValueError
+        (not just a falsy value), which Django's template engine does not
+        swallow the way it does AttributeError/VariableDoesNotExist - it
+        would crash the page. This is common for any image uploaded before
+        thumbnail generation existed, or if thumbnail generation ever fails.
+        """
+        if self.thumbnail:
+            return self.thumbnail.url
+        return self.image.url
     
     def save(self, *args, **kwargs):
         # Ensure only one primary image per property
         if self.is_primary:
             PropertyImage.objects.filter(property=self.property, is_primary=True).update(is_primary=False)
+        needs_thumbnail = bool(self.image) and not self.thumbnail
         super().save(*args, **kwargs)
+        if needs_thumbnail:
+            self._generate_thumbnail()
+
+    def _generate_thumbnail(self, size=(400, 300)):
+        """Generate a resized JPEG thumbnail with Pillow (already a hard
+        dependency for ImageField) and save it via a plain queryset .update()
+        rather than calling self.save() again, to avoid re-triggering this
+        same save()/thumbnail logic recursively. Never raises - a thumbnail
+        failure shouldn't block the (already-validated, already-stored)
+        original image upload."""
+        import io
+        import os
+
+        from PIL import Image
+        from django.core.files.base import ContentFile
+
+        try:
+            self.image.open()
+            img = Image.open(self.image)
+            img = img.convert('RGB')
+            img.thumbnail(size)
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=85)
+            buffer.seek(0)
+
+            base_name = os.path.splitext(os.path.basename(self.image.name))[0]
+            filename = f"{base_name}_thumb.jpg"
+
+            # .save(..., save=False) writes the file to storage without
+            # calling this model's save() again.
+            self.thumbnail.save(filename, ContentFile(buffer.read()), save=False)
+            PropertyImage.objects.filter(pk=self.pk).update(thumbnail=self.thumbnail.name)
+        except Exception:
+            import logging
+            logging.getLogger('properties').warning(
+                "Thumbnail generation failed for PropertyImage %s", self.pk, exc_info=True
+            )

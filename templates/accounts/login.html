@@ -49,7 +49,7 @@ Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up</a>
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function switchLoginTab(tab) {
     const emailTab = document.getElementById('emailTab');
     const phoneTab = document.getElementById('phoneTab');

@@ -6,10 +6,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db import models
 
 from accounts.permissions import AdminRequiredMixin, admin_required
@@ -19,6 +20,38 @@ from inspections.models import InspectionRequest
 from reports.models import Report
 
 User = get_user_model()
+
+# How long the admin dashboard's aggregate metrics (counts, not the actual
+# pending-item lists) are cached for. Short enough that a moderator approving
+# something still sees it disappear from the counts within a few seconds,
+# long enough to collapse dozens of repeated COUNT(*) queries on a busy
+# admin session into one. Uses Django's cache framework (DB-backed in
+# production, see settings.py CACHES) - no Redis/Celery needed.
+DASHBOARD_METRICS_CACHE_SECONDS = 20
+
+
+def _cumulative_daily_counts(queryset, date_field, days):
+    """Given a queryset and a datetime field, return a running total of rows
+    that existed as-of each date in `days` (ascending). Two queries total,
+    regardless of how many days are requested."""
+    from django.db.models.functions import TruncDate
+
+    before_count = queryset.filter(**{f'{date_field}__date__lt': days[0]}).count()
+    daily_rows = (
+        queryset
+        .filter(**{f'{date_field}__date__gte': days[0], f'{date_field}__date__lte': days[-1]})
+        .annotate(_day=TruncDate(date_field))
+        .values('_day')
+        .annotate(_count=Count('id'))
+    )
+    daily_map = {row['_day']: row['_count'] for row in daily_rows}
+
+    cumulative = []
+    running = before_count
+    for d in days:
+        running += daily_map.get(d, 0)
+        cumulative.append(running)
+    return cumulative
 
 
 # ============================================================================
@@ -37,59 +70,67 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, ListView):
             status='PENDING_REVIEW'
         ).select_related('created_by', 'state', 'lga').order_by('-created_at')
 
+    def _get_cached_metrics(self):
+        """All the simple status-breakdown counts, computed as ONE aggregate
+        query per model (Count(..., filter=Q(...))) instead of one query per
+        status - was ~25 separate COUNT(*) queries, now 4. Cached briefly
+        since these are dashboard-overview numbers, not data a moderator
+        acts on directly."""
+        cached = cache.get('dashboard:metrics')
+        if cached is not None:
+            return cached
+
+        property_counts = Property.objects.aggregate(
+            total_listings=Count('id'),
+            published_listings=Count('id', filter=Q(status='PUBLISHED')),
+            pending_review_listings=Count('id', filter=Q(status='PENDING_REVIEW')),
+            rejected_listings=Count('id', filter=Q(status='REJECTED')),
+            rented_listings=Count('id', filter=Q(status='RENTED')),
+            archived_listings=Count('id', filter=Q(status='ARCHIVED')),
+            featured_listings=Count('id', filter=Q(featured=True)),
+            draft_listings=Count('id', filter=Q(status='DRAFT')),
+        )
+
+        agent_counts = CustomUser.objects.filter(role='MINOR_ADMIN').aggregate(
+            total_agents=Count('id'),
+            pending_agents=Count('id', filter=Q(agent_status='PENDING')),
+            approved_agents=Count('id', filter=Q(agent_status='APPROVED')),
+            rejected_agents=Count('id', filter=Q(agent_status='REJECTED')),
+            suspended_agents=Count('id', filter=Q(agent_status='SUSPENDED')),
+        )
+
+        user_counts = CustomUser.objects.aggregate(
+            total_users=Count('id', filter=Q(role='PUBLIC')),
+            total_staff=Count('id', filter=Q(is_staff=True)),
+        )
+
+        inspection_counts = InspectionRequest.objects.aggregate(
+            total_inspections=Count('id'),
+            pending_inspections=Count('id', filter=Q(status=InspectionRequest.Status.PENDING)),
+            accepted_inspections=Count('id', filter=Q(status=InspectionRequest.Status.ACCEPTED)),
+            completed_inspections=Count('id', filter=Q(status=InspectionRequest.Status.COMPLETED)),
+            declined_inspections=Count('id', filter=Q(status=InspectionRequest.Status.DECLINED)),
+        )
+
+        report_counts = Report.objects.aggregate(
+            total_reports=Count('id'),
+            pending_reports=Count('id', filter=Q(status=Report.Status.PENDING)),
+            under_review_reports=Count('id', filter=Q(status=Report.Status.UNDER_REVIEW)),
+            resolved_reports=Count('id', filter=Q(status=Report.Status.RESOLVED)),
+            dismissed_reports=Count('id', filter=Q(status=Report.Status.DISMISSED)),
+        )
+
+        metrics = {
+            **property_counts, **agent_counts, **user_counts,
+            **inspection_counts, **report_counts,
+        }
+        cache.set('dashboard:metrics', metrics, DASHBOARD_METRICS_CACHE_SECONDS)
+        return metrics
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Property metrics
-        context['total_listings'] = Property.objects.count()
-        context['published_listings'] = Property.objects.filter(status='PUBLISHED').count()
-        context['pending_review_listings'] = Property.objects.filter(status='PENDING_REVIEW').count()
-        context['rejected_listings'] = Property.objects.filter(status='REJECTED').count()
-        context['rented_listings'] = Property.objects.filter(status='RENTED').count()
-        context['archived_listings'] = Property.objects.filter(status='ARCHIVED').count()
-        context['featured_listings'] = Property.objects.filter(featured=True).count()
-        context['draft_listings'] = Property.objects.filter(status='DRAFT').count()
-
-        # Agent metrics
-        context['total_agents'] = CustomUser.objects.filter(role='MINOR_ADMIN').count()
-        context['pending_agents'] = CustomUser.objects.filter(
-            role='MINOR_ADMIN', agent_status='PENDING'
-        ).count()
-        context['approved_agents'] = CustomUser.objects.filter(
-            role='MINOR_ADMIN', agent_status='APPROVED'
-        ).count()
-        context['rejected_agents'] = CustomUser.objects.filter(
-            role='MINOR_ADMIN', agent_status='REJECTED'
-        ).count()
-        context['suspended_agents'] = CustomUser.objects.filter(
-            role='MINOR_ADMIN', agent_status='SUSPENDED'
-        ).count()
-
-        # User metrics
-        context['total_users'] = CustomUser.objects.filter(role='PUBLIC').count()
-        context['total_staff'] = CustomUser.objects.filter(is_staff=True).count()
-
-        # Inspection metrics
-        context['total_inspections'] = InspectionRequest.objects.count()
-        context['pending_inspections'] = InspectionRequest.objects.filter(
-            status=InspectionRequest.Status.PENDING
-        ).count()
-        context['accepted_inspections'] = InspectionRequest.objects.filter(
-            status=InspectionRequest.Status.ACCEPTED
-        ).count()
-        context['completed_inspections'] = InspectionRequest.objects.filter(
-            status=InspectionRequest.Status.COMPLETED
-        ).count()
-        context['declined_inspections'] = InspectionRequest.objects.filter(
-            status=InspectionRequest.Status.DECLINED
-        ).count()
-
-        # Report metrics
-        context['total_reports'] = Report.objects.count()
-        context['pending_reports'] = Report.objects.filter(status=Report.Status.PENDING).count()
-        context['under_review_reports'] = Report.objects.filter(status=Report.Status.UNDER_REVIEW).count()
-        context['resolved_reports'] = Report.objects.filter(status=Report.Status.RESOLVED).count()
-        context['dismissed_reports'] = Report.objects.filter(status=Report.Status.DISMISSED).count()
+        context.update(self._get_cached_metrics())
 
         # Recent inspection requests
         context['recent_inspections'] = InspectionRequest.objects.select_related(
@@ -126,11 +167,15 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, ListView):
 
         # 7-day platform overview trend - real daily counts, not hardcoded points.
         # Chart area is 330px wide (x: 50 to 380) and 160px tall (y: 20 to 160).
+        # Previously ran 2 queries PER DAY (14 total) to get a *cumulative*
+        # count as-of each day. Instead: 1 query for "how many existed before
+        # this 7-day window" + 1 grouped query for new-per-day inside the
+        # window, then a running sum in Python - 4 queries total either way.
         from datetime import timedelta
         today = timezone.localdate()
         days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-        user_counts = [CustomUser.objects.filter(date_joined__date__lte=d).count() for d in days]
-        property_counts = [Property.objects.filter(created_at__date__lte=d).count() for d in days]
+        user_counts = _cumulative_daily_counts(CustomUser.objects.all(), 'date_joined', days)
+        property_counts = _cumulative_daily_counts(Property.objects.all(), 'created_at', days)
         chart_max = max(user_counts + property_counts) or 1
 
         def to_points(counts):
@@ -411,6 +456,7 @@ def reactivate_agent(request, pk):
 
 
 @login_required
+@require_POST
 def delete_agent(request, pk):
     """
     Permanently delete an agent account. Requires the admin to type the
@@ -418,8 +464,6 @@ def delete_agent(request, pk):
     """
     if not request.user.is_admin:
         raise PermissionDenied("Admin access required.")
-    if request.method != 'POST':
-        return HttpResponseForbidden("This action requires POST.")
 
     agent = get_object_or_404(CustomUser, pk=pk, role='MINOR_ADMIN')
 

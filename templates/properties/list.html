@@ -88,7 +88,7 @@
 <div class="col-md-6 col-lg-4">
 <div class="property-card position-relative">
 {% if user.is_authenticated %}
-<form method="post" action="{% url 'favourites:toggle' property.id %}" class="position-absolute" style="top: 0.75rem; right: 0.75rem; z-index: 2;">
+<form method="post" action="{% url 'favourites:toggle' property.id %}" class="position-absolute js-fav-toggle" style="top: 0.75rem; right: 0.75rem; z-index: 2;">
 {% csrf_token %}
 <input type="hidden" name="next" value="{{ request.get_full_path }}">
 <button type="submit" class="fav-card-heart" title="{% if property.id in favourited_ids %}Remove from favourites{% else %}Save to favourites{% endif %}">
@@ -98,7 +98,7 @@
 {% endif %}
 <a href="{% url 'properties:detail' property.slug %}" style="text-decoration:none;color:inherit;">
 {% if property.images.first %}
-<img src="{{ property.images.first.image.url }}" class="property-card-img" alt="{{ property.title }}" loading="lazy">
+<img src="{{ property.images.first.display_url }}" class="property-card-img" alt="{{ property.title }}" loading="lazy">
 {% else %}
 <div class="property-card-img d-flex align-items-center justify-content-center" style="background: var(--border-light); color: var(--text-muted);">No Media Yet</div>
 {% endif %}

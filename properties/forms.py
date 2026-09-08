@@ -2,6 +2,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Property
+from nigerrents.validators import validate_whatsapp_number
 import os
 
 
@@ -125,12 +126,7 @@ class PropertyForm(forms.ModelForm):
         return self.cleaned_data.get('rental_period') or Property._meta.get_field('rental_period').default
 
     def clean_agent_whatsapp(self):
-        whatsapp = self.cleaned_data['agent_whatsapp'].strip()
-        if not whatsapp.startswith('234'):
-            raise ValidationError("WhatsApp number must start with 234 (e.g. 2348012345678).")
-        if len(whatsapp) < 13:
-            raise ValidationError("WhatsApp number seems too short.")
-        return whatsapp
+        return validate_whatsapp_number(self.cleaned_data['agent_whatsapp'])
     
     def clean_images(self):
         images = self.cleaned_data.get('images', [])

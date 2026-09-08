@@ -17,12 +17,10 @@
 <nav class="public-navbar">
 <div class="container">
 <div class="d-flex align-items-center justify-content-between">
-<a href="{% url 'properties:home' %}" class="brand-logo-dark text-decoration-none fs-4 fw-bold"></a>
+<a href="{% url 'properties:home' %}" class="brand-logo-dark text-decoration-none fs-4 fw-bold"><span class="brand-9ja">9ja</span>Rent.com.ng</a>
 <div class="d-none d-lg-flex align-items-center gap-1">
 <a href="{% url 'properties:list' %}" class="nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'properties' %}active{% endif %}">Browse Properties</a>
 <a href="{% url 'accounts:agents_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'agents_directory' %}active{% endif %}">Agents</a>
-<a href="#" class="nav-link">About Us</a>
-<a href="#" class="nav-link">Contact</a>
 </div>
 <div class="d-flex align-items-center gap-2">
 {% if user.is_authenticated %}

@@ -6,4 +6,5 @@ django-filter==26.1
 ffmpeg-python==0.2.0
 gunicorn==26.0.0
 pillow==12.3.0
+psycopg2-binary==2.9.10
 whitenoise==6.12.0

@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import ListView
 from django.views.decorators.http import require_POST
 
@@ -66,20 +67,43 @@ def mark_notification_read(request, pk):
 @login_required
 @require_POST
 def mark_all_read(request):
-    """Mark all notifications as read."""
+    """Mark all notifications as read.
+
+    Reachable two ways: a plain <form method="post"> submit from
+    templates/notifications/list.html (no JS involved - needs a redirect
+    back to an HTML page, not JSON), and potentially a future fetch()-based
+    caller (needs JSON). Previously this always returned JsonResponse,
+    which meant clicking "Mark all as read" navigated the browser to a raw
+    JSON response instead of back to the notifications list - a real bug,
+    just not one that would show up in a status-code-only test.
+    """
     Notification.objects.filter(user=request.user, is_read=False).update(
         is_read=True
     )
-    return JsonResponse({'status': 'ok', 'unread_count': 0})
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'ok', 'unread_count': 0})
+    return redirect('notifications:list')
 
 
 @login_required
 def notification_redirect(request, pk):
-    """Mark notification read and redirect to its link."""
+    """Mark notification read and redirect to its link.
+
+    notification.link is a plain URLField - nothing currently lets an
+    end user set it to an attacker-controlled value (see notifications/services.py),
+    but it's cheap defense-in-depth to validate it the same way Django's own
+    login_redirect/next-url handling does, in case a future code path ever
+    lets a link be set from user input. Anything that isn't a safe relative
+    path or an allowed host falls back to the notifications list instead of
+    silently redirecting off-site.
+    """
     notification = get_object_or_404(Notification, pk=pk, user=request.user)
     notification.mark_read()
-    if notification.link:
-        return redirect(notification.link)
+    link = notification.link
+    if link and url_has_allowed_host_and_scheme(
+        url=link, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(link)
     return redirect('notifications:list')
 
 

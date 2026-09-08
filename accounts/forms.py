@@ -7,6 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from .models import CustomUser
 from properties.models import State, LGA
+from nigerrents.validators import validate_whatsapp_number
 
 
 def generate_unique_username(email, first_name=''):
@@ -144,12 +145,7 @@ class AgentSignUpStep1Form(forms.ModelForm):
         return email
 
     def clean_whatsapp_number(self):
-        whatsapp = self.cleaned_data['whatsapp_number'].strip()
-        if not whatsapp.startswith('234'):
-            raise ValidationError("WhatsApp number must start with 234 (e.g. 2348012345678).")
-        if len(whatsapp) < 13:
-            raise ValidationError("WhatsApp number seems too short. Use format: 234XXXXXXXXXX")
-        return whatsapp
+        return validate_whatsapp_number(self.cleaned_data['whatsapp_number'])
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -280,12 +276,7 @@ class ProfileCompletionForm(forms.ModelForm):
         ]
     
     def clean_whatsapp_number(self):
-        whatsapp = self.cleaned_data['whatsapp_number'].strip()
-        if not whatsapp.startswith('234'):
-            raise ValidationError("WhatsApp number must start with 234 (e.g. 2348012345678).")
-        if len(whatsapp) < 13:
-            raise ValidationError("WhatsApp number seems too short.")
-        return whatsapp
+        return validate_whatsapp_number(self.cleaned_data['whatsapp_number'])
     
     def clean_profile_photo(self):
         photo = self.cleaned_data.get('profile_photo')

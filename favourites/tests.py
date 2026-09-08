@@ -88,3 +88,40 @@ class FavouriteTests(TestCase):
         response = self.client.get(reverse('favourites:list'))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Test Property')
+
+    def test_ajax_toggle_returns_json_and_persists(self):
+        """The fetch()-based toggle (see static/js/app.js initFavouriteToggle)
+        must actually persist the favourite, not just report success - this
+        guards against the fake-toggle regression the original JS had, where
+        the icon flipped client-side but nothing was ever saved."""
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.post(
+            reverse('favourites:toggle', kwargs={'property_id': self.property.pk}),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['favourited'])
+        self.assertEqual(data['favourite_count'], 1)
+        self.assertTrue(Favourite.objects.filter(user=self.renter, property=self.property).exists())
+
+        # Toggling again via AJAX removes it
+        response = self.client.post(
+            reverse('favourites:toggle', kwargs={'property_id': self.property.pk}),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        data = response.json()
+        self.assertFalse(data['favourited'])
+        self.assertEqual(data['favourite_count'], 0)
+        self.assertFalse(Favourite.objects.filter(user=self.renter, property=self.property).exists())
+
+    def test_non_ajax_toggle_still_redirects(self):
+        """A plain <form> submit (no X-Requested-With header) still gets the
+        original redirect-based behaviour, so browsers with JS disabled (or
+        the fetch() fallback path in app.js) keep working."""
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.post(
+            reverse('favourites:toggle', kwargs={'property_id': self.property.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Favourite.objects.filter(user=self.renter, property=self.property).exists())

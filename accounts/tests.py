@@ -250,11 +250,15 @@ class AgentRegistrationTests(TestCase):
         
     def test_agent_cannot_edit_another_agents_property(self):
         """Test that agents can only edit their own properties."""
-        from properties.models import Property, State, LGA
-        
-        # Create states and LGA
-        state = State.objects.create(name='Lagos', slug='lagos')
-        lga = LGA.objects.create(state=state, name='Lekki', slug='lekki')
+        from properties.models import Property
+
+        # setUp() already created self.state ('Lagos') and self.lga ('Lekki')
+        # for this TestCase - reuse them instead of creating duplicates
+        # (State.slug is unique, so creating a second 'lagos' here raised an
+        # IntegrityError and failed this test before it even got to the
+        # actual assertion).
+        state = self.state
+        lga = self.lga
         
         agent1 = User.objects.create_user(
             username='agent1',
@@ -387,3 +391,37 @@ class AgentSignUpWizardEdgeCaseTests(TestCase):
 
         new_otp = EmailOTP.objects.get(user=user, is_used=False)
         self.assertNotEqual(new_otp.pk, first_otp.pk)
+
+
+class RateLimitConfigTests(TestCase):
+    """Regression test for a real bug found during the production audit:
+    two entries in nigerrents.middleware.RateLimitMiddleware.RATE_LIMITED_ENDPOINTS
+    referenced URLs that don't exist (`/accounts/register/` and
+    `/accounts/agent/register/` - the real paths are
+    `/accounts/signup/renter/` and `/accounts/signup/agent/`), so those
+    rules silently never matched anything and signup spam was effectively
+    unlimited. This doesn't exercise the middleware end-to-end (it
+    deliberately no-ops under settings.TESTING to avoid cross-test cache
+    interference - see the middleware's own comment) - it just asserts the
+    configured path fragments actually appear in the real, reversed URLs
+    they're meant to protect, so a future refactor of urls.py can't quietly
+    break rate limiting again without a test failing.
+    """
+
+    def test_sensitive_signup_and_auth_urls_are_covered(self):
+        from nigerrents.middleware import RateLimitMiddleware
+
+        configured_fragments = [e for e, _, _ in RateLimitMiddleware.RATE_LIMITED_ENDPOINTS]
+        urls_that_must_be_covered = [
+            reverse('accounts:login'),
+            reverse('accounts:renter_signup'),
+            reverse('accounts:agent_signup'),
+            reverse('accounts:agent_signup_verify'),
+            reverse('accounts:password_reset'),
+        ]
+        for url in urls_that_must_be_covered:
+            with self.subTest(url=url):
+                self.assertTrue(
+                    any(fragment in url for fragment in configured_fragments),
+                    f"{url!r} isn't covered by any RATE_LIMITED_ENDPOINTS entry: {configured_fragments!r}"
+                )

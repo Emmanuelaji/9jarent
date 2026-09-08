@@ -166,3 +166,70 @@ class NotificationTests(TestCase):
         notifications = list(response.context['notifications'])
         self.assertEqual(len(notifications), 1)
         self.assertEqual(notifications[0].title, 'Renter Notif')
+
+    def test_redirect_follows_safe_relative_link(self):
+        """A normal same-site notification link redirects as expected."""
+        notif = Notification.objects.create(
+            user=self.renter,
+            notification_type=Notification.Type.SYSTEM,
+            title='Safe link',
+            message='...',
+            link='/properties/',
+        )
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.get(reverse('notifications:redirect', kwargs={'pk': notif.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/properties/')
+        notif.refresh_from_db()
+        self.assertTrue(notif.is_read)
+
+    def test_redirect_blocks_offsite_link(self):
+        """An off-site/protocol-relative link must NOT be followed - this is
+        the open-redirect fix for notification_redirect. Even though nothing
+        in the current app lets a user set notification.link themselves,
+        this is defense-in-depth for whatever writes Notification rows in
+        the future."""
+        notif = Notification.objects.create(
+            user=self.renter,
+            notification_type=Notification.Type.SYSTEM,
+            title='Malicious link',
+            message='...',
+            link='//evil.example.com/phishing',
+        )
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.get(reverse('notifications:redirect', kwargs={'pk': notif.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('evil.example.com', response.url)
+        self.assertEqual(response.url, reverse('notifications:list'))
+
+    def test_mark_all_read_plain_form_submit_redirects(self):
+        """A plain <form method="post"> submit (no X-Requested-With header,
+        as in templates/notifications/list.html) must redirect back to an
+        HTML page. Previously this view always returned JsonResponse, which
+        meant clicking the button navigated the browser to a raw JSON blob
+        instead of back to the notifications list."""
+        Notification.objects.create(
+            user=self.renter, notification_type=Notification.Type.SYSTEM,
+            title='A', message='...'
+        )
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.post(reverse('notifications:mark_all_read'))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('notifications:list'))
+        self.assertEqual(Notification.objects.filter(user=self.renter, is_read=False).count(), 0)
+
+    def test_mark_all_read_ajax_returns_json(self):
+        """A fetch()-based caller (X-Requested-With header set) still gets
+        the JSON response, for any future JS that wants to mark-all-read
+        without a full page reload."""
+        Notification.objects.create(
+            user=self.renter, notification_type=Notification.Type.SYSTEM,
+            title='A', message='...'
+        )
+        self.client.login(username='renter', password='testpass123')
+        response = self.client.post(
+            reverse('notifications:mark_all_read'),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['unread_count'], 0)

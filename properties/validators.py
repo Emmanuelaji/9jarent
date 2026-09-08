@@ -1,7 +1,11 @@
+import logging
 import os
 import tempfile
 import ffmpeg
 from django.core.exceptions import ValidationError
+
+logger = logging.getLogger('properties')
+
 
 def validate_video_file(video_file):
     if video_file.size > 3 * 1024 * 1024:
@@ -36,6 +40,20 @@ def validate_video_file(video_file):
             raise ValidationError("Video must use H.264 codec.")
     except ValidationError:
         raise
+    except FileNotFoundError:
+        # ffmpeg.probe() shells out to the `ffprobe` binary. Many shared/
+        # cPanel hosts don't have it installed and won't let you install
+        # system packages, which would otherwise turn this into "you can
+        # never upload a video" for every user, with a confusing generic
+        # error message. Degrade gracefully: keep the extension/size checks
+        # above (still enforced), skip the codec/resolution check, and log
+        # it loudly so whoever deploys this notices and can install ffmpeg
+        # if they actually want that check enforced.
+        logger.warning(
+            "ffprobe binary not found - skipping video codec/resolution "
+            "validation for '%s'. Install ffmpeg on the server to re-enable "
+            "this check (see README.md).", video_file.name
+        )
     except Exception as e:
         raise ValidationError(f"Invalid video file: {str(e)}")
     finally:

@@ -14,7 +14,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initPasswordStrength();
     initDateRangePicker();
     initLgaCascade();
+    initPropertyGallery();
 });
+
+// ============================================
+// CSRF helper (for fetch() calls - Django needs
+// the X-CSRFToken header on same-origin POSTs)
+// ============================================
+function getCsrfToken() {
+    const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
 
 // ============================================
 // Mobile Sidebar
@@ -78,62 +88,26 @@ function initConversationSelection() {
 // ============================================
 // Chat Composer
 // ============================================
+// The actual message send is a REAL Django form POST (see
+// templates/messaging/inbox.html) - the server persists the message and
+// re-renders the thread. This JS only enhances the UX: it lets the
+// textarea submit on Enter (Shift+Enter still inserts a newline), since
+// browsers don't submit a form on Enter inside a <textarea> by default.
+// There is no client-side faking of messages here.
 function initChatComposer() {
-    const input = document.querySelector('.chat-composer-input input');
-    const sendBtn = document.querySelector('.chat-composer-send');
-    const messagesContainer = document.querySelector('.chat-messages');
-    
-    if (input && sendBtn && messagesContainer) {
-        sendBtn.addEventListener('click', function() {
-            sendMessage();
-        });
-        
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+    const form = document.querySelector('.chat-composer');
+    const textarea = document.querySelector('.chat-composer-input textarea');
+
+    if (form && textarea) {
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (textarea.value.trim()) {
+                    form.requestSubmit();
+                }
             }
         });
-        
-        function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            const messageHTML = `
-                <div class="message-bubble message-outgoing">
-                    <div>${escapeHtml(text)}</div>
-                    <div class="message-time">
-                        ${timeStr}
-                        <i class="bi bi-check2-all message-read"></i>
-                    </div>
-                </div>
-            `;
-            
-            messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
-            input.value = '';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            // Simulate reply after 2 seconds
-            setTimeout(function() {
-                const replyHTML = `
-                    <div class="message-bubble message-incoming">
-                        <div>Thank you for your message. I'll get back to you shortly.</div>
-                        <div class="message-time">${timeStr}</div>
-                    </div>
-                `;
-                messagesContainer.insertAdjacentHTML('beforeend', replyHTML);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 2000);
-        }
     }
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // ============================================
@@ -164,24 +138,64 @@ function initSearchFilter() {
 // ============================================
 // Favourite Toggle
 // ============================================
+// Real POST to /favourites/toggle/<id>/ via fetch() with the CSRF header
+// Django requires - this actually persists the change (see
+// favourites/views.py::toggle_favourite), it doesn't just flip a CSS class.
+// Falls back to a normal full-page form submit if fetch fails for any reason.
 function initFavouriteToggle() {
-    const favButtons = document.querySelectorAll('.fav-toggle, .fav-card-heart');
-    
-    favButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    document.querySelectorAll('form.js-fav-toggle').forEach(form => {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            
-            const icon = this.querySelector('i') || this;
-            if (icon.classList.contains('bi-heart-fill')) {
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-            } else {
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-            }
+            const button = form.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(form),
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Request failed');
+                    return response.json();
+                })
+                .then(data => {
+                    applyFavouriteResult(form, data.favourited);
+                })
+                .catch(() => {
+                    // Network/JS error - degrade to a normal form submit so the
+                    // action still works (full page reload, server-rendered state).
+                    form.submit();
+                })
+                .finally(() => {
+                    if (button) button.disabled = false;
+                });
         });
     });
+}
+
+function applyFavouriteResult(form, isFavourited) {
+    const icon = form.querySelector('i.bi-heart, i.bi-heart-fill');
+    if (icon) {
+        icon.classList.toggle('bi-heart-fill', isFavourited);
+        icon.classList.toggle('bi-heart', !isFavourited);
+    }
+
+    if (form.dataset.textMode === 'true') {
+        const label = form.querySelector('.js-fav-label');
+        if (label) label.textContent = isFavourited ? 'Saved to Favourites' : 'Save to Favourites';
+        if (icon) icon.style.color = isFavourited ? 'var(--brand-orange)' : '';
+    }
+
+    if (!isFavourited && form.dataset.removeCardOnUnfav === 'true') {
+        const card = form.closest('.fav-card');
+        const column = card ? (card.closest('[class*="col-"]') || card) : form;
+        column.style.transition = 'opacity 0.2s ease';
+        column.style.opacity = '0';
+        setTimeout(() => column.remove(), 200);
+    }
 }
 
 // ============================================
@@ -363,42 +377,6 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.remove();
     }, 3000);
-}
-
-// ============================================
-// Pagination
-// ============================================
-function initPagination() {
-    const paginationItems = document.querySelectorAll('.pagination-custom .page-link');
-    
-    paginationItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const parent = this.closest('.page-item');
-            if (parent.classList.contains('disabled') || parent.classList.contains('active')) return;
-            
-            document.querySelectorAll('.pagination-custom .page-item').forEach(p => p.classList.remove('active'));
-            parent.classList.add('active');
-        });
-    });
-}
-
-// ============================================
-// Account Type Selection
-// ============================================
-function selectAccountType(type) {
-    const cards = document.querySelectorAll('.account-type-card');
-    cards.forEach(card => {
-        card.style.borderColor = '';
-        card.style.boxShadow = '';
-    });
-    
-    const selectedCard = document.querySelector(`.account-type-card[data-type="${type}"]`);
-    if (selectedCard) {
-        selectedCard.style.borderColor = 'var(--brand-green)';
-        selectedCard.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
-    }
 }
 
 // ============================================

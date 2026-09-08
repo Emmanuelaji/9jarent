@@ -1,5 +1,7 @@
 # accounts/views.py
 
+from datetime import datetime, timedelta
+
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -81,6 +83,11 @@ class AgentSignUpStep1View(CreateView):
         response = super().form_valid(form)
         from .emails import create_and_send_otp
         create_and_send_otp(self.object)
+        # Rotate the session key before storing anything in it. If an
+        # attacker fixated this anonymous session before the victim started
+        # signup (session fixation), this makes sure the victim's signup
+        # progress lives under a session ID the attacker never saw.
+        self.request.session.cycle_key()
         self.request.session['agent_signup_user_id'] = self.object.pk
         return response
 
@@ -127,12 +134,23 @@ class AgentSignUpVerifyView(FormView):
         otp.save(update_fields=['is_used'])
         self.pending_user.email_verified = True
         self.pending_user.save(update_fields=['email_verified'])
+        # Stamp when verification happened - AgentSignUpSetupView uses this
+        # to expire the "verified, awaiting password" window (see comment
+        # there for why: an unattended browser between these two steps is a
+        # narrow account-takeover risk on a shared/public computer).
+        self.request.session['agent_signup_verified_at'] = timezone.now().isoformat()
         return redirect('accounts:agent_signup_setup')
 
     def post(self, request, *args, **kwargs):
         if 'resend' in request.POST:
+            from django.core.cache import cache
             from .emails import create_and_send_otp
+            cooldown_key = f'otp_resend_cooldown:{self.pending_user.pk}'
+            if cache.get(cooldown_key):
+                messages.warning(request, "Please wait a minute before requesting another code.")
+                return redirect('accounts:agent_signup_verify')
             create_and_send_otp(self.pending_user)
+            cache.set(cooldown_key, True, 60)  # 1 resend per minute per user
             messages.success(request, f"A new code has been sent to {self.pending_user.email}.")
             return redirect('accounts:agent_signup_verify')
         return super().post(request, *args, **kwargs)
@@ -143,16 +161,38 @@ class AgentSignUpSetupView(FormView):
     form_class = AgentSignUpStep3Form
     template_name = 'accounts/signup_setup.html'
 
+    # How long after OTP verification the account can sit "verified, no
+    # password yet" before we require the user to prove it's still them by
+    # re-verifying. Without this, on a shared/public computer, anyone who
+    # uses the browser after a legitimate user verifies but before they set
+    # a password could set the password themselves and take the account.
+    # 15 minutes is generous for a normal single sitting but small enough to
+    # make that window impractical to exploit opportunistically.
+    VERIFIED_WINDOW_MINUTES = 15
+
     def _get_pending_user(self):
         user_id = self.request.session.get('agent_signup_user_id')
         if not user_id:
             return None
+
+        verified_at_raw = self.request.session.get('agent_signup_verified_at')
+        if not verified_at_raw:
+            return None
+        try:
+            verified_at = datetime.fromisoformat(verified_at_raw)
+        except (TypeError, ValueError):
+            return None
+        if timezone.now() - verified_at > timedelta(minutes=self.VERIFIED_WINDOW_MINUTES):
+            return None
+
         return CustomUser.objects.filter(pk=user_id, role='MINOR_ADMIN', email_verified=True).first()
 
     def dispatch(self, request, *args, **kwargs):
         self.pending_user = self._get_pending_user()
         if not self.pending_user:
-            messages.info(request, "Let's start your agent registration.")
+            request.session.pop('agent_signup_user_id', None)
+            request.session.pop('agent_signup_verified_at', None)
+            messages.info(request, "Your session has expired for security. Please start your agent registration again.")
             return redirect('accounts:agent_signup')
         return super().dispatch(request, *args, **kwargs)
 
@@ -167,6 +207,7 @@ class AgentSignUpSetupView(FormView):
         send_welcome_email(user)
 
         self.request.session.pop('agent_signup_user_id', None)
+        self.request.session.pop('agent_signup_verified_at', None)
         messages.success(
             self.request,
             "Your agent application has been submitted and is awaiting administrator approval. "

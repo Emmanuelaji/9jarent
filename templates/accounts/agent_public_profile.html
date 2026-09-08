@@ -68,7 +68,7 @@
 <div class="col-md-6">
 <a href="{% url 'properties:detail' prop.slug %}" style="text-decoration:none;color:inherit;">
 <div class="property-card">
-{% if prop.images.first %}<img src="{{ prop.images.first.image.url }}" alt="{{ prop.title }}" class="property-card-img">
+{% if prop.images.first %}<img src="{{ prop.images.first.display_url }}" alt="{{ prop.title }}" class="property-card-img">
 {% else %}<div class="property-card-img d-flex align-items-center justify-content-center" style="background:var(--border-light);"></div>{% endif %}
 <div class="property-card-body">
 <div class="property-card-title">{{ prop.title }}</div>

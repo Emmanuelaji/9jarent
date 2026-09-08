@@ -80,7 +80,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function () {
     var box = document.querySelector('.chat-messages');
     if (box) { box.scrollTop = box.scrollHeight; }

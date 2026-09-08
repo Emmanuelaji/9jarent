@@ -36,10 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    #'allauth',    
-    #'allauth.account',    
-    #'allauth.socialaccount',
-    #'django.contrib.sites',
     'crispy_forms',
     'crispy_bootstrap5',
     'django_filters',
@@ -122,6 +118,7 @@ TEMPLATES = [
                 'messaging.context_processors.unread_messages',
                 'notifications.context_processors.unread_notifications',
                 'dashboard.context_processors.admin_sidebar_counts',
+                'nigerrents.context_processors.csp',
 ],
         },
     },
@@ -129,9 +126,66 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'nigerrents.wsgi.application'
 
-DATABASES = {
-    'default': env.db(default='sqlite:///db.sqlite3')
-}
+# --------------------------------------------------------------------------
+# Database: SQLite for local development (zero setup), PostgreSQL required
+# in production. cPanel's "PostgreSQL Databases" panel provisions a normal
+# Postgres database/user just like it does for MySQL - set DATABASE_URL to
+# postgres://USER:PASSWORD@localhost:5432/DBNAME in the app's environment
+# variables (or .env) and migrate as usual.
+#
+# We deliberately do NOT fall back to SQLite when DEBUG=False: SQLite's
+# single-writer file lock causes real "database is locked" 500s under any
+# concurrent traffic, so silently defaulting to it in production is worse
+# than failing loudly at startup with a clear message.
+# --------------------------------------------------------------------------
+if not DEBUG and not TESTING:
+    if not env('DATABASE_URL', default=None):
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            "DATABASE_URL is required when DEBUG=False. Set it to a PostgreSQL "
+            "URL, e.g. postgres://user:password@localhost:5432/9jarent - see "
+            "README.md > Database & backups. Refusing to silently fall back "
+            "to SQLite in production."
+        )
+    DATABASES = {'default': env.db()}
+    engine = DATABASES['default'].get('ENGINE', '')
+    if 'sqlite' in engine:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            "DATABASE_URL points at SQLite, but SQLite is not supported in "
+            "production (DEBUG=False). Use a postgres:// URL instead."
+        )
+    # Keep the DB connection open across requests instead of reconnecting
+    # every time (cPanel/Passenger processes are long-lived, so this is a
+    # meaningful win with no extra moving parts).
+    DATABASES['default']['CONN_MAX_AGE'] = env.int('CONN_MAX_AGE', default=600)
+else:
+    DATABASES = {
+        'default': env.db(default='sqlite:///db.sqlite3')
+    }
+
+# --------------------------------------------------------------------------
+# Cache: Django's database-backed cache. No Redis/Celery in this stack - the
+# db cache backend needs no extra service, just one table (created by
+# `python manage.py createcachetable`, see README.md). Used for short-TTL
+# caching of expensive aggregate queries (e.g. the admin dashboard metrics)
+# and can also back rate limiting if you ever move off single-process dev
+# semantics; the default LocMemCache is used for local dev/tests since it
+# needs no migration.
+# --------------------------------------------------------------------------
+if DEBUG or TESTING:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'django_cache_table',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

@@ -14,9 +14,9 @@
 <div class="col-md-6 col-lg-4">
 <div class="fav-card">
 <div class="fav-card-img-wrap">
-{% if fav.property.images.first %}<img src="{{ fav.property.images.first.image.url }}" alt="{{ fav.property.title }}" class="fav-card-img">
+{% if fav.property.images.first %}<img src="{{ fav.property.images.first.display_url }}" alt="{{ fav.property.title }}" class="fav-card-img">
 {% else %}<div class="fav-card-img d-flex align-items-center justify-content-center" style="background:var(--border-light);"></div>{% endif %}
-<form method="post" action="{% url 'favourites:toggle' fav.property.pk %}">
+<form method="post" action="{% url 'favourites:toggle' fav.property.pk %}" class="js-fav-toggle" data-remove-card-on-unfav="true">
 {% csrf_token %}
 <button type="submit" class="fav-card-heart"><i class="bi bi-heart-fill"></i></button>
 </form>
