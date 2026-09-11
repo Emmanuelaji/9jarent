@@ -24,4 +24,7 @@ def admin_sidebar_counts(request):
         'pending_reports_count': Report.objects.filter(
             status=Report.Status.PENDING
         ).count(),
+        'pending_deletions_count': CustomUser.objects.filter(
+            deletion_requested_at__isnull=False, is_archived=False
+        ).count(),
     }

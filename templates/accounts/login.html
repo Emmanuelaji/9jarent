@@ -6,8 +6,8 @@
 <p class="auth-subtitle">Log in to your account to continue</p>
 
 <div class="auth-tabs">
-<button type="button" class="auth-tab active" id="emailTab" onclick="switchLoginTab('email')">Email</button>
-<button type="button" class="auth-tab" id="phoneTab" onclick="switchLoginTab('phone')">Phone</button>
+<button type="button" class="auth-tab active" id="emailTab">Email</button>
+<button type="button" class="auth-tab" id="phoneTab">Phone</button>
 </div>
 
 <form method="post" action="{% url 'accounts:login' %}">
@@ -24,7 +24,7 @@
 <label class="form-label-custom">Password</label>
 <div class="position-relative">
 <input type="password" name="password" id="loginPassword" class="form-control-custom w-100" placeholder="Enter your password" required>
-<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" onclick="togglePasswordVisibility('loginPassword', this)"><i class="bi bi-eye-slash"></i></button>
+<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" data-pw-toggle="loginPassword" aria-label="Toggle password visibility"><i class="bi bi-eye-slash"></i></button>
 </div>
 </div>
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -46,35 +46,4 @@
 <div class="auth-footer">
 Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up</a>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script nonce="{{ csp_nonce }}">
-function switchLoginTab(tab) {
-    const emailTab = document.getElementById('emailTab');
-    const phoneTab = document.getElementById('phoneTab');
-    const emailField = document.getElementById('emailField');
-    const phoneField = document.getElementById('phoneField');
-    if (tab === 'email') {
-        emailTab.classList.add('active'); phoneTab.classList.remove('active');
-        emailField.style.display = 'block'; phoneField.style.display = 'none';
-        emailField.querySelector('input').required = true;
-        phoneField.querySelector('input').required = false;
-    } else {
-        phoneTab.classList.add('active'); emailTab.classList.remove('active');
-        emailField.style.display = 'none'; phoneField.style.display = 'block';
-        emailField.querySelector('input').required = false;
-        phoneField.querySelector('input').required = true;
-    }
-}
-function togglePasswordVisibility(fieldId, btn) {
-    const field = document.getElementById(fieldId);
-    const icon = btn.querySelector('i');
-    if (field.type === 'password') {
-        field.type = 'text'; icon.classList.remove('bi-eye-slash'); icon.classList.add('bi-eye');
-    } else {
-        field.type = 'password'; icon.classList.remove('bi-eye'); icon.classList.add('bi-eye-slash');
-    }
-}
-</script>
 {% endblock %}

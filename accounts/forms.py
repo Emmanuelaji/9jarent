@@ -8,6 +8,9 @@ from django.core.exceptions import ValidationError
 from .models import CustomUser
 from properties.models import State, LGA
 from nigerrents.validators import validate_whatsapp_number
+from urllib.parse import urlparse
+from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
 
 
 def generate_unique_username(email, first_name=''):
@@ -289,3 +292,42 @@ class ProfileCompletionForm(forms.ModelForm):
             if ext not in ['.jpg', '.jpeg', '.png']:
                 raise ValidationError("Only JPEG and PNG images are allowed.")
         return photo
+    
+class DomainAwarePasswordResetForm(PasswordResetForm):
+    """
+    PasswordResetForm that builds reset links from settings.SITE_URL rather
+    than get_current_site(request). On cPanel/Passenger the app commonly
+    sees Host: localhost (or the internal proxy address), which makes every
+    reset link in the email point at a URL the user can't open. SITE_URL is
+    already required in production (see settings.py), so use it here too.
+    """
+
+    def save(
+        self,
+        domain_override=None,
+        subject_template_name="registration/password_reset_subject.txt",
+        email_template_name="registration/password_reset_email.html",
+        use_https=False,
+        token_generator=None,
+        from_email=None,
+        request=None,
+        html_email_template_name=None,
+        extra_email_context=None,
+    ):
+        if not domain_override and getattr(settings, "SITE_URL", None):
+            parsed = urlparse(settings.SITE_URL)
+            if parsed.netloc:
+                domain_override = parsed.netloc
+                use_https = parsed.scheme == "https"
+
+        return super().save(
+            domain_override=domain_override,
+            subject_template_name=subject_template_name,
+            email_template_name=email_template_name,
+            use_https=use_https,
+            token_generator=token_generator,
+            from_email=from_email,
+            request=request,
+            html_email_template_name=html_email_template_name,
+            extra_email_context=extra_email_context,
+        )

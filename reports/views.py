@@ -11,7 +11,7 @@ from .forms import ReportForm
 @login_required
 def report_property(request, property_id):
     """Submit a report for a specific property."""
-    property_obj = get_object_or_404(Property, pk=property_id)
+    property_obj = get_object_or_404(Property, pk=property_id, status='PUBLISHED')
 
     # Prevent reporting own property
     if property_obj.created_by == request.user:
@@ -51,7 +51,7 @@ def report_property(request, property_id):
 @login_required
 def report_agent(request, agent_id):
     """Submit a report for a specific agent."""
-    agent = get_object_or_404(CustomUser, pk=agent_id, role='MINOR_ADMIN')
+    agent = get_object_or_404(CustomUser, pk=agent_id, role='MINOR_ADMIN', agent_status='APPROVED')
 
     # Prevent self-reporting
     if agent == request.user:

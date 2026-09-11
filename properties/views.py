@@ -230,15 +230,9 @@ class PropertyUpdateView(LoginRequiredMixin, UpdateView):
         if not request.user.is_authenticated:
             return super().dispatch(request, *args, **kwargs)
         obj = self.get_object()
-        # Server-side ownership check
         if obj.created_by != request.user and not request.user.is_admin:
             messages.error(request, "You do not have permission to edit this property.")
-            raise PermissionDenied("You can only edit your own properties.")
-        # Only allow editing if not RENTED or ARCHIVED (unless admin)
-        if obj.status in ['RENTED', 'ARCHIVED'] and not request.user.is_admin:
-            messages.error(request, "Rented or archived properties cannot be edited.")
             return redirect('properties:mine')
-        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

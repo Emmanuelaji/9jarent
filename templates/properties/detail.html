@@ -6,13 +6,15 @@
 {
   "@context": "https://schema.org/",
   "@type": "RealEstateListing",
-  "name": "{{ property.title }}",
-  "description": "{{ property.description|striptags|truncatewords:30 }}",
+  "name": "{{ property.title|escapejs }}",
+  "description": "{{ property.description|striptags|truncatewords:30|escapejs }}",
   "price": "{{ property.price }}",
   "priceCurrency": "NGN",
-  "address": {"@type": "PostalAddress", "addressLocality": "{{ property.area }}", "addressRegion": "{{ property.state.name }}", "addressCountry": "NG"},
-  "url": "{{ request.build_absolute_uri }}",
-  "image": "{% if property.primary_image %}{{ request.scheme }}://{{ request.get_host }}{{ property.primary_image.image.url }}{% endif %}"
+  "address": {"@type": "PostalAddress", "addressLocality": "{{ property.area|escapejs }}", "addressRegion": "{{ property.state.name|escapejs }}", "addressCountry": "NG"},
+  "url": "{{ SITE_URL }}{{ request.path }}"
+  {% if property.primary_image %},
+  "image": "{{ SITE_URL }}{{ property.primary_image.display_url }}"
+  {% endif %}
 }
 </script>
 <div class="container py-4">
@@ -26,14 +28,14 @@
     <div class="row g-4">
         <div class="col-lg-8">
             {% if property.images.first %}
-            <img src="{{ property.images.first.image.url }}" class="property-detail-img property-main-image mb-3" alt="{{ property.title }}" loading="lazy">
+            <img src="{{ property.images.first.display_url }}" class="property-detail-img property-main-image mb-3" alt="{{ property.title }}" loading="lazy">
             {% else %}
             <div class="property-detail-img mb-3 d-flex align-items-center justify-content-center" style="background: var(--border-light);"><h4 class="text-muted">No media available</h4></div>
             {% endif %}
             {% if property.images.count > 1 %}
             <div class="thumbnail-gallery mb-4">
                 {% for img in property.images.all %}
-                <img src="{{ img.image.url }}" class="property-thumbnail {% if forloop.first %}active{% endif %}" alt="{{ property.title }} - Image {{ forloop.counter }}">
+                <img src="{{ img.display_url }}" class="property-thumbnail {% if forloop.first %}active{% endif %}" alt="{{ property.title }} - Image {{ forloop.counter }}">
                 {% endfor %}
             </div>
             {% endif %}
@@ -56,7 +58,7 @@
                 </div>
                 <hr>
                 <h5 class="fw-semibold mb-3">Description</h5>
-                <p class="text-muted" style="line-height: 1.7;">{{ property.description|linebreaks }}</p>
+                <div class="text-muted" style="line-height: 1.7;">{{ property.description|linebreaks }}</div>
 
                 {% if property.has_parking or property.has_water or property.has_electricity or property.has_borehole or property.has_generator or property.has_security or property.has_fenced_compound or property.is_furnished or property.has_kitchen or property.has_balcony or property.has_air_conditioning or property.has_internet or property.has_cctv or property.has_swimming_pool or property.has_gym %}
                 <hr>
@@ -126,7 +128,7 @@
             <div class="property-sidebar" id="sidebarCard">
                 <div class="d-flex align-items-start justify-content-between mb-2">
                     <h3 class="fs-4 fw-bold mb-0">{{ property.title }}</h3>
-                    <button type="button" class="btn btn-link text-muted p-0" onclick="document.getElementById('sidebarCard').style.display='none';"><i class="bi bi-x-lg"></i></button>
+                    <button type="button" class="btn btn-link text-muted p-0" data-dismiss-target="sidebarCard" aria-label="Close"><i class="bi bi-x-lg"></i></button>
                 </div>
                 <div class="d-flex align-items-center gap-1 text-muted fs-8 mb-3">
                     <i class="bi bi-geo-alt"></i> {{ property.area }}, {{ property.state.name }}
@@ -141,7 +143,7 @@
 
                 {% if property.agency_fee or property.legal_fee or property.caution_fee or property.agreement_fee %}
                 <h6 class="fw-semibold mb-3">Estimated Move-in Cost <a href="#feeBreakdownFull" class="fs-9 text-brand-green fw-normal float-end">See Breakdown</a></h6>
-                <div class="cost-row"><span class="cost-label">Annual Rent</span><span class="cost-value">&#8358;{{ property.price|floatformat:0 }}</span></div>
+                <div class="cost-row"><span class="cost-label">{{ property.get_rental_period_display }} Rent</span><span class="cost-value">&#8358;{{ property.price|floatformat:0 }}</span></div>
                 {% if property.agency_fee %}<div class="cost-row"><span class="cost-label">Agency Fee</span><span class="cost-value">&#8358;{{ property.agency_fee|floatformat:0 }}</span></div>{% endif %}
                 {% if property.legal_fee %}<div class="cost-row"><span class="cost-label">Legal Fee</span><span class="cost-value">&#8358;{{ property.legal_fee|floatformat:0 }}</span></div>{% endif %}
                 {% if property.caution_fee %}<div class="cost-row"><span class="cost-label">Caution Fee</span><span class="cost-value">&#8358;{{ property.caution_fee|floatformat:0 }}</span></div>{% endif %}
@@ -156,7 +158,9 @@
                         <button type="submit" class="btn btn-brand-green w-100"><i class="bi bi-envelope me-2"></i>Message Agent</button>
                     </form>
                     {% endif %}
+                    {% if whatsapp_link %}
                     <a href="{{ whatsapp_link }}" target="_blank" class="btn btn-brand-orange"><i class="bi bi-whatsapp me-2"></i>Chat on WhatsApp</a>
+                    {% endif %}
                     {% if user.is_authenticated and user.id != property.created_by_id and not user.is_admin %}
                     <a href="{% url 'inspections:request' property.id %}" class="btn btn-outline-secondary"><i class="bi bi-calendar-check me-2"></i>Request Inspection</a>
                     {% endif %}
@@ -189,7 +193,7 @@
                 {% for sim in similar_properties %}
                 <div class="d-flex gap-3 mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
                     {% if sim.primary_image %}
-                    <img src="{{ sim.primary_image.image.url }}" alt="{{ sim.title }}" class="rounded" width="80" height="60" style="object-fit: cover;">
+                    <img src="{{ sim.primary_image.display_url }}" alt="{{ sim.title }}" class="rounded" width="80" height="60" style="object-fit: cover;">
                     {% else %}
                     <div class="rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 60px; background: var(--border-light);">
                         <i class="bi bi-image text-muted"></i>

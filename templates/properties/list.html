@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load query_extras %}
 {% block title %}{% if request.resolver_match.url_name == 'home' %}9jaRent.com.ng - Find Verified Rentals Across Nigeria{% else %}Browse Properties | 9jaRent{% endif %}{% endblock %}
 
 {% block content %}
@@ -130,13 +131,13 @@
 <nav class="mt-4">
 <ul class="pagination justify-content-center">
 {% if page_obj.has_previous %}
-<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
-<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+<li class="page-item"><a class="page-link" href="{% querystring_with_page 1 %}">&laquo; First</a></li>
+<li class="page-item"><a class="page-link" href="{% querystring_with_page page_obj.previous_page_number %}">Previous</a></li>
 {% endif %}
 <li class="page-item active"><span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
 {% if page_obj.has_next %}
-<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
-<li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+<li class="page-item"><a class="page-link" href="{% querystring_with_page page_obj.next_page_number %}">Next</a></li>
+<li class="page-item"><a class="page-link" href="{% querystring_with_page page_obj.paginator.num_pages %}">Last &raquo;</a></li>
 {% endif %}
 </ul>
 </nav>

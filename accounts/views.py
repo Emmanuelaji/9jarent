@@ -13,7 +13,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from .forms import (
     AgentSignUpStep1Form, OTPVerifyForm, AgentSignUpStep3Form,
-    RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm,
+    RenterSignUpForm, ProfileCompletionForm, EmailOrPhoneAuthenticationForm, DomainAwarePasswordResetForm,
 )
 from .models import CustomUser
 
@@ -402,25 +402,41 @@ class AgentPublicProfileView(DetailView):
 
 
 class SettingsView(LoginRequiredMixin, TemplateView):
-    """Account settings: notification prefs, password change, delete account
-    (delete account is intentionally NOT offered to admins - self-service
-    deletion of the only superuser account is a real way to lock everyone
-    out of the admin dashboard, so that stays a manual/Django-Admin action)."""
+    """Account settings: notification prefs, password change, delete account.
+
+    Delete account is intentionally NOT offered to any admin (is_staff or
+    role='SUPER_ADMIN' - see CustomUser.is_admin) - self-service deletion of
+    an admin account is a real way to lock everyone out of the dashboard,
+    so removing an admin account stays a Django-Admin-only action performed
+    by a superuser. This is deliberately checked via `is_admin`, not just
+    `is_superuser` - a staff user who isn't (yet) a superuser is still an
+    admin for this purpose.
+
+    For everyone else, deletion is a REQUEST, not an immediate delete: it
+    sets deletion_requested_at and waits for an admin to approve it (see
+    dashboard/views.py::approve_account_deletion). See the comment on
+    CustomUser.deletion_requested_at for why this isn't a hard delete.
+    """
 
     def get_template_names(self):
         if self.request.user.is_superuser:
-            return ['dashboard/settings.html']
+            return ['accounts/settings.html']
         return ['accounts/settings.html']
 
     def post(self, request, *args, **kwargs):
-        from django.contrib.auth import update_session_auth_hash, logout
+        from django.contrib.auth import update_session_auth_hash
         from django.contrib.auth.forms import PasswordChangeForm
 
         action = request.POST.get('action')
 
         if action == 'notifications':
-            request.user.email_notifications_enabled = 'email_notifications' in request.POST
-            request.user.save(update_fields=['email_notifications_enabled'])
+            user = request.user
+            user.email_notifications_enabled = 'email_notifications' in request.POST
+            user.push_notifications_enabled = 'push_notifications' in request.POST
+            user.save(update_fields=[
+                'email_notifications_enabled',
+                'push_notifications_enabled',
+            ])
             messages.success(request, "Notification preferences updated.")
             return redirect('accounts:settings')
 
@@ -434,20 +450,45 @@ class SettingsView(LoginRequiredMixin, TemplateView):
             return self.render_to_response(self.get_context_data(password_form=form))
 
         elif action == 'delete_account':
-            if request.user.is_superuser:
-                messages.error(request, "Admin accounts can't be self-deleted here. This has to be done from Django Admin.")
+            if request.user.is_admin:
+                messages.error(request, "Admin accounts can't be self-deleted here. This has to be done from Django Admin by a superuser.")
                 return redirect('accounts:settings')
-            if request.POST.get('confirm_delete') == 'DELETE':
-                user = request.user
-                from properties.models import Property
-                Property.objects.filter(created_by=user).exclude(status='ARCHIVED').update(
-                    status='ARCHIVED', updated_at=timezone.now()
-                )
-                logout(request)
-                user.delete()
-                messages.success(request, "Your account has been deleted.")
-                return redirect('properties:home')
-            messages.error(request, 'Type "DELETE" exactly to confirm account deletion.')
+            if request.user.has_pending_deletion_request:
+                messages.info(request, "You already have a pending deletion request awaiting admin review.")
+                return redirect('accounts:settings')
+            if request.POST.get('confirm_delete') != 'DELETE':
+                messages.error(request, 'Type "DELETE" exactly to confirm your deletion request.')
+                return redirect('accounts:settings')
+
+            user = request.user
+            user.deletion_requested_at = timezone.now()
+            user.deletion_reason = request.POST.get('deletion_reason', '').strip()
+            user.save(update_fields=['deletion_requested_at', 'deletion_reason'])
+
+            from notifications.services import notify, notify_admins
+            from notifications.models import Notification
+            notify_admins(
+                Notification.Type.ACCOUNT_DELETION_REQUESTED,
+                'Account Deletion Requested',
+                message=f'{user.full_name_or_username} ({user.get_role_display()}) requested to delete their account.',
+                link='/dashboard/accounts/deletion-requests/',
+            )
+            notify(
+                user,
+                Notification.Type.SYSTEM,
+                'Deletion Request Received',
+                message="We've received your account deletion request. An admin will review it shortly - "
+                        "you can keep using your account until then, and cancel the request any time from Settings.",
+            )
+            messages.success(request, "Your deletion request has been submitted and is pending admin approval.")
+            return redirect('accounts:settings')
+
+        elif action == 'cancel_deletion_request':
+            if request.user.has_pending_deletion_request:
+                request.user.deletion_requested_at = None
+                request.user.deletion_reason = ''
+                request.user.save(update_fields=['deletion_requested_at', 'deletion_reason'])
+                messages.success(request, "Your deletion request has been cancelled.")
             return redirect('accounts:settings')
 
         return redirect('accounts:settings')

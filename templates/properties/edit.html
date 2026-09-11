@@ -21,7 +21,7 @@
 <div class="d-flex flex-wrap gap-2 mb-3">
 {% for image in object.images.all %}
 <div class="position-relative">
-<img src="{{ image.image.url }}" alt="{{ object.title }}"
+<img src="{{ image.display_url }}" alt="{{ object.title }}"
      style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid {% if image.is_primary %}var(--brand-green){% else %}var(--border-color){% endif %};">
 {% if image.is_primary %}
 <span class="badge position-absolute top-0 start-0" style="background: var(--brand-green);">Primary</span>
@@ -52,7 +52,7 @@
 <div class="d-flex flex-wrap gap-2">
 {% for image in object.images.all %}
 <form method="post" action="{% url 'properties:delete_image' pk=object.pk image_id=image.pk %}"
-      onsubmit="return confirm('Remove this image?');">
+      data-confirm="Remove this image?">
 {% csrf_token %}
 <button type="submit" class="btn btn-sm btn-outline-danger">
 <i class="bi bi-trash me-1"></i> Image {{ forloop.counter }}{% if image.is_primary %} (primary){% endif %}

@@ -1,69 +1,124 @@
 {% extends 'base.html' %}
+{% load query_extras %}
 {% block title %}Verified Agents | 9jaRent{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-<div class="breadcrumb-custom">
-<a href="{% url 'properties:home' %}">Home</a>
-<span class="separator"><i class="bi bi-chevron-right"></i></span>
-<span class="active">Agents</span>
-</div>
 
-<h1 class="fs-2 fw-bold mb-1">Verified Agents</h1>
-<p class="text-muted mb-4">Connect with trusted and verified property agents.</p>
+    <div class="breadcrumb-custom">
+        <a href="{% url 'properties:home' %}">Home</a>
+        <span class="separator"><i class="bi bi-chevron-right"></i></span>
+        <span class="active">Agents</span>
+    </div>
 
-<form method="get" class="filter-bar mb-4">
-<div class="position-relative" style="width:300px;max-width:100%;">
-<i class="bi bi-search position-absolute" style="left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:0.875rem;"></i>
-<input type="text" name="search" value="{{ request.GET.search }}" class="form-control-custom ps-4" placeholder="Search agents by name, agency, location..." style="padding-left:2.5rem;">
-</div>
-<select name="state" class="form-select-custom" onchange="this.form.submit()">
-<option value="">All States</option>
-{% for state in states %}
-<option value="{{ state }}" {% if request.GET.state == state %}selected{% endif %}>{{ state }}</option>
-{% endfor %}
-</select>
-<select name="sort" class="form-select-custom" onchange="this.form.submit()">
-<option value="active" {% if request.GET.sort == 'active' or not request.GET.sort %}selected{% endif %}>Sort by: Most Active</option>
-<option value="listings" {% if request.GET.sort == 'listings' %}selected{% endif %}>Most Listings</option>
-<option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
-</select>
-<button type="submit" class="btn btn-brand-green">Search</button>
-</form>
+    <h1 class="fs-2 fw-bold mb-1">Verified Agents</h1>
+    <p class="text-muted mb-4">Connect with trusted and verified property agents.</p>
 
-{% if agents %}
-<div class="row g-3 mb-4">
-{% for agent in agents %}
-<div class="col-md-6 col-lg-4">
-<div class="agent-card">
-{% if agent.profile_photo %}<img src="{{ agent.profile_photo.url }}" alt="{{ agent.company_name }}" class="agent-card-img">
-{% else %}<div class="agent-card-img d-flex align-items-center justify-content-center" style="background:var(--brand-green);color:#fff;font-weight:600;font-size:1.5rem;">{{ agent.first_name|default:agent.username|first|upper }}</div>{% endif %}
-<div class="agent-card-info">
-<div class="agent-card-name">{{ agent.company_name|default:agent.full_name_or_username }}</div>
-<div class="agent-card-company">{{ agent.city }}{% if agent.city and agent.state %}, {% endif %}{{ agent.state }}</div>
-<div class="agent-card-meta">
-<span class="agent-card-listings">{{ agent.property_count }} Active Listing{{ agent.property_count|pluralize }}</span>
-</div>
-</div>
-<a href="{% url 'accounts:agent_public_profile' agent.username %}" class="btn btn-outline-green btn-sm">View Profile</a>
-</div>
-</div>
-{% endfor %}
-</div>
-{% if is_paginated %}
-<nav class="mt-4">
-<ul class="pagination justify-content-center">
-{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>{% endif %}
-<li class="page-item active"><span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>{% endif %}
-</ul>
-</nav>
-{% endif %}
-{% else %}
-<div class="empty-state">
-<i class="bi bi-person-badge empty-state-icon"></i>
-<div class="empty-state-title">No agents found</div>
-<p class="empty-state-text">Try a different search or filter.</p>
-</div>
-{% endif %}
+    {# ---------- Filters ---------- #}
+    <form method="get" class="filter-bar mb-4">
+        <div class="position-relative" style="width:300px;max-width:100%;">
+            <i class="bi bi-search position-absolute" style="left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:0.875rem;"></i>
+            <input type="text" name="search" value="{{ request.GET.search }}"
+                   class="form-control-custom w-100"
+                   placeholder="Search agents by name, agency, location..."
+                   style="padding-left:2.5rem;">
+        </div>
+
+        <select name="state" class="form-select-custom js-auto-submit">
+            <option value="">All States</option>
+            {% for state in states %}
+            <option value="{{ state }}" {% if request.GET.state == state %}selected{% endif %}>{{ state }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="sort" class="form-select-custom js-auto-submit">
+            <option value="active" {% if request.GET.sort == 'active' or not request.GET.sort %}selected{% endif %}>Sort by: Most Active</option>
+            <option value="listings" {% if request.GET.sort == 'listings' %}selected{% endif %}>Most Listings</option>
+            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+        </select>
+
+        <button type="submit" class="btn btn-brand-green">Search</button>
+
+        {% if request.GET.search or request.GET.state or request.GET.sort %}
+        <a href="{% url 'accounts:agents_directory' %}" class="btn btn-outline-secondary">Clear</a>
+        {% endif %}
+    </form>
+
+    {# ---------- Results ---------- #}
+    {% if agents %}
+        <div class="row g-3 mb-4">
+            {% for agent in agents %}
+            <div class="col-md-6 col-lg-4">
+                <div class="agent-card">
+                    {% if agent.profile_photo %}
+                    <img src="{{ agent.profile_photo.url }}" alt="{{ agent.company_name }}" class="agent-card-img">
+                    {% else %}
+                    <div class="agent-card-img d-flex align-items-center justify-content-center"
+                         style="background:var(--brand-green);color:#fff;font-weight:600;font-size:1.5rem;">
+                        {{ agent.first_name|default:agent.username|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div class="agent-card-info">
+                        <div class="agent-card-name">{{ agent.company_name|default:agent.full_name_or_username }}</div>
+                        <div class="agent-card-company">
+                            {{ agent.city }}{% if agent.city and agent.state %}, {% endif %}{{ agent.state }}
+                        </div>
+                        <div class="agent-card-meta">
+                            <span class="agent-card-listings">
+                                {{ agent.property_count }} Active Listing{{ agent.property_count|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url 'accounts:agent_public_profile' agent.username %}"
+                       class="btn btn-outline-green btn-sm">View Profile</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ---------- Pagination (preserves search/state/sort filters) ---------- #}
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="{% querystring_with_page 1 %}">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{% querystring_with_page page_obj.previous_page_number %}">Previous</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link" style="background-color: var(--brand-green); border-color: var(--brand-green);">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{% querystring_with_page page_obj.next_page_number %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{% querystring_with_page page_obj.paginator.num_pages %}">Last &raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-person-badge empty-state-icon"></i>
+            <div class="empty-state-title">No agents found</div>
+            <p class="empty-state-text">
+                {% if request.GET.search or request.GET.state %}
+                Try a different search or filter, or <a href="{% url 'accounts:agents_directory' %}" class="text-brand-green">clear the filters</a>.
+                {% else %}
+                No agents are currently listed.
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+
 </div>
 {% endblock %}

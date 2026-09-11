@@ -60,7 +60,7 @@
                         </form>
                         {% endif %}
                         {% if not user.is_agent and inspection.is_active %}
-                        <form method="post" action="{% url 'inspections:cancel' inspection.pk %}" onsubmit="return confirm('Cancel this inspection request?');">
+                        <form method="post" action="{% url 'inspections:cancel' inspection.pk %}" data-confirm="Cancel this inspection request?">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-danger">Cancel Request</button>
                         </form>

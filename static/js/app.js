@@ -2,7 +2,7 @@
 // 9jaRent.com.ng - App JavaScript
 // ============================================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initMobileSidebar();
     initConversationSelection();
     initChatComposer();
@@ -12,14 +12,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initTabNavigation();
     initFormValidation();
     initPasswordStrength();
-    initDateRangePicker();
     initLgaCascade();
     initPropertyGallery();
+    initLoginTabs();
+    initPasswordToggles();
+    initAutoSubmit();
+    initConfirmSubmit();
+    initDismissible();
 });
 
 // ============================================
-// CSRF helper (for fetch() calls - Django needs
-// the X-CSRFToken header on same-origin POSTs)
+// CSRF helper (for fetch() calls)
 // ============================================
 function getCsrfToken() {
     const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
@@ -29,29 +32,32 @@ function getCsrfToken() {
 // ============================================
 // Mobile Sidebar
 // ============================================
+
 function initMobileSidebar() {
-    const menuBtn = document.querySelector('.mobile-menu-btn');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener('click', function() {
+    const toggleBtns = document.querySelectorAll('.portal-sidebar-toggle, .mobile-menu-btn');
+
+    if (!sidebar) return;
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
             sidebar.classList.toggle('show');
             if (overlay) overlay.classList.toggle('show');
         });
-        
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('show');
-                overlay.classList.remove('show');
-            });
-        }
+    });
+
+    if (overlay) {
+        overlay.addEventListener('click', function () {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
     }
-    
-    // Close sidebar on window resize to desktop
-    window.addEventListener('resize', function() {
+
+    // Close the sidebar when the viewport grows back to desktop width
+    window.addEventListener('resize', function () {
         if (window.innerWidth >= 1200) {
-            if (sidebar) sidebar.classList.remove('show');
+            sidebar.classList.remove('show');
             if (overlay) overlay.classList.remove('show');
         }
     });
@@ -62,49 +68,35 @@ function initMobileSidebar() {
 // ============================================
 function initConversationSelection() {
     const conversationItems = document.querySelectorAll('.conversation-item');
-    
+
     conversationItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Remove active from all
+        item.addEventListener('click', function () {
             conversationItems.forEach(i => i.classList.remove('active'));
-            // Add active to clicked
             this.classList.add('active');
-            
-            // Remove badge if exists
+
             const badge = this.querySelector('.conversation-item-badge');
             if (badge) badge.remove();
-            
-            // On mobile, scroll to chat
+
             if (window.innerWidth < 768) {
                 const chatWindow = document.querySelector('.chat-window');
-                if (chatWindow) {
-                    chatWindow.scrollIntoView({ behavior: 'smooth' });
-                }
+                if (chatWindow) chatWindow.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 }
 
 // ============================================
-// Chat Composer
+// Chat Composer (Enter submits; Shift+Enter newline)
 // ============================================
-// The actual message send is a REAL Django form POST (see
-// templates/messaging/inbox.html) - the server persists the message and
-// re-renders the thread. This JS only enhances the UX: it lets the
-// textarea submit on Enter (Shift+Enter still inserts a newline), since
-// browsers don't submit a form on Enter inside a <textarea> by default.
-// There is no client-side faking of messages here.
 function initChatComposer() {
     const form = document.querySelector('.chat-composer');
     const textarea = document.querySelector('.chat-composer-input textarea');
 
     if (form && textarea) {
-        textarea.addEventListener('keydown', function(e) {
+        textarea.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                if (textarea.value.trim()) {
-                    form.requestSubmit();
-                }
+                if (textarea.value.trim()) form.requestSubmit();
             }
         });
     }
@@ -115,21 +107,13 @@ function initChatComposer() {
 // ============================================
 function initSearchFilter() {
     const searchInputs = document.querySelectorAll('[data-search]');
-    
     searchInputs.forEach(input => {
         const target = input.getAttribute('data-search');
         const items = document.querySelectorAll(target);
-        
-        input.addEventListener('input', function() {
+        input.addEventListener('input', function () {
             const query = this.value.toLowerCase();
-            
             items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = item.textContent.toLowerCase().includes(query) ? '' : 'none';
             });
         });
     });
@@ -138,13 +122,9 @@ function initSearchFilter() {
 // ============================================
 // Favourite Toggle
 // ============================================
-// Real POST to /favourites/toggle/<id>/ via fetch() with the CSRF header
-// Django requires - this actually persists the change (see
-// favourites/views.py::toggle_favourite), it doesn't just flip a CSS class.
-// Falls back to a normal full-page form submit if fetch fails for any reason.
 function initFavouriteToggle() {
     document.querySelectorAll('form.js-fav-toggle').forEach(form => {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
             const button = form.querySelector('button[type="submit"]');
             if (button) button.disabled = true;
@@ -161,17 +141,9 @@ function initFavouriteToggle() {
                     if (!response.ok) throw new Error('Request failed');
                     return response.json();
                 })
-                .then(data => {
-                    applyFavouriteResult(form, data.favourited);
-                })
-                .catch(() => {
-                    // Network/JS error - degrade to a normal form submit so the
-                    // action still works (full page reload, server-rendered state).
-                    form.submit();
-                })
-                .finally(() => {
-                    if (button) button.disabled = false;
-                });
+                .then(data => applyFavouriteResult(form, data.favourited))
+                .catch(() => form.submit())
+                .finally(() => { if (button) button.disabled = false; });
         });
     });
 }
@@ -204,46 +176,31 @@ function applyFavouriteResult(form, isFavourited) {
 function initNotificationDropdown() {
     const notifyBtn = document.querySelector('.top-bar-notify');
     const dropdown = document.querySelector('.notification-dropdown');
-    
-    if (notifyBtn && dropdown) {
-        notifyBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            dropdown.classList.toggle('show');
-        });
-        
-        document.addEventListener('click', function() {
-            dropdown.classList.remove('show');
-        });
-        
-        dropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
+    if (!notifyBtn || !dropdown) return;
+
+    notifyBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+    });
+    document.addEventListener('click', function () { dropdown.classList.remove('show'); });
+    dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
 }
 
 // ============================================
-// Tab Navigation
+// Tab Navigation (generic [data-tabs] groups)
 // ============================================
 function initTabNavigation() {
-    const tabGroups = document.querySelectorAll('[data-tabs]');
-    
-    tabGroups.forEach(group => {
+    document.querySelectorAll('[data-tabs]').forEach(group => {
         const tabs = group.querySelectorAll('[data-tab]');
         const panels = group.querySelectorAll('[data-panel]');
-        
+
         tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 const target = this.getAttribute('data-tab');
-                
                 tabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                
                 panels.forEach(p => {
-                    if (p.getAttribute('data-panel') === target) {
-                        p.classList.remove('d-none');
-                    } else {
-                        p.classList.add('d-none');
-                    }
+                    p.classList.toggle('d-none', p.getAttribute('data-panel') !== target);
                 });
             });
         });
@@ -255,13 +212,10 @@ function initTabNavigation() {
 // ============================================
 function initFormValidation() {
     const forms = document.querySelectorAll('form[data-validate]');
-    
     forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
             let isValid = true;
-            const requiredFields = form.querySelectorAll('[required]');
-            
-            requiredFields.forEach(field => {
+            form.querySelectorAll('[required]').forEach(field => {
                 if (!field.value.trim()) {
                     isValid = false;
                     field.classList.add('is-invalid');
@@ -269,17 +223,11 @@ function initFormValidation() {
                     field.classList.remove('is-invalid');
                 }
             });
-            
-            if (!isValid) {
-                e.preventDefault();
-            }
+            if (!isValid) e.preventDefault();
         });
-        
         form.querySelectorAll('input, textarea, select').forEach(field => {
-            field.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('is-invalid');
-                }
+            field.addEventListener('input', function () {
+                if (this.value.trim()) this.classList.remove('is-invalid');
             });
         });
     });
@@ -290,97 +238,30 @@ function initFormValidation() {
 // ============================================
 function initPasswordStrength() {
     const passwordInput = document.querySelector('input[data-password-strength]');
-    
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            const value = this.value;
-            const bars = document.querySelectorAll('.password-strength-bar');
-            const text = document.querySelector('.password-strength-text');
-            
-            let strength = 0;
-            if (value.length >= 8) strength++;
-            if (/[A-Z]/.test(value)) strength++;
-            if (/[0-9]/.test(value)) strength++;
-            if (/[^A-Za-z0-9]/.test(value)) strength++;
-            
-            bars.forEach((bar, index) => {
-                if (index < strength) {
-                    bar.classList.add('active');
-                } else {
-                    bar.classList.remove('active');
-                }
-            });
-            
-            if (text) {
-                const labels = ['Weak', 'Fair', 'Good', 'Strong'];
-                text.textContent = strength > 0 ? `Password strength: ${labels[strength - 1]}` : '';
-                text.className = 'password-strength-text' + (strength >= 3 ? ' strong' : '');
-            }
-        });
-    }
-}
+    if (!passwordInput) return;
 
-// ============================================
-// Date Range Picker
-// ============================================
-function initDateRangePicker() {
-    const datePickers = document.querySelectorAll('input[type="date"]');
-    
-    datePickers.forEach(picker => {
-        picker.addEventListener('change', function() {
-            // Custom date validation can go here
-        });
-    });
-}
+    passwordInput.addEventListener('input', function () {
+        const value = this.value;
+        const bars = document.querySelectorAll('.password-strength-bar');
+        const text = document.querySelector('.password-strength-text');
 
-// ============================================
-// Property Thumbnail Gallery
-// ============================================
-function initPropertyGallery() {
-    const mainImage = document.querySelector('.property-main-image');
-    const thumbnails = document.querySelectorAll('.property-thumbnail');
-    
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            if (mainImage) {
-                mainImage.src = this.src;
-            }
-            thumbnails.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-}
+        let strength = 0;
+        if (value.length >= 8) strength++;
+        if (/[A-Z]/.test(value)) strength++;
+        if (/[0-9]/.test(value)) strength++;
+        if (/[^A-Za-z0-9]/.test(value)) strength++;
 
-// ============================================
-// Smooth Scroll
-// ============================================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            e.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth' });
+        bars.forEach((bar, index) => bar.classList.toggle('active', index < strength));
+        if (text) {
+            const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+            text.textContent = strength > 0 ? `Password strength: ${labels[strength - 1]}` : '';
+            text.className = 'password-strength-text' + (strength >= 3 ? ' strong' : '');
         }
     });
-});
-
-// ============================================
-// Toast Notifications
-// ============================================
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'} position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
 }
 
 // ============================================
-// Cascading State -> LGA dropdown (property forms)
+// Cascading State -> LGA dropdown
 // ============================================
 function initLgaCascade() {
     const stateSelect = document.getElementById('id_state');
@@ -406,9 +287,7 @@ function initLgaCascade() {
                     const opt = document.createElement('option');
                     opt.value = lga.id;
                     opt.textContent = lga.name;
-                    if (selectedLgaId && String(lga.id) === String(selectedLgaId)) {
-                        opt.selected = true;
-                    }
+                    if (selectedLgaId && String(lga.id) === String(selectedLgaId)) opt.selected = true;
                     lgaSelect.appendChild(opt);
                 });
                 lgaSelect.disabled = false;
@@ -419,14 +298,127 @@ function initLgaCascade() {
             });
     }
 
-    stateSelect.addEventListener('change', function () {
-        loadLgas(this.value, null);
-    });
+    stateSelect.addEventListener('change', function () { loadLgas(this.value, null); });
 
-    // On page load (e.g. editing an existing property), preserve whatever
-    // LGA was already selected server-side instead of wiping it.
     const initialLgaId = lgaSelect.dataset.initialValue;
-    if (stateSelect.value) {
-        loadLgas(stateSelect.value, initialLgaId);
+    if (stateSelect.value) loadLgas(stateSelect.value, initialLgaId);
+}
+
+// ============================================
+// Property Thumbnail Gallery
+// ============================================
+function initPropertyGallery() {
+    const mainImage = document.querySelector('.property-main-image');
+    const thumbnails = document.querySelectorAll('.property-thumbnail');
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function () {
+            if (mainImage) mainImage.src = this.src;
+            thumbnails.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// ============================================
+// Login page: Email / Phone tab switching
+// ============================================
+function initLoginTabs() {
+    const emailTab = document.getElementById('emailTab');
+    const phoneTab = document.getElementById('phoneTab');
+    const emailField = document.getElementById('emailField');
+    const phoneField = document.getElementById('phoneField');
+    if (!emailTab || !phoneTab || !emailField || !phoneField) return;
+
+    function select(tab) {
+        const isEmail = tab === 'email';
+        emailTab.classList.toggle('active', isEmail);
+        phoneTab.classList.toggle('active', !isEmail);
+        emailField.style.display = isEmail ? 'block' : 'none';
+        phoneField.style.display = isEmail ? 'none' : 'block';
+        emailField.querySelector('input').required = isEmail;
+        phoneField.querySelector('input').required = !isEmail;
     }
+
+    emailTab.addEventListener('click', () => select('email'));
+    phoneTab.addEventListener('click', () => select('phone'));
+}
+
+// ============================================
+// Password visibility toggles
+// ============================================
+function initPasswordToggles() {
+    document.querySelectorAll('[data-pw-toggle]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const field = document.getElementById(this.dataset.pwToggle);
+            if (!field) return;
+            const icon = this.querySelector('i');
+            const revealing = field.type === 'password';
+            field.type = revealing ? 'text' : 'password';
+            if (icon) {
+                icon.classList.toggle('bi-eye', revealing);
+                icon.classList.toggle('bi-eye-slash', !revealing);
+            }
+        });
+    });
+}
+
+// ============================================
+// Auto-submitting form controls
+// ============================================
+function initAutoSubmit() {
+    document.querySelectorAll('.js-auto-submit').forEach(el => {
+        el.addEventListener('change', function () {
+            if (this.form) this.form.submit();
+        });
+    });
+}
+
+// ============================================
+// Confirm-before-submit
+// ============================================
+function initConfirmSubmit() {
+    document.querySelectorAll('form[data-confirm]').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            if (!window.confirm(this.dataset.confirm)) {
+                e.preventDefault();
+            }
+        });
+    });
+}
+
+// ============================================
+// Dismissible in-page panels
+// ============================================
+function initDismissible() {
+    document.querySelectorAll('[data-dismiss-target]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const target = document.getElementById(this.dataset.dismissTarget);
+            if (target) target.style.display = 'none';
+        });
+    });
+}
+
+// ============================================
+// Smooth scroll for in-page anchors
+// ============================================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+
+// ============================================
+// Toast helper
+// ============================================
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }

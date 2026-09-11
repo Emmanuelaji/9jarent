@@ -6,6 +6,31 @@ from django.utils.safestring import mark_safe
 from .models import CustomUser
 
 
+# --------------------------------------------------------------------------
+# Restrict Django's own /admin/ to superusers only.
+#
+# This project has two separate admin surfaces: the custom "admin
+# dashboard" (the `dashboard` app, under /dashboard/) for day-to-day
+# moderation (approve agents/properties, handle reports, etc.) - open to
+# anyone with is_staff=True or role='SUPER_ADMIN' (see CustomUser.is_admin
+# and accounts/permissions.py::AdminRequiredMixin) - and Django's own
+# built-in /admin/, which can edit raw model rows, permissions, and groups
+# directly. The built-in one is reserved for the actual superuser account
+# only; staff/admin-role users who aren't superusers use the dashboard
+# instead. Patching AdminSite.has_permission here (rather than
+# subclassing/replacing admin.site everywhere it's registered) keeps every
+# existing `@admin.register(...)` call in every app's admin.py unchanged.
+#
+# This module is guaranteed to be imported at startup because `accounts` is
+# in INSTALLED_APPS - Django's AdminConfig.ready() autodiscovers and
+# imports every app's admin.py before serving any request.
+def _superuser_only_has_permission(self, request):
+    return bool(request.user and request.user.is_active and request.user.is_superuser)
+
+
+admin.site.has_permission = _superuser_only_has_permission.__get__(admin.site, admin.site.__class__)
+
+
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     """Enhanced admin for CustomUser with agent status management."""

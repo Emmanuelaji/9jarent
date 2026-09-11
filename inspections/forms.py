@@ -34,3 +34,20 @@ class InspectionRequestForm(forms.ModelForm):
         if date < timezone.localdate():
             raise forms.ValidationError("Please choose a date that is today or later.")
         return date
+
+    def clean(self):
+        """
+        Same-day requests are allowed only if the chosen time is still in
+        the future — otherwise "request a 9am inspection" submitted at 3pm
+        sails through validation and the agent just has to decline it.
+        """
+        cleaned = super().clean()
+        date = cleaned.get('requested_date')
+        time = cleaned.get('requested_time')
+        if date and time and date == timezone.localdate():
+            if time < timezone.localtime().time():
+                self.add_error(
+                    'requested_time',
+                    "Please choose a time later than now for a same-day inspection.",
+                )
+        return cleaned

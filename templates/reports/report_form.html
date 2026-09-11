@@ -14,12 +14,11 @@
                     </h4>
                 </div>
                 <div class="card-body p-4">
-                    <!-- Target Info -->
                     <div class="alert alert-light border mb-4">
                         {% if target_type == 'property' %}
                         <div class="d-flex align-items-center gap-3">
                             {% if target.primary_image %}
-                            <img src="{{ target.primary_image.image.url }}" alt="" class="rounded" width="60" height="45" style="object-fit: cover;">
+                            <img src="{{ target.primary_image.display_url }}" alt="" class="rounded" width="60" height="45" style="object-fit: cover;">
                             {% endif %}
                             <div>
                                 <strong>{{ target.title }}</strong>

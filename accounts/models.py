@@ -34,6 +34,7 @@ class CustomUser(AbstractUser):
         default=True,
         help_text="Whether notification emails are sent to this user. Toggled from Settings."
     )
+    push_notifications_enabled = models.BooleanField(default=True)
     office_address = models.TextField(blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
@@ -67,12 +68,29 @@ class CustomUser(AbstractUser):
         blank=True, 
         related_name='suspended_agents'
     )
+
+    deletion_requested_at = models.DateTimeField(null=True, blank=True)
+    deletion_reason = models.TextField(blank=True, null=True, help_text="Optional reason the user gave for requesting deletion.")
+    is_archived = models.BooleanField(default=False, help_text="True once an admin has approved this account's deletion request.")
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='archived_accounts',
+    )
+
+    @property
+    def has_pending_deletion_request(self):
+        return bool(self.deletion_requested_at) and not self.is_archived
     
     class Meta:
         indexes = [
             models.Index(fields=['role']),
             models.Index(fields=['agent_status']),
             models.Index(fields=['role', 'agent_status']),
+            models.Index(fields=['is_archived', 'deletion_requested_at']),
         ]
     
     def __str__(self):

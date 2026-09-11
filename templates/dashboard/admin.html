@@ -21,6 +21,11 @@
 <div class="stat-card"><div class="stat-label">Pending Agents</div><div class="stat-value">{{ pending_agents|intcomma }}</div></div>
 </div>
 <div class="col-6 col-lg-4 col-xl-2">
+<a href="{% url 'dashboard:deletion_requests_list' %}" class="text-decoration-none">
+<div class="stat-card"><div class="stat-label">Deletion Requests</div><div class="stat-value">{{ pending_deletion_requests|intcomma }}</div></div>
+</a>
+</div>
+<div class="col-6 col-lg-4 col-xl-2">
 <div class="stat-card"><div class="stat-label">Total Properties</div><div class="stat-value">{{ total_listings|intcomma }}</div></div>
 </div>
 <div class="col-6 col-lg-4 col-xl-2">

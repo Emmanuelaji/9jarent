@@ -168,12 +168,26 @@ def notify_inspection_status_change(sender, instance, created, **kwargs):
             message=f'Your inspection request for "{instance.property.title}" was declined.',
             link=f'/inspections/{instance.pk}/',
         )
+
     elif instance.status == 'COMPLETED':
         Notification.objects.create(
             user=instance.renter,
             notification_type=Notification.Type.INSPECTION_COMPLETED,
             title='Inspection Completed',
             message=f'Your inspection for "{instance.property.title}" has been marked as completed.',
+            link=f'/inspections/{instance.pk}/',
+        )
+        
+    elif instance.status == 'CANCELLED':
+        Notification.objects.create(
+            user=instance.agent,
+            notification_type=Notification.Type.INSPECTION_CANCELLED,
+            title='Inspection Cancelled',
+            message=(
+                f'{instance.renter.full_name_or_username} cancelled their '
+                f'inspection request for "{instance.property.title}" on '
+                f'{instance.requested_date}.'
+            ),
             link=f'/inspections/{instance.pk}/',
         )
 

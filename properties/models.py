@@ -188,7 +188,9 @@ class Property(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             import uuid
-            base_slug = slugify(f"{self.state.slug}-{self.lga.slug}-{self.property_type}")
+            state_slug = self.state.slug if self.state_id else "ng"
+            lga_slug = self.lga.slug if self.lga_id else "na"
+            base_slug = slugify(f"{state_slug}-{lga_slug}-{self.property_type}")
             self.slug = f"{base_slug}-{uuid.uuid4().hex[:8]}"
         super().save(*args, **kwargs)
     

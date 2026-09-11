@@ -144,17 +144,17 @@
 <div class="modal fade" id="deleteAgentModal" tabindex="-1">
 <div class="modal-dialog">
 <div class="modal-content">
-<div class="modal-header"><h5 class="modal-title text-danger">Delete Agent</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-header"><h5 class="modal-title text-danger">Archive Agent Account</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <form method="post" action="{% url 'dashboard:delete_agent' agent.pk %}">
 {% csrf_token %}
 <div class="modal-body">
-<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>This permanently deletes <strong>{{ agent.full_name_or_username }}</strong>'s account. Their properties will be archived, not deleted, but this action itself cannot be undone.</div>
+<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>This archives <strong>{{ agent.full_name_or_username }}</strong>'s account - they'll be logged out and can't log back in. Their properties, messages, and history are kept (archived, not erased). To permanently delete data, use Django Admin instead.</div>
 <label class="form-label-custom">Type <strong>{{ agent.username }}</strong> to confirm</label>
 <input type="text" name="confirm_username" class="form-control-custom w-100" autocomplete="off" required>
 </div>
 <div class="modal-footer">
 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-<button type="submit" class="btn btn-danger">Delete Agent Permanently</button>
+<button type="submit" class="btn btn-danger">Archive Agent Account</button>
 </div>
 </form>
 </div>

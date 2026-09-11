@@ -38,4 +38,12 @@ urlpatterns = [
     path('reports/', views.ReportsListView.as_view(), name='reports_list'),
     path('reports/<int:pk>/', views.ReportDetailView.as_view(), name='report_detail'),
     path('reports/<int:pk>/resolve/', views.resolve_report, name='resolve_report'),
+
+    # Account deletion requests (users/agents requesting to delete their own
+    # account - see accounts/views.py::SettingsView and the comment on
+    # CustomUser.deletion_requested_at for why this is a request+approval
+    # flow rather than an immediate delete)
+    path('accounts/deletion-requests/', views.AccountDeletionRequestsListView.as_view(), name='deletion_requests_list'),
+    path('accounts/deletion-requests/<int:pk>/approve/', views.approve_account_deletion, name='approve_account_deletion'),
+    path('accounts/deletion-requests/<int:pk>/reject/', views.reject_account_deletion, name='reject_account_deletion'),
 ]

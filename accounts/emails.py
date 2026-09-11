@@ -2,11 +2,12 @@
 """
 Email sending for account verification and onboarding.
 
-Sent synchronously via Django's send_mail (using whatever EMAIL_BACKEND is
-configured - console in dev, Gmail SMTP in production per .env.example).
-Every call is wrapped so a failed/slow email send (e.g. Gmail SMTP hiccup)
-never breaks registration or login - it's logged and the user can always
-hit "Resend code".
+Sent synchronously via Django's send_mail using the SMTP backend configured
+in settings.py (always SMTP — there is no console fallback; see the module
+docstring in nigerrents/settings.py). Every call is wrapped so a failed/slow
+email send (e.g. an SMTP hiccup) never breaks registration or login — it's
+logged to auth.log via the 'accounts' logger, and the user can always hit
+"Resend code".
 """
 
 import logging
@@ -19,14 +20,14 @@ from django.utils import timezone
 
 from .models import EmailOTP
 
-logger = logging.getLogger('accounts')
+logger = logging.getLogger("accounts")
 
 OTP_LENGTH = 6
 OTP_VALIDITY_MINUTES = 10
 
 
 def _generate_code():
-    return ''.join(random.choices('0123456789', k=OTP_LENGTH))
+    return "".join(random.choices("0123456789", k=OTP_LENGTH))
 
 
 def create_and_send_otp(user, purpose=EmailOTP.Purpose.SIGNUP):
@@ -35,7 +36,7 @@ def create_and_send_otp(user, purpose=EmailOTP.Purpose.SIGNUP):
     codes for the same purpose are invalidated first, so only the latest
     code works (avoids a stale earlier email still being valid).
 
-    Returns the OTP instance. Never raises - email failures are logged and
+    Returns the OTP instance. Never raises — email failures are logged and
     swallowed so signup/login flows are never broken by an SMTP problem.
     """
     EmailOTP.objects.filter(user=user, purpose=purpose, is_used=False).update(is_used=True)
@@ -45,6 +46,14 @@ def create_and_send_otp(user, purpose=EmailOTP.Purpose.SIGNUP):
         code=_generate_code(),
         purpose=purpose,
         expires_at=timezone.now() + timedelta(minutes=OTP_VALIDITY_MINUTES),
+    )
+
+    # The code itself is deliberately NOT logged — it's an authentication
+    # secret. The fact that one was issued, and to whom, is what belongs in
+    # the log; that's what an "I never got my code" investigation needs.
+    logger.info(
+        "OTP issued — user=%s purpose=%s expires_in=%smin",
+        user.pk, purpose, OTP_VALIDITY_MINUTES,
     )
 
     subject = "Verify your 9jaRent account"
@@ -94,4 +103,9 @@ def _send(subject, message, to_email):
             fail_silently=False,
         )
     except Exception:
+        # logger.exception writes the full traceback at ERROR level; the
+        # 'accounts' logger routes that to auth.log, django.log, and
+        # errors.log. Keeping fail_silently=False above means we actually
+        # reach this except block on real failures — the caller never has
+        # to handle an SMTP exception.
         logger.exception("Failed to send email to %s: %s", to_email, subject)

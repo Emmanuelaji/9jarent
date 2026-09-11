@@ -8,6 +8,9 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
+# Application logs
+logs/
+
 # Environment variables
 .env
 .env.local

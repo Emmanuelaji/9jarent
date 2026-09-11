@@ -40,8 +40,12 @@
 {% if user.agent_status == 'APPROVED' %}<div class="profile-preview-badge"><i class="bi bi-check-circle-fill"></i> Verified Agent</div>{% endif %}
 <div class="profile-preview-stats">
 <div class="profile-preview-stat"><div class="profile-preview-stat-value">{{ user.properties.count }}</div><div class="profile-preview-stat-label">Properties</div></div>
-<div class="profile-preview-stat"><div class="profile-preview-stat-value">{{ user.approved_at|timesince:""|default:"-" }}</div><div class="profile-preview-stat-label">Years Active</div></div>
-<div class="profile-preview-stat"><div class="profile-preview-stat-value">98%</div><div class="profile-preview-stat-label">Response Rate</div></div>
+<div class="profile-preview-stat">
+  <div class="profile-preview-stat-value">
+    {% if user.approved_at %}{{ user.approved_at|date:"M Y" }}{% else %}-{% endif %}
+  </div>
+  <div class="profile-preview-stat-label">Agent Since</div>
+</div>
 </div>
 <a href="{% url 'accounts:agent_public_profile' user.username %}" class="btn btn-outline-secondary w-100 mt-3">View Public Profile</a>
 </div>

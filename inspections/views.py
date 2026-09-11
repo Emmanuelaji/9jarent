@@ -70,6 +70,10 @@ def request_inspection(request, property_id):
         messages.error(request, "You cannot request an inspection on your own property.")
         return redirect('properties:detail', slug=property_obj.slug)
 
+    if not property_obj.created_by_id:
+        messages.error(request, "This listing is no longer managed by an active agent.")
+        return redirect('properties:detail', slug=property_obj.slug)
+
     existing_active = InspectionRequest.objects.filter(
         property=property_obj, renter=user, status__in=InspectionRequest.ACTIVE_STATUSES
     ).first()

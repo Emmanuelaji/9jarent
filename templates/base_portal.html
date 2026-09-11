@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
+
+{# Hide the public navbar inside the portal shell. The sidebar already has  #}
+{# its own branding at the top, and the fixed-position sidebar was painting #}
+{# over the public navbar's brand logo on desktop. #}
+{% block public_navbar %}{% endblock %}
+
 {% block content %}
 <div class="sidebar-overlay"></div>
+
 <aside class="sidebar">
 <div class="sidebar-brand"><span class="brand-logo"><span class="brand-9ja">9ja</span>Rent.com.ng</span></div>
 <div class="sidebar-user">
@@ -20,6 +27,7 @@
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:inspections_list' %}" class="sidebar-nav-link {% if 'inspection' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-clipboard-check"></i><span>Inspections</span>{% if pending_inspections_count %}<span class="badge bg-warning text-dark ms-auto">{{ pending_inspections_count }}</span>{% endif %}</a></li>
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:messages_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'messages_list' %}active{% endif %}"><i class="bi bi-envelope"></i><span>Messages</span></a></li>
 <li class="sidebar-nav-item"><a href="{% url 'dashboard:reports_list' %}" class="sidebar-nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-bar-chart"></i><span>Reports</span>{% if pending_reports_count %}<span class="badge bg-warning text-dark ms-auto">{{ pending_reports_count }}</span>{% endif %}</a></li>
+<li class="sidebar-nav-item"><a href="{% url 'dashboard:deletion_requests_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'deletion_requests_list' %}active{% endif %}"><i class="bi bi-person-x"></i><span>Deletion Requests</span>{% if pending_deletions_count %}<span class="badge bg-warning text-dark ms-auto">{{ pending_deletions_count }}</span>{% endif %}</a></li>
 <li class="sidebar-nav-item"><a href="{% url 'notifications:list' %}" class="sidebar-nav-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span></a></li>
 <li class="sidebar-nav-item">
   <a href="{% url 'accounts:settings' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
@@ -81,11 +89,25 @@
 {% endif %}
 </aside>
 
+{# Mobile-only bar. Sticky at the top of the viewport on screens below      #}
+{# 1200px so the sidebar toggle is always reachable, no matter which page   #}
+{# you're on. Hidden on desktop where the sidebar is permanently visible.   #}
+{# Placed AFTER the sidebar in DOM order so `.sidebar.show ~ .portal-       #}
+{# mobile-bar` can hide it when the sidebar is open (the open sidebar would #}
+{# otherwise sit under it).                                                  #}
+<div class="portal-mobile-bar">
+<button type="button" class="portal-sidebar-toggle" aria-label="Toggle sidebar" aria-controls="portal-sidebar">
+<i class="bi bi-list"></i>
+</button>
+<a href="{% url 'properties:home' %}" class="brand-logo-dark text-decoration-none fw-bold">
+<span class="brand-9ja">9ja</span>Rent
+</a>
+</div>
+
 <main class="main-content">
 {% if user.is_superuser %}
 <div class="top-bar">
 <div class="d-flex align-items-center gap-3">
-<button class="mobile-menu-btn"><i class="bi bi-list"></i></button>
 <div class="top-bar-search"><i class="bi bi-search"></i><input type="text" placeholder="Search anything..."></div>
 </div>
 <div class="top-bar-actions">
@@ -97,7 +119,6 @@
 {% else %}
 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
 <div class="d-flex align-items-center gap-3">
-<button class="mobile-menu-btn"><i class="bi bi-list"></i></button>
 {% block portal_header %}{% endblock %}
 </div>
 {% block portal_header_action %}{% endblock %}

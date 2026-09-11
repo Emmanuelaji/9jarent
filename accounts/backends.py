@@ -3,22 +3,24 @@
 Custom authentication backend allowing login via email address OR phone
 number.
 
-This module is referenced by two places that were previously pointing at a
-module which didn't exist anywhere in the repo - `nigerrents/settings.py`
-(AUTHENTICATION_BACKENDS) and `accounts/views.py`
-(RenterSignUpView.form_valid, which hardcodes the backend path when logging
-a brand-new renter in). With no `accounts/backends.py` present, EVERY call
-to `authenticate()` - including Django's `client.login()` in tests, the
-login form, and the post-signup auto-login - raised
-`ModuleNotFoundError: No module named 'accounts.backends'`, i.e. login and
-renter registration were completely broken.
+`AUTHENTICATION_BACKENDS` in settings.py points here, and
+`accounts/views.py::RenterSignUpView.form_valid` hardcodes this backend's
+path when logging a brand-new renter in.
+
+Every authenticate() call is logged:
+  - INFO  on success (auth.log)
+  - WARN  on failure with reason (auth.log; also routed to errors.log
+          via the 'accounts' logger's ERROR handler for genuine failures)
 """
 
+import logging
 import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+
+logger = logging.getLogger("accounts")
 
 UserModel = get_user_model()
 
@@ -28,7 +30,24 @@ MIN_PHONE_DIGITS = 7
 
 
 def _digits_only(value):
-    return re.sub(r'\D', '', value or '')
+    return re.sub(r"\D", "", value or "")
+
+
+def _client_ip(request):
+    """Return the client IP from the request, or 'unknown' if there is none.
+
+    Mirrors RateLimitMiddleware._get_client_ip's X-Forwarded-For policy:
+    only trust the header when TRUST_PROXY_HEADERS is on.
+    """
+    if request is None:
+        return "unknown"
+    from django.conf import settings
+
+    if getattr(settings, "TRUST_PROXY_HEADERS", False):
+        xff = request.META.get("HTTP_X_FORWARDED_FOR")
+        if xff:
+            return xff.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "unknown")
 
 
 class EmailOrPhoneBackend(ModelBackend):
@@ -43,9 +62,11 @@ class EmailOrPhoneBackend(ModelBackend):
     """
 
     def authenticate(self, request, username=None, password=None, phone=None, **kwargs):
-        identifier = (username or phone or '').strip()
+        identifier = (username or phone or "").strip()
         if not identifier or not password:
             return None
+
+        ip = _client_ip(request)
 
         query = Q(email__iexact=identifier) | Q(username__iexact=identifier)
 
@@ -60,14 +81,31 @@ class EmailOrPhoneBackend(ModelBackend):
             # identifier take the same time as a wrong-password attempt on
             # a real account (mitigates user enumeration via timing).
             UserModel().set_password(password)
+            logger.warning(
+                "Login failed — unknown identifier=%r ip=%s", identifier, ip
+            )
             return None
         except UserModel.MultipleObjectsReturned:
             # An ambiguous identifier should never happen given email is
             # meant to be unique, but refuse rather than guessing.
+            logger.warning(
+                "Login failed — ambiguous identifier=%r matched multiple users ip=%s",
+                identifier, ip,
+            )
             return None
 
         if user.check_password(password) and self.user_can_authenticate(user):
+            logger.info(
+                "Login success — user=%s ip=%s", user.pk, ip,
+            )
             return user
+
+        # Either the password was wrong, or user_can_authenticate() refused
+        # (inactive/archived account, etc). Same log line covers both — the
+        # distinction isn't actionable from here.
+        logger.warning(
+            "Login failed — bad credentials user=%s ip=%s", user.pk, ip,
+        )
         return None
 
     def get_user(self, user_id):

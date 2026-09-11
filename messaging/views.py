@@ -33,7 +33,7 @@ def inbox(request, pk=None):
     conversations = list(
         Conversation.objects.filter(
             Q(renter=user) | Q(agent=user)
-        ).select_related('property', 'renter', 'agent').prefetch_related('messages')
+        ).select_related('property', 'renter', 'agent')
     )
     for convo in conversations:
         convo.other = convo.other_party(user)
@@ -90,6 +90,12 @@ def start_conversation(request, property_id):
 
     if property_obj.created_by_id == user.id:
         django_messages.error(request, "You cannot message yourself about your own property.")
+        return redirect('properties:detail', slug=property_obj.slug)
+
+    # Property.created_by is SET_NULL, Conversation.agent is null=False —
+    # proceeding without an active agent would raise IntegrityError.
+    if not property_obj.created_by_id:
+        django_messages.error(request, "This listing is no longer managed by an active agent.")
         return redirect('properties:detail', slug=property_obj.slug)
 
     conversation, _created = Conversation.objects.get_or_create(

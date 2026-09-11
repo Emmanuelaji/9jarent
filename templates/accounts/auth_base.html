@@ -19,6 +19,11 @@
 <a href="{% url 'properties:home' %}" class="fs-4 fw-bold text-decoration-none" style="color: var(--text-dark);"><span class="brand-9ja">9ja</span>Rent.com.ng</a>
 </div>
 
+{# Optional headline/subhead a page can override; useful when the page's own  #}
+{# content needs a shared tagline without re-declaring the layout.            #}
+{% block auth_headline %}{% endblock %}
+{% block auth_subhead %}{% endblock %}
+
 {% if messages %}
 {% for message in messages %}
 <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">

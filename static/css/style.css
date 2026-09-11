@@ -190,9 +190,19 @@ a {
    Sidebar (Dashboard)
    ============================================ */
 
+/* Height (not min-height) is what makes the sidebar scrollable.
+   With min-height: 100vh the flex column was free to grow taller than
+   the viewport when it had more nav items than fit, and because the
+   sidebar is position: fixed, the overflow grew off-screen below the
+   viewport where nothing could scroll to it. Capping the height at
+   100vh makes the flex content overflow inside the element, which is
+   what overflow-y: auto then turns into a scrollbar. */
 .sidebar {
     width: var(--sidebar-width);
-    min-height: 100vh;
+    height: 100vh;              /* fallback for older browsers */
+    height: 100dvh;             /* iOS 15.4+/Chrome 108+: excludes mobile browser chrome */
+    max-height: 100vh;
+    max-height: 100dvh;
     background-color: var(--sidebar-bg);
     position: fixed;
     left: 0;
@@ -202,11 +212,33 @@ a {
     flex-direction: column;
     padding: 1.5rem 0;
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .sidebar-brand {
     padding: 0 1.5rem;
     margin-bottom: 1.5rem;
+    flex-shrink: 0;
 }
 
 .sidebar-user {
@@ -215,6 +247,7 @@ a {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-shrink: 0;
 }
 
 .sidebar-user-img {
@@ -245,6 +278,7 @@ a {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255,255,255,0.4);
+    flex-shrink: 0;
 }
 
 .sidebar-nav {
@@ -334,6 +368,50 @@ a {
 .sidebar-chat-btn:hover {
     background: rgba(255,255,255,0.12);
     color: var(--white);
+}
+
+/* ============================================
+   Portal Mobile Bar (sidebar toggle for <1200px)
+   ============================================ */
+
+/* Hidden on desktop - the sidebar is always visible there. Shows as a
+   sticky bar at the top of the viewport on tablet/mobile. The toggle
+   inside is what replaces the old in-page `.mobile-menu-btn` that was
+   easy to miss (it rendered inside each page's own header row, and
+   disappeared entirely on pages that rendered no header). */
+.portal-mobile-bar {
+    display: none;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.75rem 1rem;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.portal-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    border: 1.5px solid var(--border-color);
+    background: var(--white);
+    color: var(--text-dark);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.portal-sidebar-toggle:hover,
+.portal-sidebar-toggle:focus-visible {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+    outline: none;
 }
 
 /* ============================================
@@ -1863,25 +1941,36 @@ a {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
     }
-    
+
     .sidebar.show {
         transform: translateX(0);
     }
-    
+
+    /* Show the mobile bar containing the sidebar toggle. */
+    .portal-mobile-bar {
+        display: flex;
+    }
+
+    /* Hide the mobile bar when the sidebar is open - otherwise the toggle
+       would sit on top of the sidebar's brand area. */
+    .sidebar.show ~ .portal-mobile-bar {
+        display: none;
+    }
+
     .main-content {
         margin-left: 0;
     }
-    
+
     .messages-layout {
         flex-direction: column;
         height: auto;
     }
-    
+
     .conversations-panel {
         width: 100%;
         max-height: 400px;
     }
-    
+
     .chat-window {
         min-height: 500px;
     }
@@ -1891,29 +1980,29 @@ a {
     .main-content {
         padding: 1rem;
     }
-    
+
     .top-bar-search {
         width: 200px;
     }
-    
+
     .stat-value {
         font-size: 1.5rem;
     }
-    
+
     .agent-hero {
         padding: 1.5rem;
     }
-    
+
     .agent-hero-img {
         width: 72px;
         height: 72px;
     }
-    
+
     .auth-hero {
         min-height: auto;
         padding: 2rem;
     }
-    
+
     .auth-hero-title {
         font-size: 1.75rem;
     }
@@ -1925,28 +2014,28 @@ a {
         gap: 1rem;
         align-items: stretch;
     }
-    
+
     .top-bar-search {
         width: 100%;
     }
-    
+
     .top-bar-actions {
         justify-content: flex-end;
     }
-    
+
     .messages-layout {
         gap: 0.5rem;
     }
-    
+
     .conversations-panel {
         border-radius: 0.5rem;
     }
-    
+
     .chat-window {
         border-radius: 0.5rem;
         min-height: 400px;
     }
-    
+
     .message-bubble {
         max-width: 85%;
     }
@@ -1977,7 +2066,7 @@ a {
     box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
 }
 
-/* Scrollbar */
+/* Scrollbar (global - public pages and main content) */
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -2154,27 +2243,6 @@ a {
 
 .sidebar-overlay.show {
     display: block;
-}
-
-/* Mobile hamburger */
-.mobile-menu-btn {
-    display: none;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.5rem;
-    border: 1.5px solid var(--border-color);
-    background: var(--white);
-    color: var(--text-dark);
-    font-size: 1.25rem;
-    cursor: pointer;
-}
-
-@media (max-width: 1199.98px) {
-    .mobile-menu-btn {
-        display: flex;
-    }
 }
 
 /* Property table actions */

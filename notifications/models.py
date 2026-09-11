@@ -15,10 +15,14 @@ class Notification(models.Model):
         NEW_MESSAGE = 'new_message', 'New Message'
         INSPECTION_REQUEST = 'inspection_request', 'Inspection Request'
         INSPECTION_ACCEPTED = 'inspection_accepted', 'Inspection Accepted'
-        INSPECTION_DECLINED = 'inspection_declined', 'Inspection Declined'
+        INSPECTION_DECLINED = 'inspection_declined', 'ISnspection Declined'
         INSPECTION_COMPLETED = 'inspection_completed', 'Inspection Completed'
+        INSPECTION_CANCELLED = 'inspection_cancelled', 'Inspection Cancelled'
         REPORT_SUBMITTED = 'report_submitted', 'Report Submitted'
         REPORT_RESOLVED = 'report_resolved', 'Report Resolved'
+        ACCOUNT_DELETION_REQUESTED = 'account_deletion_requested', 'Account Deletion Requested'
+        ACCOUNT_DELETION_REJECTED = 'account_deletion_rejected', 'Account Deletion Rejected'
+        ACCOUNT_ARCHIVED = 'account_archived', 'Account Archived'
         SYSTEM = 'system', 'System'
 
     user = models.ForeignKey(
