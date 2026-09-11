@@ -1,24 +1,33 @@
 # nigerrents/views.py
-"""Project-level views for custom error pages."""
+"""Project-level views: custom error pages and the legal pages."""
 
 from django.shortcuts import render
+from django.views.generic import TemplateView
 
+
+# --- Error pages ------------------------------------------------------------
 
 def handler400(request, exception=None):
-    """Custom 400 Bad Request page."""
-    return render(request, '400.html', status=400)
+    return render(request, "400.html", status=400)
 
 
 def handler403(request, exception=None):
-    """Custom 403 Forbidden page."""
-    return render(request, '403.html', status=403)
+    return render(request, "403.html", status=403)
 
 
 def handler404(request, exception=None):
-    """Custom 404 Not Found page."""
-    return render(request, '404.html', status=404)
+    return render(request, "404.html", status=404)
 
 
 def handler500(request):
-    """Custom 500 Server Error page."""
-    return render(request, '500.html', status=500)
+    return render(request, "500.html", status=500)
+
+
+# --- Legal pages ------------------------------------------------------------
+
+class TermsView(TemplateView):
+    template_name = "terms.html"
+
+
+class PrivacyView(TemplateView):
+    template_name = "privacy.html"

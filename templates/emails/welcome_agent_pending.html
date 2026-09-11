@@ -1,0 +1,48 @@
+{% extends 'emails/base_email.html' %}
+{% block title %}Welcome to 9jaRent — application received{% endblock %}
+
+{% block content %}
+<h1 style="margin:0 0 16px; font-size:20px; color:#0B3D2E; font-weight:700;">
+    Welcome to 9jaRent, {{ user_name }}
+</h1>
+
+<p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#333333;">
+    Thanks for registering your agency. Your email is verified and your
+    application has been submitted for review.
+</p>
+
+<div style="background:#FFF7E6; border-left: 3px solid #F2A93B; border-radius: 6px; padding: 16px; margin: 0 0 24px;">
+    <div style="font-size: 12px; color: #A1660F; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700;">
+        What happens next
+    </div>
+    <p style="margin:0; font-size: 14px; line-height: 1.6; color: #6B4A0E;">
+        An administrator will review your application within 24–48 hours.
+        You'll receive an email and an in-app notification as soon as
+        you're approved — then you can start listing properties.
+    </p>
+</div>
+
+<p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#333333;">
+    In the meantime, you can explore the platform and complete your
+    profile so renters get a complete picture of your agency when your
+    first listing goes live.
+</p>
+
+{% if site_url %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 16px;">
+    <tr>
+        <td style="background:#F2A93B; border-radius:8px;">
+            <a href="{{ site_url }}/accounts/profile/"
+               style="display:inline-block; padding:12px 24px; color:#0B3D2E; text-decoration:none; font-weight:700; font-size:14px;">
+                Complete your profile
+            </a>
+        </td>
+    </tr>
+</table>
+{% endif %}
+
+<p style="margin:24px 0 0; font-size:13px; line-height:1.5; color:#999999;">
+    We'll be in touch shortly. Questions in the meantime? Just reply to
+    this email.
+</p>
+{% endblock %}

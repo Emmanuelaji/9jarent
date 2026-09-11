@@ -2,12 +2,10 @@
 """
 Email sending for account verification and onboarding.
 
-Sent synchronously via Django's send_mail using the SMTP backend configured
-in settings.py (always SMTP — there is no console fallback; see the module
-docstring in nigerrents/settings.py). Every call is wrapped so a failed/slow
-email send (e.g. an SMTP hiccup) never breaks registration or login — it's
-logged to auth.log via the 'accounts' logger, and the user can always hit
-"Resend code".
+All emails are HTML (branded, using templates/emails/base_email.html) with
+a plain-text fallback for clients that don't render HTML. Sent synchronously
+via Django's SMTP backend — see settings.py. Failures are caught and logged;
+they never break the request that triggered them.
 """
 
 import logging
@@ -15,8 +13,10 @@ import random
 from datetime import timedelta
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.html import strip_tags
 
 from .models import EmailOTP
 
@@ -30,14 +30,42 @@ def _generate_code():
     return "".join(random.choices("0123456789", k=OTP_LENGTH))
 
 
+def _site_url():
+    """Base URL for CTA buttons, without a trailing slash."""
+    return (getattr(settings, "SITE_URL", "") or "").rstrip("/")
+
+
+def _send_html(subject, to_email, template_name, context, text_fallback):
+    """
+    Render `template_name` as HTML and send it, with `text_fallback` as
+    the plain-text alternative. Single choke point for all account emails —
+    a failure here is logged and swallowed, never propagated to the caller.
+    """
+    try:
+        html_body = render_to_string(template_name, context)
+    except Exception:
+        logger.exception("Failed to render email template %s", template_name)
+        return
+
+    try:
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_fallback or strip_tags(html_body),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[to_email],
+        )
+        email.attach_alternative(html_body, "text/html")
+        email.send(fail_silently=False)
+    except Exception:
+        logger.exception("Failed to send email to %s: %s", to_email, subject)
+
+
 def create_and_send_otp(user, purpose=EmailOTP.Purpose.SIGNUP):
     """
-    Create a fresh OTP for `user` and email it to them. Any previous unused
-    codes for the same purpose are invalidated first, so only the latest
-    code works (avoids a stale earlier email still being valid).
+    Create a fresh OTP for `user` and email it. Invalidates any prior
+    unused codes for the same purpose, so only the latest one works.
 
-    Returns the OTP instance. Never raises — email failures are logged and
-    swallowed so signup/login flows are never broken by an SMTP problem.
+    Returns the OTP instance. Never raises.
     """
     EmailOTP.objects.filter(user=user, purpose=purpose, is_used=False).update(is_used=True)
 
@@ -48,64 +76,70 @@ def create_and_send_otp(user, purpose=EmailOTP.Purpose.SIGNUP):
         expires_at=timezone.now() + timedelta(minutes=OTP_VALIDITY_MINUTES),
     )
 
-    # The code itself is deliberately NOT logged — it's an authentication
-    # secret. The fact that one was issued, and to whom, is what belongs in
-    # the log; that's what an "I never got my code" investigation needs.
+    # Deliberately do not log the code itself — it's an authentication
+    # secret. Log only the fact that one was issued.
     logger.info(
         "OTP issued — user=%s purpose=%s expires_in=%smin",
         user.pk, purpose, OTP_VALIDITY_MINUTES,
     )
 
-    subject = "Verify your 9jaRent account"
-    message = (
+    subject = "Your 9jaRent verification code"
+    text_fallback = (
         f"Hi {user.full_name_or_username},\n\n"
         f"Your 9jaRent verification code is: {otp.code}\n\n"
         f"This code expires in {OTP_VALIDITY_MINUTES} minutes. "
         f"If you didn't request this, you can safely ignore this email.\n\n"
         f"- The 9jaRent Team"
     )
-    _send(subject, message, user.email)
+
+    _send_html(
+        subject=subject,
+        to_email=user.email,
+        template_name="emails/otp.html",
+        context={
+            "user_name": user.full_name_or_username,
+            "code": otp.code,
+            "expires_in_minutes": OTP_VALIDITY_MINUTES,
+        },
+        text_fallback=text_fallback,
+    )
     return otp
 
 
 def send_welcome_email(user):
-    """Send a welcome email once a user's email address is verified."""
+    """
+    Send the post-verification welcome email. Different template for agents
+    (application pending) vs renters (ready to browse).
+    """
     if user.is_agent:
-        subject = "Welcome to 9jaRent — you're verified!"
-        body_extra = (
-            "Your email is verified. Your agent application is still being "
-            "reviewed by our team - we'll notify you as soon as it's approved "
-            "and you can start listing properties."
+        subject = "Welcome to 9jaRent — application received"
+        template_name = "emails/welcome_agent_pending.html"
+        text_fallback = (
+            f"Hi {user.full_name_or_username},\n\n"
+            f"Welcome to 9jaRent.com.ng! Your email is verified and your "
+            f"agent application has been submitted for review. An "
+            f"administrator will review it within 24-48 hours, and you'll "
+            f"be notified as soon as you're approved.\n\n"
+            f"- The 9jaRent Team"
         )
     else:
         subject = "Welcome to 9jaRent!"
-        body_extra = (
-            "You're all set. Browse verified listings, message agents directly, "
-            "and request inspections whenever you're ready - "
-            "no middlemen, just a WhatsApp message away."
+        template_name = "emails/welcome_renter.html"
+        text_fallback = (
+            f"Hi {user.full_name_or_username},\n\n"
+            f"Welcome to 9jaRent.com.ng! Your account is now active. "
+            f"Browse verified listings, message agents directly, and request "
+            f"inspections whenever you're ready.\n\n"
+            f"- The 9jaRent Team"
         )
 
-    message = (
-        f"Hi {user.full_name_or_username},\n\n"
-        f"Welcome to 9jaRent.com.ng! {body_extra}\n\n"
-        f"- The 9jaRent Team"
+    _send_html(
+        subject=subject,
+        to_email=user.email,
+        template_name=template_name,
+        context={
+            "user_name": user.full_name_or_username,
+            "site_url": _site_url(),
+        },
+        text_fallback=text_fallback,
     )
-    _send(subject, message, user.email)
-
-
-def _send(subject, message, to_email):
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[to_email],
-            fail_silently=False,
-        )
-    except Exception:
-        # logger.exception writes the full traceback at ERROR level; the
-        # 'accounts' logger routes that to auth.log, django.log, and
-        # errors.log. Keeping fail_silently=False above means we actually
-        # reach this except block on real failures — the caller never has
-        # to handle an SMTP exception.
-        logger.exception("Failed to send email to %s: %s", to_email, subject)

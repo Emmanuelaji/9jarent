@@ -84,6 +84,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="{% static 'js/app.js' %}"></script>
+<footer class="border-top mt-5 py-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="text-muted fs-8">
+            &copy; {% now "Y" %} 9jaRent.com.ng — All rights reserved.
+        </div>
+        <div class="d-flex gap-3 fs-8">
+            <a href="{% url 'terms' %}" class="text-muted">Terms &amp; Conditions</a>
+            <a href="{% url 'privacy' %}" class="text-muted">Privacy Policy</a>
+            <a href="mailto:support@9jarent.com.ng" class="text-muted">Contact</a>
+        </div>
+    </div>
+</footer>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

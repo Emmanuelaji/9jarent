@@ -2,10 +2,12 @@ from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from .views import (
     RoleBasedLoginView, AgentSignUpStep1View, AgentSignUpVerifyView, AgentSignUpSetupView,
-    RenterSignUpView, AccountTypeChoiceView, DomainAwarePasswordResetForm,
+    RenterSignUpView, RenterSignUpVerifyView, AccountTypeChoiceView,
     CompleteProfileView, AgentProfileEditView, AgentPendingView, AgentPublicProfileView,
     AgentsDirectoryView, SignUpSuccessView, SettingsView,
 )
+
+from .forms import DomainAwarePasswordResetForm
 
 app_name = 'accounts'
 
@@ -19,6 +21,7 @@ urlpatterns = [
     path('signup/renter/', RenterSignUpView.as_view(), name='renter_signup'),
     path('signup/success/', SignUpSuccessView.as_view(), name='signup_success'),
     path('pending/', AgentPendingView.as_view(), name='pending'),
+    path('signup/renter/verify/', RenterSignUpVerifyView.as_view(), name='renter_signup_verify'),
     path('complete-profile/', CompleteProfileView.as_view(), name='complete_profile'),
     path('profile/', AgentProfileEditView.as_view(), name='profile_edit'),
     path('settings/', SettingsView.as_view(), name='settings'),

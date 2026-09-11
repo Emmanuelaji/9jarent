@@ -1,49 +1,282 @@
-{% extends 'accounts/auth_base.html' %}
+{% extends 'base.html' %}
+
 {% block title %}Login | 9jaRent{% endblock %}
 
-{% block auth_content %}
-<h1 class="auth-title">Welcome Back</h1>
-<p class="auth-subtitle">Log in to your account to continue</p>
+{# Split-screen layout supplies its own navigation; hide the public navbar. #}
+{% block public_navbar %}{% endblock %}
 
-<div class="auth-tabs">
-<button type="button" class="auth-tab active" id="emailTab">Email</button>
-<button type="button" class="auth-tab" id="phoneTab">Phone</button>
-</div>
+{% block extra_css %}
+<style>
+.login-split {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
 
-<form method="post" action="{% url 'accounts:login' %}">
-{% csrf_token %}
-<div class="mb-3" id="emailField">
-<label class="form-label-custom">Email Address</label>
-<input type="email" name="username" class="form-control-custom w-100" placeholder="Enter your email address" required>
-</div>
-<div class="mb-3" id="phoneField" style="display:none;">
-<label class="form-label-custom">Phone Number</label>
-<input type="tel" name="phone" class="form-control-custom w-100" placeholder="080 1234 5678">
-</div>
-<div class="mb-3">
-<label class="form-label-custom">Password</label>
-<div class="position-relative">
-<input type="password" name="password" id="loginPassword" class="form-control-custom w-100" placeholder="Enter your password" required>
-<button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" style="border:none;background:none;" data-pw-toggle="loginPassword" aria-label="Toggle password visibility"><i class="bi bi-eye-slash"></i></button>
-</div>
-</div>
-<div class="d-flex align-items-center justify-content-between mb-4">
-<div class="form-check">
-<input class="form-check-input" type="checkbox" name="remember" id="remember">
-<label class="form-check-label fs-8 text-muted" for="remember">Remember me</label>
-</div>
-<a href="{% url 'accounts:password_reset' %}" class="fs-8 text-brand-green fw-medium">Forgot password?</a>
-</div>
-{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-<button type="submit" class="btn btn-brand-orange w-100 mb-3">Log In</button>
-</form>
+.login-split-hero {
+    flex: 0 0 42%;
+    max-width: 42%;
+    background-color: #0B3D2E;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 3rem;
+    box-shadow: none;
+}
 
-<div class="auth-divider">or continue with</div>
+.login-split-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 85% 15%, rgba(245, 166, 35, 0.10) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
 
-<button type="button" class="social-btn" disabled title="Coming soon"><i class="bi bi-google text-danger"></i> Continue with Google</button>
-<button type="button" class="social-btn" disabled title="Coming soon"><i class="bi bi-apple"></i> Continue with Apple</button>
+.login-split-back {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
 
-<div class="auth-footer">
-Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up</a>
+.login-split-back:hover,
+.login-split-back:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    outline: none;
+}
+
+.login-split-hero-inner {
+    position: relative;
+    z-index: 1;
+}
+
+.login-split-hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+
+.login-split-hero-highlight {
+    color: #F5A623;
+}
+
+.login-split-hero-text {
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+.login-split-hero-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.login-split-hero-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+    font-size: 0.9375rem;
+}
+
+.login-split-hero-list li i {
+    color: #F5A623;
+    font-size: 1.1rem;
+}
+
+.login-split-form {
+    flex: 1 1 58%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    box-shadow: none;
+}
+
+.login-split-form-inner {
+    width: 100%;
+    max-width: 440px;
+}
+
+.login-split-back-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.login-split-back-mobile:hover,
+.login-split-back-mobile:focus-visible {
+    color: #0B3D2E;
+    outline: none;
+}
+
+@media (min-width: 992px) {
+    .login-split-back-mobile { display: none; }
+}
+
+@media (max-width: 991.98px) {
+    .login-split-hero {
+        display: none;
+    }
+    .login-split-form {
+        flex: 1 1 100%;
+        max-width: 100%;
+        padding: 2rem 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-split">
+
+    <div class="login-split-hero">
+        <a href="{% url 'properties:home' %}" class="login-split-back">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+
+        <div class="login-split-hero-inner">
+            <h1 class="login-split-hero-title">
+                Find a place,<br>message the agent,<br>
+                <span class="login-split-hero-highlight">move in.</span>
+            </h1>
+            <p class="login-split-hero-text">
+                Connecting renters directly with verified agents across
+                Nigeria — no middlemen, no fake listings.
+            </p>
+            <ul class="login-split-hero-list">
+                <li><i class="bi bi-check-circle-fill"></i> Verified agents</li>
+                <li><i class="bi bi-check-circle-fill"></i> Real properties</li>
+                <li><i class="bi bi-check-circle-fill"></i> Direct messaging</li>
+                <li><i class="bi bi-check-circle-fill"></i> No middlemen</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="login-split-form">
+        <div class="login-split-form-inner">
+
+            <a href="{% url 'properties:home' %}" class="login-split-back-mobile">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+
+            <div class="text-center mb-4">
+                <a href="{% url 'properties:home' %}" class="brand-logo-dark fs-3 fw-bold text-decoration-none">
+                    <span class="brand-9ja">9ja</span>Rent.com.ng
+                </a>
+            </div>
+
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Log in to your account to continue</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="emailTab">Email</button>
+                <button type="button" class="auth-tab" id="phoneTab">Phone</button>
+            </div>
+
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+
+                <div class="mb-3" id="emailField">
+                    <label class="form-label-custom">Email Address</label>
+                    <input type="email" name="username" class="form-control-custom w-100"
+                           placeholder="Enter your email address" required>
+                </div>
+
+                <div class="mb-3" id="phoneField" style="display:none;">
+                    <label class="form-label-custom">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control-custom w-100"
+                           placeholder="080 1234 5678">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-custom">Password</label>
+                    <div class="position-relative">
+                        <input type="password" name="password" id="loginPassword"
+                               class="form-control-custom w-100"
+                               placeholder="Enter your password" required>
+                        <button type="button"
+                                class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3"
+                                style="border:none;background:none;"
+                                data-pw-toggle="loginPassword"
+                                aria-label="Toggle password visibility">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                        <label class="form-check-label fs-8 text-muted" for="remember">Remember me</label>
+                    </div>
+                    <a href="{% url 'accounts:password_reset' %}"
+                       class="fs-8 text-brand-green fw-medium">Forgot password?</a>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-brand-orange w-100 mb-3">Log In</button>
+            </form>
+
+            <div class="auth-divider">or continue with</div>
+
+            <button type="button" class="social-btn" disabled title="Coming soon">
+                <i class="bi bi-google text-danger"></i> Continue with Google
+            </button>
+            <button type="button" class="social-btn" disabled title="Coming soon">
+                <i class="bi bi-apple"></i> Continue with Apple
+            </button>
+
+            <div class="auth-footer">
+                Don't have an account?
+                <a href="{% url 'accounts:signup' %}">Sign up</a>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'emails/base_email.html' %}
+{% block title %}Your 9jaRent verification code{% endblock %}
+
+{% block content %}
+<h1 style="margin:0 0 16px; font-size:20px; color:#0B3D2E; font-weight:700;">
+    Verify your email
+</h1>
+
+<p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#333333;">
+    Hi {{ user_name }}, please use the code below to verify your 9jaRent account.
+</p>
+
+<div style="background:#F8F9FA; border-radius:8px; padding: 20px; text-align:center; margin: 0 0 24px;">
+    <div style="font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">
+        Your verification code
+    </div>
+    <div style="font-size: 32px; font-weight: 700; color: #0B3D2E; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace;">
+        {{ code }}
+    </div>
+</div>
+
+<p style="margin:0 0 16px; font-size:14px; line-height:1.6; color:#666666;">
+    This code expires in <strong>{{ expires_in_minutes }} minutes</strong>.
+    If you didn't request this, you can safely ignore this email — your
+    account is unaffected.
+</p>
+
+<p style="margin:24px 0 0; font-size:13px; line-height:1.5; color:#999999;">
+    For your security, never share this code with anyone. 9jaRent will
+    never ask you for it.
+</p>
+{% endblock %}

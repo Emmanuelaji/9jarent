@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy | 9jaRent{% endblock %}
+{% block meta_description %}<meta name="description" content="How 9jaRent.com.ng collects, uses, and protects your personal data, in line with the Nigeria Data Protection Act 2023.">{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 820px;">
+
+    <div class="breadcrumb-custom">
+        <a href="{% url 'properties:home' %}">Home</a>
+        <span class="separator"><i class="bi bi-chevron-right"></i></span>
+        <span class="active">Privacy Policy</span>
+    </div>
+
+    <h1 class="fs-2 fw-bold mb-2">Privacy Policy</h1>
+    <p class="text-muted mb-4">
+        <strong>Last updated:</strong> {% now "F j, Y" %}
+    </p>
+
+    <div class="alert alert-light border mb-4">
+        <strong>Plain-English summary:</strong>
+        We collect the information you give us when you sign up and use the
+        Site — your name, email, phone, and (for agents) your agency details
+        and listings. We use it to run the platform: sending you verification
+        codes, showing your listings, letting renters and agents message each
+        other, and moderating reports. We do not sell your data. You can
+        request access to, correction of, or deletion of your data at any
+        time. The full details are below.
+    </div>
+
+    <nav class="card-custom p-4 mb-4" aria-label="Table of contents">
+        <h6 class="fw-semibold mb-3">Contents</h6>
+        <ol class="mb-0 fs-8" style="padding-left: 1.25rem;">
+            <li><a href="#who-we-are" class="text-brand-green">Who we are</a></li>
+            <li><a href="#what-we-collect" class="text-brand-green">What data we collect</a></li>
+            <li><a href="#how-we-use" class="text-brand-green">How we use your data</a></li>
+            <li><a href="#legal-basis" class="text-brand-green">Legal basis</a></li>
+            <li><a href="#sharing" class="text-brand-green">Who we share it with</a></li>
+            <li><a href="#cookies" class="text-brand-green">Cookies</a></li>
+            <li><a href="#retention" class="text-brand-green">How long we keep it</a></li>
+            <li><a href="#security" class="text-brand-green">Security</a></li>
+            <li><a href="#rights" class="text-brand-green">Your rights</a></li>
+            <li><a href="#children" class="text-brand-green">Children</a></li>
+            <li><a href="#transfers" class="text-brand-green">International transfers</a></li>
+            <li><a href="#changes" class="text-brand-green">Changes</a></li>
+            <li><a href="#contact" class="text-brand-green">Contact</a></li>
+        </ol>
+    </nav>
+
+    <section id="who-we-are" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">1. Who we are</h2>
+        <p>
+            9jaRent.com.ng ("we", "us", "our") is the operator of the 9jaRent
+            property rental marketplace, a service offered to users in
+            Nigeria. For the purposes of the Nigeria Data Protection Act 2023
+            ("NDPA"), we are the data controller for personal data processed
+            through the Site.
+        </p>
+        <p class="mb-0">
+            Contact us at
+            <a href="mailto:support@9jarent.com.ng" class="text-brand-green">support@9jarent.com.ng</a>
+            for any question about this policy or about your data.
+        </p>
+    </section>
+
+    <section id="what-we-collect" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">2. What data we collect</h2>
+        <p><strong>Data you give us directly:</strong></p>
+        <ul>
+            <li><strong>Account details:</strong> name, email address, phone number, password (stored hashed).</li>
+            <li><strong>Agent details (if you register as an agent):</strong> agency name, office address, state, city, WhatsApp number, profile photo, description of your agency.</li>
+            <li><strong>Listings:</strong> property title, description, address, location, price, fees, amenities, images, video.</li>
+            <li><strong>Messages:</strong> the content of conversations you have with other users through the Site.</li>
+            <li><strong>Inspection requests:</strong> requested date, time, and the optional note you write to the other party.</li>
+            <li><strong>Reports:</strong> the category, description, and target of any report you submit.</li>
+            <li><strong>Preferences:</strong> your notification and account settings.</li>
+        </ul>
+        <p><strong>Data we collect automatically:</strong></p>
+        <ul>
+            <li><strong>Log data:</strong> IP address, timestamps, and the pages or endpoints you access. This is used for security (rate limiting, fraud prevention) and troubleshooting.</li>
+            <li><strong>Session data:</strong> a session cookie keeps you logged in between requests.</li>
+            <li><strong>Approximate usage data:</strong> aggregate counts (views on a listing, messages sent) that we use to display metrics on your dashboard and to operate the platform.</li>
+        </ul>
+        <p class="mb-0">
+            We do not collect payment card details, bank details, or government
+            identification numbers. If you ever need to send us a government
+            ID for verification purposes, we will ask you to do so directly by
+            email, not through the Site.
+        </p>
+    </section>
+
+    <section id="how-we-use" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">3. How we use your data</h2>
+        <p>We use your data to:</p>
+        <ul>
+            <li>Create and manage your account, including verifying your email address by sending a one-time code.</li>
+            <li>Display your listings and profile to other users, in line with the visibility settings you choose.</li>
+            <li>Deliver messages, notifications, and inspection requests between you and other users.</li>
+            <li>Moderate the platform — review agent applications, property submissions, and reports.</li>
+            <li>Send you account and system emails (password resets, security alerts, service changes).</li>
+            <li>Send you notification emails about activity on your account, if you have email notifications turned on.</li>
+            <li>Detect, investigate, and prevent fraud, abuse, spam, and other security incidents.</li>
+            <li>Comply with legal obligations and respond to lawful requests from authorities.</li>
+        </ul>
+        <p class="mb-0">
+            We do not use your data for automated decision-making that has a
+            legal or similarly significant effect on you. Decisions like agent
+            approval or listing removal are made by a human moderator.
+        </p>
+    </section>
+
+    <section id="legal-basis" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">4. Legal basis</h2>
+        <p>Under the NDPA, we rely on the following legal bases:</p>
+        <ul>
+            <li><strong>Performance of a contract:</strong> to give you the account and services you signed up for.</li>
+            <li><strong>Legitimate interests:</strong> to keep the Site secure, prevent abuse, and improve the service. We balance these against your rights.</li>
+            <li><strong>Consent:</strong> for optional things like marketing emails, where we will ask you separately and you can withdraw at any time.</li>
+            <li><strong>Legal obligation:</strong> to retain certain records or respond to lawful requests.</li>
+        </ul>
+        <p class="mb-0">
+            You can ask us for more detail on the specific legal basis for any
+            particular processing activity.
+        </p>
+    </section>
+
+    <section id="sharing" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">5. Who we share it with</h2>
+        <p>
+            We do not sell your personal data. We share it only with:
+        </p>
+        <ul>
+            <li><strong>Other users, as part of normal use of the Site.</strong> When you list a property, your agent name, WhatsApp number, and (optionally) email are shown on the listing. When you send a message, the recipient sees the message and your display name.</li>
+            <li><strong>Service providers who help us run the platform.</strong> These include our web host (which stores the database and uploaded images), our email delivery provider (which sends account and notification emails), and — if enabled — a media storage provider. They process data on our instructions only.</li>
+            <li><strong>Authorities, when required by law.</strong> For example, in response to a valid court order or a lawful request from a regulator or law enforcement agency.</li>
+            <li><strong>A successor entity</strong> in the event of a merger, acquisition, or sale of our assets, in which case the successor will be bound by this policy.</li>
+        </ul>
+        <p class="mb-0">
+            We do not share your data with advertisers, data brokers, or
+            analytics companies that build cross-site profiles of you.
+        </p>
+    </section>
+
+    <section id="cookies" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">6. Cookies</h2>
+        <p>
+            We use cookies and similar technologies to keep you logged in and
+            to protect your account from cross-site request forgery. These are
+            essential cookies — the Site cannot work without them, and they
+            are not used for tracking you across other sites.
+        </p>
+        <p class="mb-0">
+            You can block cookies in your browser settings, but doing so will
+            prevent you from logging in or using most of the Site.
+        </p>
+    </section>
+
+    <section id="retention" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">7. How long we keep it</h2>
+        <p>
+            We keep your account data for as long as your account is active.
+            If you request account deletion, we archive your account rather
+            than immediately erasing it — this is so that the other party's
+            conversation history and inspection records remain intact (see
+            section 8 of the <a href="{% url 'terms' %}" class="text-brand-green">Terms &amp; Conditions</a>).
+            Archived accounts are excluded from normal use of the Site and
+            their listings are removed from public view.
+        </p>
+        <p class="mb-0">
+            We may keep certain records longer where the law requires it, or
+            where it is necessary to resolve a dispute, prevent fraud, or
+            enforce our Terms. Security logs (IP addresses, timestamps) are
+            kept for a limited period consistent with our security needs.
+        </p>
+    </section>
+
+    <section id="security" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">8. Security</h2>
+        <p>
+            We take reasonable technical and organisational measures to
+            protect your data, including:
+        </p>
+        <ul>
+            <li>Passwords are stored using industry-standard hashing — we never store them in plain text.</li>
+            <li>All traffic to the Site is served over HTTPS in production.</li>
+            <li>Access to the database and to administrative tools is restricted.</li>
+            <li>Administrative actions (approving agents, removing listings, resolving reports) are logged so they can be audited.</li>
+        </ul>
+        <p class="mb-0">
+            No online service can guarantee absolute security. If we become
+            aware of a data breach that is likely to result in a risk to your
+            rights or freedoms, we will notify you and the Nigeria Data
+            Protection Commission as required by the NDPA.
+        </p>
+    </section>
+
+    <section id="rights" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">9. Your rights</h2>
+        <p>Under the NDPA, you have the right to:</p>
+        <ul>
+            <li><strong>Access</strong> the personal data we hold about you.</li>
+            <li><strong>Correct</strong> data that is inaccurate or incomplete.</li>
+            <li><strong>Delete</strong> your data, subject to the retention rules described above.</li>
+            <li><strong>Restrict</strong> or <strong>object to</strong> certain processing, in the circumstances the NDPA allows.</li>
+            <li><strong>Portability</strong> — receive a copy of the data you have given us in a structured, commonly used format.</li>
+            <li><strong>Withdraw consent</strong> where we relied on consent, without affecting the lawfulness of processing already done.</li>
+            <li><strong>Lodge a complaint</strong> with the Nigeria Data Protection Commission.</li>
+        </ul>
+        <p class="mb-0">
+            To exercise any of these rights, email
+            <a href="mailto:support@9jarent.com.ng" class="text-brand-green">support@9jarent.com.ng</a>.
+            We will respond within the period required by the NDPA. We may ask
+            you to confirm your identity before we act on a request.
+        </p>
+    </section>
+
+    <section id="children" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">10. Children</h2>
+        <p class="mb-0">
+            The Site is not intended for anyone under 18. We do not knowingly
+            collect personal data from children. If you believe a child has
+            provided us with personal data, please contact us and we will take
+            steps to delete it.
+        </p>
+    </section>
+
+    <section id="transfers" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">11. International transfers</h2>
+        <p>
+            Some of our service providers (for example, email delivery and, if
+            enabled, media storage) may store or process data outside Nigeria.
+            Where we transfer personal data outside Nigeria, we do so only in
+            accordance with the NDPA — typically on the basis of an adequacy
+            decision, standard contractual clauses, or your explicit consent.
+        </p>
+        <p class="mb-0">
+            You can ask us for details of the safeguards we rely on for any
+            specific transfer.
+        </p>
+    </section>
+
+    <section id="changes" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">12. Changes to this policy</h2>
+        <p>
+            We may update this policy from time to time. When we do, we will
+            change the "Last updated" date at the top. If the change is
+            material, we will notify you by email or through an in-app
+            notification before it takes effect.
+        </p>
+        <p class="mb-0">
+            Continued use of the Site after a change takes effect means you
+            accept the updated policy.
+        </p>
+    </section>
+
+    <section id="contact" class="mb-5">
+        <h2 class="fs-4 fw-semibold mb-3">13. Contact</h2>
+        <p class="mb-0">
+            For any question about this policy, or to exercise any of your
+            rights, email
+            <a href="mailto:support@9jarent.com.ng" class="text-brand-green">support@9jarent.com.ng</a>.
+        </p>
+    </section>
+
+</div>
+{% endblock %}

@@ -29,31 +29,20 @@ class RoleBasedLoginView(LoginView):
             # Session ends when the browser closes instead of the default 2-week cookie age.
             self.request.session.set_expiry(0)
         return response
-    
+
     def get_success_url(self):
         user = self.request.user
-        
-        # Super admins go to admin dashboard
+
         if user.is_admin:
             return reverse_lazy('dashboard:admin')
-        
-        # Pending agents go to pending page
         if user.is_pending_agent:
             return reverse_lazy('accounts:pending')
-        
-        # Rejected agents go to pending page (shows rejection reason)
         if user.is_rejected_agent:
             return reverse_lazy('accounts:pending')
-        
-        # Suspended agents go to pending page (shows suspension message)
         if user.is_suspended_agent:
             return reverse_lazy('accounts:pending')
-        
-        # Approved agents go to their dashboard
         if user.is_approved_agent:
             return reverse_lazy('properties:mine')
-        
-        # Public users go to homepage
         return reverse_lazy('properties:home')
 
 
@@ -62,13 +51,9 @@ class AgentSignUpStep1View(CreateView):
     Step 1 of agent signup: agency info + email.
 
     Creates the CustomUser row immediately (unusable password,
-    email_verified=False) so an EmailOTP - which requires a real user FK -
+    email_verified=False) so an EmailOTP — which requires a real user FK —
     can be issued and emailed. The account isn't fully usable until step 3
-    sets a real password; if the user abandons the flow here, they're left
-    with an unusable-password, unverified account rather than nothing, which
-    is an acceptable tradeoff for keeping the OTP model's existing schema
-    (EmailOTP.user is a required FK) rather than inventing separate
-    pre-account session storage for step 1's data.
+    sets a real password.
     """
     form_class = AgentSignUpStep1Form
     template_name = 'accounts/signup.html'
@@ -95,65 +80,175 @@ class AgentSignUpStep1View(CreateView):
         return reverse_lazy('accounts:agent_signup_verify')
 
 
-class AgentSignUpVerifyView(FormView):
-    """Step 2: verify the emailed OTP code."""
+# ============================================================================
+# Signup OTP verification — shared base
+# ============================================================================
+#
+# Both signup flows (agent, renter) do exactly the same thing here: look up
+# the pending user from the session, verify a 6-digit OTP, mark the account
+# verified, then hand off to a per-flow "what happens next" step. Only the
+# stepper display, back link, submit button, and post-verification behavior
+# differ, so those are the config points on the subclasses below.
+
+class BaseOTPVerifyView(FormView):
     form_class = OTPVerifyForm
-    template_name = 'accounts/signup_verify.html'
+    template_name = 'accounts/verify_otp.html'
+
+    # --- Subclass config (all must be overridden) ---
+    session_user_key = None       # e.g. 'agent_signup_user_id'
+    expected_role = None          # 'MINOR_ADMIN' or 'PUBLIC'
+    stepper = []                  # list of {'label', 'icon', 'state'}
+    verify_heading = None
+    verify_subheading = None
+    submit_label = None
+    back_url_name = None          # e.g. 'accounts:agent_signup'
+    back_label = "Start over"
+
+    # ------------------------------------------------------------------
+    # Pending-user lookup (from the session)
+    # ------------------------------------------------------------------
 
     def _get_pending_user(self):
-        user_id = self.request.session.get('agent_signup_user_id')
+        user_id = self.request.session.get(self.session_user_key)
         if not user_id:
             return None
         return CustomUser.objects.filter(
-            pk=user_id, role='MINOR_ADMIN', email_verified=False
+            pk=user_id,
+            role=self.expected_role,
+            email_verified=False,
         ).first()
 
     def dispatch(self, request, *args, **kwargs):
         self.pending_user = self._get_pending_user()
         if not self.pending_user:
-            messages.info(request, "Let's start your agent registration.")
-            return redirect('accounts:agent_signup')
+            messages.info(request, "Let's start your registration.")
+            return redirect(self.back_url_name)
         return super().dispatch(request, *args, **kwargs)
+
+    # ------------------------------------------------------------------
+    # Context
+    # ------------------------------------------------------------------
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pending_email'] = self.pending_user.email
+        context.update({
+            'pending_email': self.pending_user.email,
+            'stepper': self.stepper,
+            'verify_heading': self.verify_heading,
+            'verify_subheading': self.verify_subheading,
+            'submit_label': self.submit_label,
+            'back_url_name': self.back_url_name,
+            'back_label': self.back_label,
+        })
         return context
+
+    # ------------------------------------------------------------------
+    # Form handling
+    # ------------------------------------------------------------------
 
     def form_valid(self, form):
         from .models import EmailOTP
+
         code = form.cleaned_data['code']
         otp = EmailOTP.objects.filter(
-            user=self.pending_user, purpose=EmailOTP.Purpose.SIGNUP,
-            code=code, is_used=False, expires_at__gt=timezone.now()
+            user=self.pending_user,
+            purpose=EmailOTP.Purpose.SIGNUP,
+            code=code,
+            is_used=False,
+            expires_at__gt=timezone.now(),
         ).first()
+
         if not otp:
-            form.add_error('code', "That code is invalid or has expired. You can request a new one below.")
+            form.add_error(
+                'code',
+                "That code is invalid or has expired. You can request a new one below.",
+            )
             return self.form_invalid(form)
+
         otp.is_used = True
         otp.save(update_fields=['is_used'])
+
         self.pending_user.email_verified = True
         self.pending_user.save(update_fields=['email_verified'])
-        # Stamp when verification happened - AgentSignUpSetupView uses this
-        # to expire the "verified, awaiting password" window (see comment
-        # there for why: an unattended browser between these two steps is a
-        # narrow account-takeover risk on a shared/public computer).
-        self.request.session['agent_signup_verified_at'] = timezone.now().isoformat()
-        return redirect('accounts:agent_signup_setup')
+
+        return self.on_verified()
+
+    def on_verified(self):
+        """
+        Subclasses do their post-verification work here (send welcome email,
+        log the user in, redirect to next step, etc.) and return a response.
+        """
+        raise NotImplementedError
 
     def post(self, request, *args, **kwargs):
         if 'resend' in request.POST:
             from django.core.cache import cache
             from .emails import create_and_send_otp
+
             cooldown_key = f'otp_resend_cooldown:{self.pending_user.pk}'
             if cache.get(cooldown_key):
                 messages.warning(request, "Please wait a minute before requesting another code.")
-                return redirect('accounts:agent_signup_verify')
+                return redirect(request.path)
+
             create_and_send_otp(self.pending_user)
             cache.set(cooldown_key, True, 60)  # 1 resend per minute per user
             messages.success(request, f"A new code has been sent to {self.pending_user.email}.")
-            return redirect('accounts:agent_signup_verify')
+            return redirect(request.path)
+
         return super().post(request, *args, **kwargs)
+
+
+class AgentSignUpVerifyView(BaseOTPVerifyView):
+    session_user_key = 'agent_signup_user_id'
+    expected_role = 'MINOR_ADMIN'
+
+    verify_heading = "Verify Your Email"
+    verify_subheading = "One more step before you set up your account."
+    submit_label = "Verify & Continue"
+    back_url_name = 'accounts:agent_signup'
+    back_label = "Start over"
+
+    stepper = [
+        {'label': 'Agency Info',   'icon': 'building',     'state': 'completed'},
+        {'label': 'Verification',  'icon': 'shield-check', 'state': 'active'},
+        {'label': 'Account Setup', 'icon': 'person',       'state': 'pending'},
+    ]
+
+    def on_verified(self):
+        # Stamp verification time — AgentSignUpSetupView reads this to
+        # expire the "verified, no password yet" window.
+        self.request.session['agent_signup_verified_at'] = timezone.now().isoformat()
+        return redirect('accounts:agent_signup_setup')
+
+
+class RenterSignUpVerifyView(BaseOTPVerifyView):
+    session_user_key = 'renter_signup_user_id'
+    expected_role = 'PUBLIC'
+
+    verify_heading = "Verify Your Email"
+    verify_subheading = "One more step to activate your account."
+    submit_label = "Verify & Activate Account"
+    back_url_name = 'accounts:renter_signup'
+    back_label = "Start over"
+
+    stepper = [
+        {'label': 'Your Details', 'icon': 'person',       'state': 'completed'},
+        {'label': 'Verification', 'icon': 'shield-check', 'state': 'active'},
+    ]
+
+    def on_verified(self):
+        from .emails import send_welcome_email
+
+        user = self.pending_user
+        send_welcome_email(user)
+
+        # Now safe to log in — the user has proven they own the email.
+        user.backend = 'accounts.backends.EmailOrPhoneBackend'
+        login(self.request, user)
+
+        self.request.session.pop('renter_signup_user_id', None)
+        messages.success(self.request, "Welcome to 9jaRent! Your account is now active.")
+        return redirect('properties:home')
 
 
 class AgentSignUpSetupView(FormView):
@@ -166,8 +261,6 @@ class AgentSignUpSetupView(FormView):
     # re-verifying. Without this, on a shared/public computer, anyone who
     # uses the browser after a legitimate user verifies but before they set
     # a password could set the password themselves and take the account.
-    # 15 minutes is generous for a normal single sitting but small enough to
-    # make that window impractical to exploit opportunistically.
     VERIFIED_WINDOW_MINUTES = 15
 
     def _get_pending_user(self):
@@ -232,9 +325,12 @@ class AccountTypeChoiceView(TemplateView):
 
 class RenterSignUpView(CreateView):
     """
-    Renter/public user registration view.
-    Renters have no approval workflow - they can browse and use the
-    platform (favourites, messaging, inspections) immediately.
+    Renter registration, step 1: collect details, create the user with
+    email_verified=False, email an OTP, redirect to verification.
+
+    The user is NOT logged in yet — that only happens after the OTP is
+    confirmed. Login here would let someone register with an email they
+    don't own.
     """
     form_class = RenterSignUpForm
     template_name = 'accounts/renter_signup.html'
@@ -247,13 +343,16 @@ class RenterSignUpView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.object.backend = 'accounts.backends.EmailOrPhoneBackend'
-        login(self.request, self.object)
-        messages.success(self.request, "Welcome to 9jaRent! Your account has been created.")
+        from .emails import create_and_send_otp
+        create_and_send_otp(self.object)
+        # Rotate session before storing anything — same reasoning as the
+        # agent signup flow (session fixation defense).
+        self.request.session.cycle_key()
+        self.request.session['renter_signup_user_id'] = self.object.pk
         return response
 
     def get_success_url(self):
-        return reverse_lazy('properties:home')
+        return reverse_lazy('accounts:renter_signup_verify')
 
 
 class AgentPendingView(TemplateView):
@@ -262,10 +361,8 @@ class AgentPendingView(TemplateView):
     Displays status and any rejection/suspension reasons.
     """
     template_name = 'accounts/pending.html'
-    
+
     def dispatch(self, request, *args, **kwargs):
-        # Allow anonymous users who just signed up (via session)
-        # Or authenticated users who are agents
         if request.user.is_authenticated and not request.user.is_agent:
             messages.info(request, "This page is for agent applicants only.")
             return redirect('properties:home')
@@ -276,19 +373,17 @@ class CompleteProfileView(LoginRequiredMixin, UpdateView):
     """View for agents to complete/update their profile."""
     form_class = ProfileCompletionForm
     template_name = 'accounts/complete_profile.html'
-    
+
     def get_object(self, queryset=None):
         return self.request.user
-    
+
     def dispatch(self, request, *args, **kwargs):
-        # Only agents can complete this profile
         if not request.user.is_agent:
             messages.error(request, "Only agents can access this page.")
             return redirect('properties:home')
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get_success_url(self):
-        # Redirect based on status
         user = self.request.user
         if user.is_pending_agent:
             return reverse_lazy('accounts:pending')
@@ -297,7 +392,7 @@ class CompleteProfileView(LoginRequiredMixin, UpdateView):
         if user.is_suspended_agent:
             return reverse_lazy('accounts:pending')
         return reverse_lazy('properties:mine')
-    
+
     def form_valid(self, form):
         messages.success(self.request, "Profile updated successfully.")
         return super().form_valid(form)
@@ -380,7 +475,6 @@ class AgentPublicProfileView(DetailView):
     slug_field = 'username'
 
     def get_queryset(self):
-        # Only show approved agents publicly
         return CustomUser.objects.filter(
             role='MINOR_ADMIN',
             agent_status='APPROVED'
@@ -389,7 +483,6 @@ class AgentPublicProfileView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         agent = self.object
-        # Only show published properties
         context['agent_properties'] = agent.properties.filter(
             status='PUBLISHED'
         ).select_related('state', 'lga').order_by('-created_at')
@@ -402,26 +495,8 @@ class AgentPublicProfileView(DetailView):
 
 
 class SettingsView(LoginRequiredMixin, TemplateView):
-    """Account settings: notification prefs, password change, delete account.
-
-    Delete account is intentionally NOT offered to any admin (is_staff or
-    role='SUPER_ADMIN' - see CustomUser.is_admin) - self-service deletion of
-    an admin account is a real way to lock everyone out of the dashboard,
-    so removing an admin account stays a Django-Admin-only action performed
-    by a superuser. This is deliberately checked via `is_admin`, not just
-    `is_superuser` - a staff user who isn't (yet) a superuser is still an
-    admin for this purpose.
-
-    For everyone else, deletion is a REQUEST, not an immediate delete: it
-    sets deletion_requested_at and waits for an admin to approve it (see
-    dashboard/views.py::approve_account_deletion). See the comment on
-    CustomUser.deletion_requested_at for why this isn't a hard delete.
-    """
-
-    def get_template_names(self):
-        if self.request.user.is_superuser:
-            return ['accounts/settings.html']
-        return ['accounts/settings.html']
+    """Account settings: notification prefs, password change, delete account."""
+    template_name = 'accounts/settings.html'
 
     def post(self, request, *args, **kwargs):
         from django.contrib.auth import update_session_auth_hash

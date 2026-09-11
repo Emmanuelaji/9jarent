@@ -1,35 +1,87 @@
 {% extends 'accounts/auth_base.html' %}
+{% load static %}
 {% block title %}Choose Account Type | 9jaRent{% endblock %}
 {% block auth_card_width %}max-width: 640px;{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Background image on the whole page. Overrides the plain white
+   .auth-page surface from style.css. */
+.auth-page {
+    background-image:
+        linear-gradient(rgba(11, 61, 46, 0.72), rgba(11, 61, 46, 0.72)),
+        url("{% static 'img/auth-bg.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    padding: 2rem 1rem;
+}
+
+/* Give the card its own white surface so form content stays readable
+   regardless of how busy the photo is behind it. */
+.auth-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 2rem 1.75rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* Back-to-home link at the top of the card. */
+.chooser-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.chooser-back:hover,
+.chooser-back:focus-visible {
+    color: var(--brand-green);
+    outline: none;
+}
+</style>
+{% endblock %}
+
 {% block auth_content %}
+
+<a href="{% url 'properties:home' %}" class="chooser-back">
+    <i class="bi bi-arrow-left"></i> Back to Home
+</a>
+
 <h1 class="auth-title">Choose Account Type</h1>
 <p class="auth-subtitle">Select how you want to use 9jaRent</p>
 
 <div class="row g-3 mb-4">
-<div class="col-md-6">
-<a href="{% url 'accounts:renter_signup' %}" style="text-decoration:none;color:inherit;">
-<div class="account-type-card">
-<div class="icon-circle renter"><i class="bi bi-person"></i></div>
-<h4>I'm a Renter</h4>
-<p>Find and contact agents about properties.</p>
-<span class="btn btn-outline-green w-100 d-block">Choose Renter</span>
-</div>
-</a>
-</div>
-<div class="col-md-6">
-<a href="{% url 'accounts:agent_signup' %}" style="text-decoration:none;color:inherit;">
-<div class="account-type-card">
-<div class="icon-circle agent"><i class="bi bi-briefcase"></i></div>
-<h4>I'm an Agent</h4>
-<p>List properties and connect with potential renters.</p>
-<span class="btn btn-outline-orange w-100 d-block">Choose Agent</span>
-</div>
-</a>
-</div>
+    <div class="col-md-6">
+        <a href="{% url 'accounts:renter_signup' %}" style="text-decoration:none;color:inherit;">
+            <div class="account-type-card">
+                <div class="icon-circle renter"><i class="bi bi-person"></i></div>
+                <h4>I'm a Renter</h4>
+                <p>Find and contact agents about properties.</p>
+                <span class="btn btn-outline-green w-100 d-block">Choose Renter</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a href="{% url 'accounts:agent_signup' %}" style="text-decoration:none;color:inherit;">
+            <div class="account-type-card">
+                <div class="icon-circle agent"><i class="bi bi-briefcase"></i></div>
+                <h4>I'm an Agent</h4>
+                <p>List properties and connect with potential renters.</p>
+                <span class="btn btn-outline-orange w-100 d-block">Choose Agent</span>
+            </div>
+        </a>
+    </div>
 </div>
 
 <div class="auth-footer">
-Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
+    Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
 </div>
+
 {% endblock %}

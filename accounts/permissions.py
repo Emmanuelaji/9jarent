@@ -1,14 +1,18 @@
-# Create accounts/permissions.py - decorators and mixins for authorization
+# accounts/permissions.py
 """
 Permission decorators and mixins for 9jaRent.
 
-CRITICAL PRINCIPLE: Never rely on frontend hiding buttons.
-Always enforce permissions server-side.
+Never rely on frontend hiding buttons — every check here is enforced
+server-side.
 """
 
+from functools import wraps
+
+from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from functools import wraps
+from django.shortcuts import redirect
+from django.urls import reverse
 
 
 # ============================================================================
@@ -16,63 +20,67 @@ from functools import wraps
 # ============================================================================
 
 class AdminRequiredMixin(UserPassesTestMixin):
-    """Mixin that requires user to be an admin (SUPER_ADMIN or staff)."""
-    
+    """Requires an admin (SUPER_ADMIN or staff)."""
+
     def test_func(self):
         user = self.request.user
         return user.is_authenticated and user.is_admin
-    
+
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
-            # Let LoginRequiredMixin (earlier in the MRO) redirect to login
-            # instead of leaking a 403 to anonymous visitors.
+            # Let LoginRequiredMixin redirect to login instead of leaking 403.
             return super().handle_no_permission()
         raise PermissionDenied("You do not have permission to access this admin area.")
 
 
 class ApprovedAgentRequiredMixin(UserPassesTestMixin):
     """
-    Mixin that requires user to be an APPROVED agent.
-    Pending, rejected, or suspended agents are denied.
+    Requires an APPROVED agent.
+
+    Pending, rejected, and suspended agents are redirected to their status
+    page (accounts:pending) rather than shown a raw 403 — the status page
+    tells them what's happening and what to do next, which a 403 doesn't.
+    A non-agent (renter) still gets the 403, since the status page would be
+    meaningless to them.
     """
-    
+
     def test_func(self):
         user = self.request.user
         return user.is_authenticated and user.is_approved_agent
-    
+
     def handle_no_permission(self):
         user = self.request.user
+
         if not user.is_authenticated:
+            # LoginRequiredMixin (earlier in the MRO) handles this — but be
+            # explicit so the mixin works standalone if used without it.
             return super().handle_no_permission()
+
         if user.is_agent:
-            if user.is_pending_agent:
-                raise PermissionDenied(
-                    "Your agent application is pending approval. "
-                    "You cannot perform this action yet."
+            # Any non-approved agent status lands on the same status page,
+            # which renders a different message per status (pending /
+            # rejected / suspended).
+            if user.is_pending_agent or user.is_rejected_agent or user.is_suspended_agent:
+                messages.info(
+                    self.request,
+                    "You'll be able to list properties once your agent "
+                    "application is approved.",
                 )
-            elif user.is_rejected_agent:
-                raise PermissionDenied(
-                    "Your agent application was rejected. "
-                    "Please check your profile for the rejection reason."
-                )
-            elif user.is_suspended_agent:
-                raise PermissionDenied(
-                    "Your agent account has been suspended. "
-                    "Please contact support for assistance."
-                )
-        raise PermissionDenied("You must be an approved agent to access this page.")
+                return redirect(reverse("accounts:pending"))
+
+        # Renter trying to reach an agent-only page — that's a real 403.
+        raise PermissionDenied(
+            "You must be an approved agent to access this page."
+        )
 
 
 class AgentRequiredMixin(UserPassesTestMixin):
-    """
-    Mixin that requires user to have agent role (any status).
-    Used for pages that all agents can access (e.g., profile, pending status).
-    """
-    
+    """Requires an agent account of any status (used for profile pages etc.)."""
+
     def test_func(self):
         user = self.request.user
         return user.is_authenticated and user.is_agent
-    
+
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
             return super().handle_no_permission()
@@ -80,12 +88,12 @@ class AgentRequiredMixin(UserPassesTestMixin):
 
 
 class PublicOrRenterMixin(UserPassesTestMixin):
-    """Mixin that allows public users and renters (non-agents)."""
-    
+    """Allows public users and renters (non-agents)."""
+
     def test_func(self):
         user = self.request.user
-        return user.is_authenticated and (user.role == 'PUBLIC' or user.is_admin)
-    
+        return user.is_authenticated and (user.role == "PUBLIC" or user.is_admin)
+
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
             return super().handle_no_permission()
@@ -98,42 +106,39 @@ class PublicOrRenterMixin(UserPassesTestMixin):
 
 def approved_agent_required(view_func):
     """
-    Decorator that requires an APPROVED agent.
-    Usage: @approved_agent_required
+    Requires an APPROVED agent.
+
+    Same redirect-vs-403 policy as ApprovedAgentRequiredMixin above — keeps
+    the mixin and decorator behaviour identical so a view can't accidentally
+    give a worse experience than the other.
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         user = request.user
+
         if not user.is_authenticated:
             raise PermissionDenied("You must be logged in to perform this action.")
-        
-        if not user.is_approved_agent:
-            if user.is_pending_agent:
-                raise PermissionDenied(
-                    "Your agent application is pending approval. "
-                    "You cannot perform this action yet."
+
+        if user.is_approved_agent:
+            return view_func(request, *args, **kwargs)
+
+        if user.is_agent:
+            if user.is_pending_agent or user.is_rejected_agent or user.is_suspended_agent:
+                messages.info(
+                    request,
+                    "You'll be able to do this once your agent application "
+                    "is approved.",
                 )
-            elif user.is_rejected_agent:
-                raise PermissionDenied(
-                    "Your agent application was rejected. "
-                    "Please check your profile for the rejection reason."
-                )
-            elif user.is_suspended_agent:
-                raise PermissionDenied(
-                    "Your agent account has been suspended."
-                )
-            else:
-                raise PermissionDenied("You must be an approved agent to perform this action.")
-        
-        return view_func(request, *args, **kwargs)
+                return redirect(reverse("accounts:pending"))
+
+        raise PermissionDenied(
+            "You must be an approved agent to perform this action."
+        )
     return _wrapped_view
 
 
 def admin_required(view_func):
-    """
-    Decorator that requires an admin user.
-    Usage: @admin_required
-    """
+    """Requires an admin user."""
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         user = request.user
@@ -143,29 +148,26 @@ def admin_required(view_func):
     return _wrapped_view
 
 
-def object_owner_required(model_class, owner_field='created_by'):
+def object_owner_required(model_class, owner_field="created_by"):
     """
-    Decorator that ensures the current user owns the object.
-    Usage: @object_owner_required(Property, 'created_by')
+    Ensures the current user owns the object (or is an admin).
     """
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            # Get the object pk from URL kwargs
-            pk = kwargs.get('pk') or kwargs.get('id')
+            pk = kwargs.get("pk") or kwargs.get("id")
             if not pk:
                 raise PermissionDenied("Object identifier missing.")
-            
+
             try:
                 obj = model_class.objects.get(pk=pk)
             except model_class.DoesNotExist:
                 raise PermissionDenied("Object not found.")
-            
+
             owner = getattr(obj, owner_field, None)
             if owner != request.user and not request.user.is_admin:
                 raise PermissionDenied("You do not have permission to modify this object.")
-            
-            # Attach object to request for convenience
+
             request._ownership_checked_object = obj
             return view_func(request, *args, **kwargs)
         return _wrapped_view
